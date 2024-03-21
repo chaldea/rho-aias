@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias", "src\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj", "{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Server", "src\Chaldea.Fate.RhoAias.Server\Chaldea.Fate.RhoAias.Server.csproj", "{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Client", "src\Chaldea.Fate.RhoAias.Client\Chaldea.Fate.RhoAias.Client.csproj", "{00C38ADB-C24E-4750-B58E-164A9E7C4A22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {828DE202-19FE-4CAD-9E30-54D55E5A87DA}
+	EndGlobalSection
+EndGlobal
