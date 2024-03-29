@@ -4,18 +4,21 @@ using Microsoft.AspNetCore.Hosting;
 using System.Net;
 using Microsoft.Extensions.Configuration;
 using Yarp.ReverseProxy.Forwarder;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRhoAiasServer(this IServiceCollection services, IConfiguration configuration)
+    private const string GlobalEndpointRouteBuilder = "__GlobalEndpointRouteBuilder";
+
+    public static IServiceCollection AddRhoAias(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RhoAiasServerOptions>(configuration.GetSection("RhoAias:Server"));
         services.AddReverseProxy().LoadFromMemory();
         services.AddHttpContextAccessor();
         services.AddSignalR().AddMessagePackProtocol();
-        services.AddSingleton<IForwarderHttpClientFactory, CustomForwarderHttpClientFactory>();
+        services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
         services.AddSingleton<IClientManager, ClientManager>();
         services.AddSingleton<IForwarderManager, ForwarderManager>();
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
@@ -25,9 +28,23 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IWebHostBuilder ConfigureRhoAiasServer(this IWebHostBuilder builder)
+    public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
     {
-        builder.ConfigureKestrel((context, serverOptions) =>
+        app.UseWebSockets();
+        app.UseMiddleware<ForwarderMiddleware>();
+        if (app.Properties.TryGetValue(GlobalEndpointRouteBuilder, out var obj))
+        {
+            var endpoint = obj as IEndpointRouteBuilder;
+            endpoint?.MapReverseProxy();
+            endpoint?.MapHub<ClientHub>("/clienthub");
+        }
+        return app;
+    }
+
+    public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddRhoAias(builder.Configuration);
+        builder.WebHost.ConfigureKestrel((context, serverOptions) =>
         {
             var options = new RhoAiasServerOptions();
             context.Configuration.GetSection("RhoAias:Server").Bind(options);
@@ -41,19 +58,9 @@ public static class ServiceCollectionExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddRhoAiasServer(builder.Configuration);
-        builder.WebHost.ConfigureRhoAiasServer();
-        return builder;
-    }
-
     public static WebApplication UseRhoAiasServer(this WebApplication app)
     {
-        app.UseWebSockets();
-        app.UseMiddleware<ForwarderMiddleware>();
-        app.MapReverseProxy();
-        app.MapHub<ClientHub>("/clienthub");
+        app.UseRhoAias();
         return app;
     }
 

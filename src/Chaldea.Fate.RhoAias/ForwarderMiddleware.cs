@@ -22,11 +22,11 @@ internal class ForwarderMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Connection.LocalPort != _options.Bridge)
-        {
-            await _next(context);
-            return;
-        }
+        // if (context.Connection.LocalPort != _options.Bridge)
+        // {
+        //     await _next(context);
+        //     return;
+        // }
 
         if (context.Request.Method != "PROXY")
         {

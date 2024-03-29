@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -15,19 +13,12 @@ public static class ReverseProxyBuilderExtensions
     }
 }
 
-internal class CustomForwarderHttpClientFactory : ForwarderHttpClientFactory
+internal class WebForwarderHttpClientFactory : ForwarderHttpClientFactory
 {
-    private readonly ILogger<CustomForwarderHttpClientFactory> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IForwarderManager _forwarderManager;
 
-    public CustomForwarderHttpClientFactory(
-        ILogger<CustomForwarderHttpClientFactory> logger,
-        IHttpContextAccessor httpContextAccessor,
-        IForwarderManager forwarderManager)
+    public WebForwarderHttpClientFactory(IForwarderManager forwarderManager)
     {
-        _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
         _forwarderManager = forwarderManager;
     }
 
