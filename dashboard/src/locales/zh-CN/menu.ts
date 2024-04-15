@@ -49,4 +49,8 @@ export default {
   'menu.editor.flow': '流程编辑器',
   'menu.editor.mind': '脑图编辑器',
   'menu.editor.koni': '拓扑编辑器',
+  'menu.overview': '总览',
+  'menu.clients': '客户端列表',
+  'menu.proxies': '转发列表',
+  'menu.certs': '证书管理',
 };

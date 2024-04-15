@@ -169,7 +169,6 @@ internal class PortForwarder : ForwarderBase
 
     public PortForwarder(
         ILogger<PortForwarder> logger, 
-        IClientManager clientManager, 
         IHubContext<ClientHub> hub, ILoggerFactory loggerFactory)
         :base(loggerFactory)
     {

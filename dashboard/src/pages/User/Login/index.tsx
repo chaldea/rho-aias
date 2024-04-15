@@ -1,5 +1,4 @@
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
   AlipayCircleOutlined,
@@ -21,6 +20,7 @@ import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { createStyles } from 'antd-style';
+import { postUserLogin } from '@/services/dashboard/user';
 
 const useStyles = createStyles(({ token }) => {
   return {
@@ -96,7 +96,7 @@ const LoginMessage: React.FC<{
 };
 
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<API.LoginResultDto>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
@@ -114,15 +114,16 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: API.LoginDto) => {
     try {
       // 登录
-      const msg = await login({ ...values, type });
+      const msg = await postUserLogin({ ...values, type }, { skipToken: true });
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
+        window.sessionStorage.setItem('AccessToken', msg.token || '');
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
@@ -132,6 +133,7 @@ const Login: React.FC = () => {
       console.log(msg);
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
+      window.sessionStorage.removeItem('AccessToken');
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
@@ -139,6 +141,7 @@ const Login: React.FC = () => {
       });
       console.log(error);
       message.error(defaultLoginFailureMessage);
+      window.sessionStorage.removeItem('AccessToken');
     }
   };
   const { status, type: loginType } = userLoginState;
@@ -181,7 +184,7 @@ const Login: React.FC = () => {
             <ActionIcons key="icons" />,
           ]}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            await handleSubmit(values as API.LoginDto);
           }}
         >
           <Tabs
@@ -224,7 +227,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.username.placeholder',
-                  defaultMessage: '用户名: admin or user',
+                  defaultMessage: '用户名: admin',
                 })}
                 rules={[
                   {
@@ -246,7 +249,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
+                  defaultMessage: '密码: 123456Aa',
                 })}
                 rules={[
                   {

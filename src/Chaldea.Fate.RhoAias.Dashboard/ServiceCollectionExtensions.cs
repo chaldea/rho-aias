@@ -1,27 +1,36 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Chaldea.Fate.RhoAias;
+using Chaldea.Fate.RhoAias.Dashboard;
+using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddRhoAiasDashboar(this IServiceCollection services)
+	public static IRhoAiasConfigurationBuilder AddRhoAiasDashboard(this IRhoAiasConfigurationBuilder builder)
 	{
-		services.AddControllers();
-		services.AddSpaStaticFiles(options =>
+		builder.Services.AddSingleton<IUserManager, UserManager>();
+		builder.Services.AddControllers();
+		builder.Services.AddAutoMapper(config =>
+		{
+			config.AddProfile<AutoMapperProfile>();
+		});
+		builder.Services.AddSpaStaticFiles(options =>
 		{
 			options.RootPath = "wwwroot/dashboard";
 		});
-		return services;
+		return builder;
 	}
 
-	public static WebApplication UseRhoAiasDashboard(this WebApplication app)
+	public static IRhoAiasApplicationBuilder UseRhoAiasDashboard(this IRhoAiasApplicationBuilder builder)
 	{
+		var app = builder.ApplicationBuilder;
+		var endpoint = builder.EndpointRouteBuilder;
 		app.UseSpaStaticFiles();
 		app.UseSpa(spa =>
 		{
 			spa.Options.DefaultPage = "/index.html";
 		});
-		app.MapControllers();
-		return app;
+		endpoint.MapControllers();
+		return builder;
 	}
 }

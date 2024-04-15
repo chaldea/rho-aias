@@ -2,6 +2,14 @@
 
 namespace Chaldea.Fate.RhoAias;
 
+public enum ProxyType
+{
+	HTTP,
+	HTTPS,
+	TCP,
+	UDP,
+}
+
 [MessagePackObject]
 public class Proxy
 {
@@ -11,9 +19,10 @@ public class Proxy
     [Key(3)] public string LocalIP { get; set; }
     [Key(4)] public int LocalPort { get; set; }
     [Key(5)] public int RemotePort { get; set; }
-    [Key(6)] public string Path { get; set; }
-    [Key(7)] public string[] Hosts { get; set; }
-    [IgnoreMember] public Client Client { get; set; }
+    [Key(6)] public string? Path { get; set; }
+    [Key(7)] public string[]? Hosts { get; set; }
+    [IgnoreMember] public Guid ClientId { get; set; }
+	[IgnoreMember] public Client? Client { get; set; }
 
     public string GetSchema() => Type switch
     {

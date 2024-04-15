@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +24,8 @@ internal class ClientHostedService : IHostedService
         _options = options.Value;
         _client = new Client
         {
-            Token = _options.Token,
-            Proxies = _options.Proxies
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
+			Proxies = _options.Proxies
         };
         _connection = new HubConnectionBuilder()
             .WithUrl(new Uri($"{_options.Url}/clienthub"), config =>

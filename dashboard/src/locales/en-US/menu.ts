@@ -49,4 +49,8 @@ export default {
   'menu.editor.flow': 'Flow Editor',
   'menu.editor.mind': 'Mind Editor',
   'menu.editor.koni': 'Koni Editor',
+  'menu.overview': 'Overview',
+  'menu.clients': 'Clients',
+  'menu.proxies': 'Forwards',
+  'menu.certs': 'Certs',
 };

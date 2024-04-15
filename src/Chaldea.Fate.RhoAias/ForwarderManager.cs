@@ -6,8 +6,8 @@ namespace Chaldea.Fate.RhoAias;
 
 internal interface IForwarderManager
 {
-    void Register(Proxy[] proxies);
-    void UnRegister(Proxy[] proxies);
+    void Register(List<Proxy> proxies);
+    void UnRegister(List<Proxy> proxies);
     Task ForwardAsync(string requestId, IConnectionLifetimeFeature lifetime, IConnectionTransportFeature transport);
     ValueTask<Stream> CreateAndWaitAsync(Uri? uri, CancellationToken cancellation);
 }
@@ -22,18 +22,20 @@ internal class ForwarderManager : IForwarderManager
         _serviceProvider = serviceProvider;
     }
 
-    public void Register(Proxy[] proxies)
+    public void Register(List<Proxy> proxies)
     {
         foreach (var proxy in proxies)
         {
             var forwarder = _serviceProvider.GetKeyedService<IForwarder>(proxy.Type);
             if (forwarder == null) continue;
-            forwarder.Register(proxy);
-            _forwarders.TryAdd(proxy.Id, forwarder);
+            if (_forwarders.TryAdd(proxy.Id, forwarder))
+            {
+	            forwarder.Register(proxy);
+			}
         }
     }
 
-    public void UnRegister(Proxy[] proxies)
+    public void UnRegister(List<Proxy> proxies)
     {
         foreach (var proxy in proxies)
         {

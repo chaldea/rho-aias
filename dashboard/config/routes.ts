@@ -12,48 +12,43 @@
  */
 export default [
   {
+    path: '/overview',
+    name: 'overview',
+    icon: 'dashboard',
+    component: './overview',
+  },
+  {
+    path: '/clients',
+    name: 'clients',
+    icon: 'cluster',
+    component: './clients',
+  },
+  {
+    path: '/proxies',
+    name: 'proxies',
+    icon: 'Partition',
+    component: './proxies',
+  },
+  {
+    path: '/certs',
+    name: 'certs',
+    icon: 'SafetyCertificate',
+    component: './certs',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [
       {
         name: 'login',
         path: '/user/login',
-        component: './User/Login',
+        component: './user/login',
       },
     ],
-  },
-  {
-    path: '/welcome',
-    name: 'welcome',
-    icon: 'smile',
-    component: './Welcome',
-  },
-  {
-    path: '/admin',
-    name: 'admin',
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin',
-        redirect: '/admin/sub-page',
-      },
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        component: './Admin',
-      },
-    ],
-  },
-  {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
   },
   {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/overview',
   },
   {
     path: '*',

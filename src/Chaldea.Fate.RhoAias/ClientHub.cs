@@ -1,30 +1,38 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias;
 
-public class ClientHub : Hub
+[Authorize]
+internal class ClientHub : Hub
 {
     private readonly ILogger<ClientHub> _logger;
-    private readonly IClientManager _clientManager;
+    private readonly IServerManager _serverManager;
 
-    public ClientHub(ILogger<ClientHub> logger, IClientManager clientManager)
+    public ClientHub(
+	    ILogger<ClientHub> logger, 
+	    IServerManager serverManager)
     {
         _logger = logger;
-        _clientManager = clientManager;
+        _serverManager = serverManager;
     }
 
     [HubMethodName("Register")]
-    public Task RegisterAsync(Client client)
+    public async Task RegisterAsync(Client register)
     {
-        client.ConnectionId = Context.ConnectionId;
-        _clientManager.Register(client);
-        return Task.CompletedTask;
+	    register.Update(Context);
+	    var result = await _serverManager.RegisterClientAsync(register);
+	    if (!result)
+	    {
+		    _logger.LogError($"Unauthorized connection：{register.Id}");
+            Context.Abort();
+	    }
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _clientManager.UnRegister(Context.ConnectionId);
-        return base.OnDisconnectedAsync(exception);
-    }
+        await base.OnDisconnectedAsync(exception);
+        await _serverManager.UnRegisterClientAsync(Context.ConnectionId);
+	}
 }

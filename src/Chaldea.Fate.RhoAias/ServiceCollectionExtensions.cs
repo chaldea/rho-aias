@@ -19,16 +19,18 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSignalR().AddMessagePackProtocol();
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
-        services.AddSingleton<IClientManager, ClientManager>();
-        services.AddSingleton<IForwarderManager, ForwarderManager>();
-        services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
+		services.AddSingleton<IForwarderManager, ForwarderManager>();
+		services.AddSingleton<ITokenManager, TokenManager>();
+		services.AddSingleton(typeof(IRepository<>), typeof(MemoryRepository<>));
+		services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.UDP);
-        return services;
+        services.AddScoped<IServerManager, ServerManager>();
+		return services;
     }
 
-    public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
+	public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
     {
         app.UseWebSockets();
         app.UseMiddleware<ForwarderMiddleware>();
@@ -41,33 +43,43 @@ public static class ServiceCollectionExtensions
         return app;
     }
 
-    public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddRhoAias(builder.Configuration);
-        builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+	public static IWebHostBuilder ConfigureRhoAiasServer(this IWebHostBuilder builder)
+	{
+        builder.ConfigureKestrel((context, serverOptions) =>
         {
-            var options = new RhoAiasServerOptions();
-            context.Configuration.GetSection("RhoAias:Server").Bind(options);
-            serverOptions.Listen(IPAddress.Any, options.Bridge);
-            serverOptions.Listen(IPAddress.Any, options.Http);
-            serverOptions.Listen(IPAddress.Any, options.Https, listenOptions =>
-            {
-                listenOptions.UseHttps();
-            });
+	        var options = new RhoAiasServerOptions();
+	        context.Configuration.GetSection("RhoAias:Server").Bind(options);
+	        serverOptions.Listen(IPAddress.Any, options.Bridge);
+	        serverOptions.Listen(IPAddress.Any, options.Http);
+	        serverOptions.Listen(IPAddress.Any, options.Https, listenOptions =>
+	        {
+		        listenOptions.UseHttps();
+	        });
         });
-        return builder;
-    }
+		return builder;
+	}
 
-    public static WebApplication UseRhoAiasServer(this WebApplication app)
+	public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder, Action<IRhoAiasConfigurationBuilder>? config = default)
+	{
+		builder.Services.AddRhoAias(builder.Configuration);
+		builder.WebHost.ConfigureRhoAiasServer();
+		var configBuilder = new RhoAiasConfigurationBuilder(builder.Services, builder.Configuration);
+		config?.Invoke(configBuilder);
+		return builder;
+	}
+
+    public static WebApplication UseRhoAiasServer(this WebApplication app, Action<IRhoAiasApplicationBuilder>? builder = default)
     {
         app.UseRhoAias();
-        return app;
+        var appBuilder = new RhoAiasApplicationBuilder(app);
+        builder?.Invoke(appBuilder);
+		return app;
     }
 
     public static IServiceCollection AddRhoAiasClient(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
-        services.AddHostedService<ClientHostedService>();
-        return services;
+	    services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
+	    services.AddHostedService<ClientHostedService>();
+	    return services;
     }
 }
