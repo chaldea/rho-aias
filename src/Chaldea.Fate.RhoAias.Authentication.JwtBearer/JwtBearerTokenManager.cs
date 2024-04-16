@@ -20,7 +20,7 @@ internal class JwtBearerTokenManager : ITokenManager
 		var claims = new List<Claim>
 		{
 			new(ClaimTypes.Role, "client"),
-			new("sub", userId.ToString())
+			new(ClaimTypes.NameIdentifier, userId.ToString())
 		};
 
 		var tokenHandler = new JwtSecurityTokenHandler();

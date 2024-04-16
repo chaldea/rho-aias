@@ -6,6 +6,7 @@ internal class RhoAiasDbContext : DbContext
 {
 	public virtual DbSet<Client> Clients { get; set; }
 	public virtual DbSet<Proxy> Proxies { get; set; }
+	public virtual DbSet<User> Users { get; set; }
 
 	public RhoAiasDbContext(DbContextOptions<RhoAiasDbContext> options)
 		: base(options)

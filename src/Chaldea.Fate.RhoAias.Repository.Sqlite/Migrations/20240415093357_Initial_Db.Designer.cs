@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
 {
     [DbContext(typeof(RhoAiasDbContext))]
-    [Migration("20240410081415_Init_Db")]
-    partial class Init_Db
+    [Migration("20240415093357_Initial_Db")]
+    partial class Initial_Db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -87,6 +87,25 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("Proxies");
+                });
+
+            modelBuilder.Entity("Chaldea.Fate.RhoAias.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Chaldea.Fate.RhoAias.Proxy", b =>

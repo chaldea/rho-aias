@@ -25,6 +25,7 @@ internal class RhoAiasConfigurationBuilder : IRhoAiasConfigurationBuilder
 
 public interface IRhoAiasApplicationBuilder
 {
+	IConfiguration Configuration { get; }
 	IServiceProvider Services { get; }
 	IApplicationBuilder ApplicationBuilder { get; }
 	IEndpointRouteBuilder EndpointRouteBuilder { get; }
@@ -37,8 +38,9 @@ internal class RhoAiasApplicationBuilder : IRhoAiasApplicationBuilder
 		Services = app.Services;
 		ApplicationBuilder = app;
 		EndpointRouteBuilder = app;
+		Configuration = app.Configuration;
 	}
-
+	public IConfiguration Configuration { get; }
 	public IServiceProvider Services { get; }
 	public IApplicationBuilder ApplicationBuilder { get; }
 	public IEndpointRouteBuilder EndpointRouteBuilder { get; }

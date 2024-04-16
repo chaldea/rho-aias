@@ -13,12 +13,17 @@ public interface IDbMigrator
 internal class RhoAiasDbMigrator : IDbMigrator
 {
 	private readonly IConfiguration _configuration;
+	private readonly IEnumerable<IDataSeeder> _dataSeeders;
 	private readonly IServiceProvider _serviceProvider;
 
-	public RhoAiasDbMigrator(IServiceProvider serviceProvider, IConfiguration configuration)
+	public RhoAiasDbMigrator(
+		IServiceProvider serviceProvider, 
+		IConfiguration configuration,
+		IEnumerable<IDataSeeder> dataSeeders)
 	{
 		_serviceProvider = serviceProvider;
 		_configuration = configuration;
+		_dataSeeders = dataSeeders;
 	}
 
 	public async Task MigrateAsync()
@@ -32,10 +37,9 @@ internal class RhoAiasDbMigrator : IDbMigrator
 		}
 		using (var scope = _serviceProvider.CreateScope())
 		{
-			await scope.ServiceProvider
-				.GetRequiredService<RhoAiasDbContext>()
-				.Database
-				.MigrateAsync();
+			var dbContext = scope.ServiceProvider.GetRequiredService<RhoAiasDbContext>();
+			await dbContext.Database.MigrateAsync();
+			foreach (var dataSeeder in _dataSeeders) await dataSeeder.SeedAsync();
 		}
 	}
 }

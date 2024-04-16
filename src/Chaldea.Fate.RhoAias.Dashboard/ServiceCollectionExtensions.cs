@@ -8,7 +8,8 @@ public static class ServiceCollectionExtensions
 {
 	public static IRhoAiasConfigurationBuilder AddRhoAiasDashboard(this IRhoAiasConfigurationBuilder builder)
 	{
-		builder.Services.AddSingleton<IUserManager, UserManager>();
+		builder.Services.Configure<RhoAiasDashboardOptions>(builder.Configuration.GetSection("RhoAias:Dashboard"));
+		builder.Services.AddSingleton<IDataSeeder, DashboardDataSeeder>();
 		builder.Services.AddControllers();
 		builder.Services.AddAutoMapper(config =>
 		{

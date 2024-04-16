@@ -26,8 +26,9 @@ public static class ServiceCollectionExtensions
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.UDP);
-        services.AddScoped<IServerManager, ServerManager>();
-		return services;
+        services.AddSingleton<IServerManager, ServerManager>();
+        services.AddSingleton<IUserManager, UserManager>();
+        return services;
     }
 
 	public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)

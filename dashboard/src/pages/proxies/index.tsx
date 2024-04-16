@@ -1,6 +1,7 @@
 import ThemeSwitch from '@/components/ThemeSwitch';
 import { getClientList } from '@/services/dashboard/client';
 import { deleteProxyRemove, getProxyList, putProxyCreate } from '@/services/dashboard/proxy';
+import { defaultPageContainer } from '@/shared/page';
 import { useStyles } from '@/shared/style';
 import { PlusOutlined } from '@ant-design/icons';
 import {
@@ -113,7 +114,7 @@ const Forwards: React.FC = () => {
   }, []);
 
   return (
-    <PageContainer fixedHeader header={{ title: '', breadcrumb: {} }} className={styles.container}>
+    <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.ProxyDto>
         rowKey="id"
         headerTitle="转发列表"

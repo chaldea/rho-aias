@@ -1,4 +1,5 @@
 import { deleteClientRemove, getClientList, putClientCreate } from '@/services/dashboard/client';
+import { defaultPageContainer } from '@/shared/page';
 import { useStyles } from '@/shared/style';
 import { PlusOutlined } from '@ant-design/icons';
 import {
@@ -82,7 +83,7 @@ const Clients: React.FC = () => {
   ];
 
   return (
-    <PageContainer header={{ title: '', breadcrumb: {} }} className={styles.container}>
+    <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.ClientDto>
         rowKey="id"
         headerTitle="客户端列表"

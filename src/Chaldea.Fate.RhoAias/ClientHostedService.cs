@@ -20,11 +20,13 @@ internal class ClientHostedService : IHostedService
 
     public ClientHostedService(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options)
     {
-        _logger = logger;
+	    var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+	    logger.LogInformation($"RhoAias Client Version: {version}");
+		_logger = logger;
         _options = options.Value;
         _client = new Client
         {
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
+            Version = version,
 			Proxies = _options.Proxies
         };
         _connection = new HubConnectionBuilder()

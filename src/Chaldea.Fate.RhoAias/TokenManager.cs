@@ -21,7 +21,7 @@ public static class Extensions
 {
 	public static Guid UserId(this ClaimsPrincipal user)
 	{
-		var sub = user.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+		var sub = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
 		if (sub != null)
 		{
 			return Guid.Parse(sub.Value);

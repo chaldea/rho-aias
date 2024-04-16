@@ -33,11 +33,12 @@ internal class ServerManager : IServerManager
 
 	public async Task<bool> RegisterClientAsync(Client register)
 	{
-		var client = await _clientRepository.GetAsync(x => x.Token == register.Token, y => y.Proxies);
+		var client = await _clientRepository.GetAsync(x => x.Id == register.Id, y => y.Proxies);
 		if (client == null) return false;
 		client.Endpoint = register.Endpoint;
 		client.ConnectionId = register.ConnectionId;
 		client.Status = register.Status;
+		client.Version = register.Version;
 		// if client has proxies, replace to server.
 		if (register.Proxies is { Count: > 0 })
 		{
