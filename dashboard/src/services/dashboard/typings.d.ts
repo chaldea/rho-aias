@@ -48,6 +48,15 @@ declare namespace API {
 
   type ProxyType = 0 | 1 | 2 | 3;
 
+  type SummaryDto = {
+    version?: string;
+    bindPort?: number;
+    httpPort?: number;
+    httpsPort?: number;
+    proxies?: number;
+    certs?: number;
+  };
+
   type UserProfileDto = {
     id?: string;
     userName?: string;

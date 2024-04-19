@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Reposi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Authentication.JwtBearer", "src\Chaldea.Fate.RhoAias.Authentication.JwtBearer\Chaldea.Fate.RhoAias.Authentication.JwtBearer.csproj", "{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Metrics.Prometheus", "src\Chaldea.Fate.RhoAias.Metrics.Prometheus\Chaldea.Fate.RhoAias.Metrics.Prometheus.csproj", "{D5062435-9698-414F-9C3D-C3FB3C44E6AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{9B50ADF3-926D-40A9-AD04-047FCDACD133} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 		{6D12ECE3-8C95-47BD-8D50-3012737B2626} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {828DE202-19FE-4CAD-9E30-54D55E5A87DA}

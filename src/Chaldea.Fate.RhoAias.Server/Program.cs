@@ -13,6 +13,7 @@ builder.AddRhoAiasServer(cfg =>
 	cfg.AddRhoAiasDashboard();
 	cfg.AddRhoAiasSqlite();
 	cfg.AddAhoAiasJwtBearerAuthentication();
+	cfg.AddRhoAiasPrometheus();
 });
 
 var app = builder.Build();
@@ -27,5 +28,6 @@ app.UseRhoAiasServer(b =>
 {
 	b.UseRhoAiasDashboard();
 	b.UseRhoAiasSqlite();
+	b.UseRhoAiasPrometheus();
 });
 app.Run();

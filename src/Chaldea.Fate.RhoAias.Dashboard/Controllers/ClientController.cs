@@ -17,17 +17,17 @@ public class ClientDto
 	public bool Status { get; set; }
 }
 
-[Authorize]
+[Authorize(Roles = Role.User)]
 [ApiController]
 [Route("api/dashboard/client")]
 public class ClientController : ControllerBase
 {
-	private readonly IServerManager _serverManager;
+	private readonly IClientManager _clientManager;
 	private readonly IMapper _mapper;
 
-	public ClientController(IServerManager serverManager, IMapper mapper)
+	public ClientController(IClientManager clientManager, IMapper mapper)
 	{
-		_serverManager = serverManager;
+		_clientManager = clientManager;
 		_mapper = mapper;
 	}
 
@@ -36,21 +36,21 @@ public class ClientController : ControllerBase
 	public async Task CreateAsync(ClientCreateDto dto)
 	{
 		var entity = _mapper.Map<ClientCreateDto, Client>(dto);
-		await _serverManager.CreateClientAsync(entity);
+		await _clientManager.CreateClientAsync(entity);
 	}
 
 	[HttpDelete]
 	[Route("remove")]
 	public async Task RemoveAsync(Guid id)
 	{
-		await _serverManager.RemoveClientAsync(id);
+		await _clientManager.RemoveClientAsync(id);
 	}
 
 	[HttpGet]
 	[Route("list")]
 	public async Task<ICollection<ClientDto>> GetListAsync()
 	{
-		var clients = await _serverManager.GetClientListAsync();
+		var clients = await _clientManager.GetClientListAsync();
 		return _mapper.Map<List<Client>, ICollection<ClientDto>>(clients);
 	}
 }

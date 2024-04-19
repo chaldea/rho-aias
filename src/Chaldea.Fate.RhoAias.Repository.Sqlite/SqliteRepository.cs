@@ -12,13 +12,19 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 			_contextFactory = contextFactory;
 		}
 
-		public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+		public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
 		{
 			await using var context = _contextFactory.CreateDbContext();
-			return await context.Set<TEntity>().AnyAsync(predicate, cancellationToken);
+			return await context.Set<TEntity>().AnyAsync(predicate);
 		}
 
-		public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
+		public async Task<int> CountAsync()
+		{
+			await using var context = _contextFactory.CreateDbContext();
+			return await context.Set<TEntity>().CountAsync();
+		}
+
+		public async Task<TEntity> InsertAsync(TEntity entity)
 		{
 			await using var context = _contextFactory.CreateDbContext();
 			var r = await context.Set<TEntity>().AddAsync(entity);
@@ -26,7 +32,7 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 			return r.Entity;
 		}
 
-		public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<TEntity> UpdateAsync(TEntity entity)
 		{
 			await using var context = _contextFactory.CreateDbContext();
 			var r = context.Set<TEntity>().Update(entity);
@@ -34,14 +40,21 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 			return r.Entity;
 		}
 
-		public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+		public async Task UpdateManyAsync(IEnumerable<TEntity> entities)
+		{
+			await using var context = _contextFactory.CreateDbContext();
+			context.Set<TEntity>().UpdateRange(entities);
+			await context.SaveChangesAsync();
+		}
+
+		public async Task DeleteAsync(TEntity entity)
 		{
 			await using var context = _contextFactory.CreateDbContext();
 			context.Set<TEntity>().Remove(entity);
 			await context.SaveChangesAsync();
 		}
 
-		public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+		public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
 		{
 			await using var context = _contextFactory.CreateDbContext();
 			var list = await context.Set<TEntity>().Where(predicate).ToArrayAsync();
@@ -49,7 +62,7 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 			await context.SaveChangesAsync();
 		}
 
-		public async Task DeleteManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task DeleteManyAsync(IEnumerable<TEntity> entities)
 		{
 			await using var context = _contextFactory.CreateDbContext();
 			context.Set<TEntity>().RemoveRange(entities);

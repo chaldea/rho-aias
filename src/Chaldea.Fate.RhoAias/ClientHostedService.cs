@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +19,7 @@ internal class ClientHostedService : IHostedService
 
     public ClientHostedService(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options)
     {
-	    var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+	    var version = typeof(ClientHostedService).Assembly.GetName().Version?.ToString();
 	    logger.LogInformation($"RhoAias Client Version: {version}");
 		_logger = logger;
         _options = options.Value;

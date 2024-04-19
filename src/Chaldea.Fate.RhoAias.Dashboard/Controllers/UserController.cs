@@ -25,7 +25,7 @@ public class UserProfileDto
 	public string Avatar { get; set; }
 }
 
-[Authorize]
+[Authorize(Roles = Role.User)]
 [ApiController]
 [Route("api/dashboard/user")]
 public class UserController : ControllerBase
@@ -57,7 +57,7 @@ public class UserController : ControllerBase
 
 		if (user.VerifyPassword(dto.Password))
 		{
-			var token = await _tokenManager.CreateAsync(user.Id);
+			var token = await _tokenManager.CreateAsync(user.Id, Role.User, DateTime.UtcNow.AddHours(2));
 			return new LoginResultDto
 			{
 				Status = "ok",
@@ -67,7 +67,7 @@ public class UserController : ControllerBase
 
 		return new LoginResultDto
 		{
-			Status = "errror"
+			Status = "error"
 		};
 	}
 

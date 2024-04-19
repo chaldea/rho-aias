@@ -18,19 +18,19 @@ public class ProxyDto
 	public ClientDto? Client { get; set; }
 }
 
-[Authorize]
+[Authorize(Roles = Role.User)]
 [ApiController]
 [Route("api/dashboard/proxy")]
 public class ProxyController : ControllerBase
 {
-	private readonly IServerManager _serverManager;
+	private readonly IProxyManager _proxyManager;
 	private readonly IMapper _mapper;
 
 	public ProxyController(
-		IServerManager serverManager,
+		IProxyManager proxyManager,
 		IMapper mapper)
 	{
-		_serverManager = serverManager;
+		_proxyManager = proxyManager;
 		_mapper = mapper;
 	}
 
@@ -39,21 +39,21 @@ public class ProxyController : ControllerBase
 	public async Task CreateAsync(ProxyDto dto)
 	{
 		var entity = _mapper.Map<ProxyDto, Proxy>(dto);
-		await _serverManager.CreateProxyAsync(entity);
+		await _proxyManager.CreateProxyAsync(entity);
 	}
 
 	[HttpDelete]
 	[Route("remove")]
 	public async Task RemoveAsync(Guid id)
 	{
-		await _serverManager.RemoveProxyAsync(id);
+		await _proxyManager.RemoveProxyAsync(id);
 	}
 
 	[HttpGet]
 	[Route("list")]
 	public async Task<List<ProxyDto>> GetListAsync()
 	{
-		var list = await _serverManager.GetProxyListAsync();
+		var list = await _proxyManager.GetProxyListAsync();
 		return _mapper.Map<List<Proxy>, List<ProxyDto>>(list);
 	}
 }

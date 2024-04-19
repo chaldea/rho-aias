@@ -4,18 +4,14 @@ namespace Chaldea.Fate.RhoAias;
 
 public interface IRepository<TEntity> where TEntity : class
 {
-	Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-
-	Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-	Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-	Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-	Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-	Task DeleteManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+	Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
+	Task<int> CountAsync();
+	Task<TEntity> InsertAsync(TEntity entity);
+	Task<TEntity> UpdateAsync(TEntity entity);
+	Task UpdateManyAsync(IEnumerable<TEntity> entities);
+	Task DeleteAsync(TEntity entity);
+	Task DeleteManyAsync(IEnumerable<TEntity> entities);
 	Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes);
-
 	Task<List<TEntity>> GetListAsync(params Expression<Func<TEntity, object>>[] includes);
 	Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes);
 }
@@ -24,38 +20,40 @@ internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
 {
 	private readonly List<TEntity> _db = new List<TEntity>();
 
-	public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+	public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
 	{
 		var result = _db.Any(predicate.Compile());
 		return Task.FromResult(result);
 	}
 
-	public Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
+	public Task<int> CountAsync()
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task<TEntity> InsertAsync(TEntity entity)
 	{
 		_db.Add(entity);
 		return Task.FromResult(entity);
 	}
 
-	public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
+	public Task<TEntity> UpdateAsync(TEntity entity)
 	{
 		return Task.FromResult(entity);
 	}
 
-	public Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+	public Task UpdateManyAsync(IEnumerable<TEntity> entities)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task DeleteAsync(TEntity entity)
 	{
 		_db.Remove(entity);
 		return Task.CompletedTask;
 	}
 
-	public Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-	{
-		var item = _db.FirstOrDefault(predicate.Compile());
-		if (item != null)
-			_db.Remove(item);
-		return Task.CompletedTask;
-	}
-
-	public Task DeleteManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+	public Task DeleteManyAsync(IEnumerable<TEntity> entities)
 	{
 		throw new NotImplementedException();
 	}
@@ -63,12 +61,6 @@ internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
 	public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes)
 	{
 		throw new NotImplementedException();
-	}
-
-	public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
-	{
-		var item = _db.FirstOrDefault(predicate.Compile());
-		return Task.FromResult(item);
 	}
 
 	public Task<List<TEntity>> GetListAsync(params Expression<Func<TEntity, object>>[] includes)

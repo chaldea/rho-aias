@@ -1,6 +1,6 @@
 ﻿namespace Chaldea.Fate.RhoAias;
 
-internal class RhoAiasClientOptions
+public class RhoAiasClientOptions
 {
     public string Url { get; set; }
     public string Token { get; set; }

@@ -16,6 +16,10 @@ export default {
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },
+    '/notificationhub': {
+      target: 'http://127.0.0.1:8024',
+      ws: true
+    }
   },
   test: {
     '/api/': {

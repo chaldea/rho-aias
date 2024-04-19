@@ -20,15 +20,19 @@ public static class ServiceCollectionExtensions
         services.AddSignalR().AddMessagePackProtocol();
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
 		services.AddSingleton<IForwarderManager, ForwarderManager>();
-		services.AddSingleton<ITokenManager, TokenManager>();
 		services.AddSingleton(typeof(IRepository<>), typeof(MemoryRepository<>));
 		services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.UDP);
-        services.AddSingleton<IServerManager, ServerManager>();
-        services.AddSingleton<IUserManager, UserManager>();
-        return services;
+        services.AddSingleton<ITokenManager, TokenManager>();
+		services.AddSingleton<IClientManager, ClientManager>();
+		services.AddSingleton<IProxyManager, ProxyManager>();
+		services.AddSingleton<IUserManager, UserManager>();
+		services.AddSingleton<IMetrics, Metrics>();
+		services.AddSingleton<INotificationManager, NotificationManager>();
+		services.AddHostedService<ServerHostedService>();
+		return services;
     }
 
 	public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
@@ -40,6 +44,7 @@ public static class ServiceCollectionExtensions
             var endpoint = obj as IEndpointRouteBuilder;
             endpoint?.MapReverseProxy();
             endpoint?.MapHub<ClientHub>("/clienthub");
+            endpoint?.MapHub<NotificationHub>("/notificationhub");
         }
         return app;
     }

@@ -5,12 +5,12 @@ namespace Chaldea.Fate.RhoAias;
 
 public interface ITokenManager
 {
-	Task<string> CreateAsync(Guid userId);
+	Task<string> CreateAsync(Guid userId, string role, DateTime expires);
 }
 
 internal class TokenManager : ITokenManager
 {
-	public Task<string> CreateAsync(Guid userId)
+	public Task<string> CreateAsync(Guid userId, string role, DateTime expires)
 	{
 		var token = Regex.Replace(Convert.ToBase64String(userId.ToByteArray()), "[/+=]", "");
 		return Task.FromResult(token);

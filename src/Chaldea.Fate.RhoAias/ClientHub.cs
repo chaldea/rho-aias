@@ -4,28 +4,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias;
 
-[Authorize]
+[Authorize(Roles = Role.Client)]
 internal class ClientHub : Hub
 {
     private readonly ILogger<ClientHub> _logger;
-    private readonly IServerManager _serverManager;
+    private readonly IClientManager _clientManager;
 
     public ClientHub(
-	    ILogger<ClientHub> logger, 
-	    IServerManager serverManager)
+	    ILogger<ClientHub> logger,
+	    IClientManager clientManager)
     {
         _logger = logger;
-        _serverManager = serverManager;
+        _clientManager = clientManager;
     }
 
     [HubMethodName("Register")]
     public async Task RegisterAsync(Client register)
     {
 	    register.Update(Context);
-	    var result = await _serverManager.RegisterClientAsync(register);
+	    var result = await _clientManager.RegisterClientAsync(register);
 	    if (!result)
 	    {
-		    _logger.LogError($"Unauthorized connection：{register.Id}");
+		    _logger.LogError($"UnAuthorized connection：{register.Id}");
             Context.Abort();
 	    }
     }
@@ -33,6 +33,6 @@ internal class ClientHub : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         await base.OnDisconnectedAsync(exception);
-        await _serverManager.UnRegisterClientAsync(Context.ConnectionId);
+        await _clientManager.UnRegisterClientAsync(Context.ConnectionId);
 	}
 }

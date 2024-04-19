@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
 	public static IRhoAiasConfigurationBuilder AddAhoAiasJwtBearerAuthentication(this IRhoAiasConfigurationBuilder builder)
 	{
 		var services = builder.Services;
-		var configKey = "RhoAias:Server:Authentication:Jwt";
+		var configKey = "RhoAias:Authentication:Jwt";
 		var options = new RhoAiasJwtOptions();
 		services.AddOptions<RhoAiasJwtOptions>(configKey);
 		builder.Configuration.GetSection(configKey).Bind(options);
@@ -34,6 +34,21 @@ public static class ServiceCollectionExtensions
 					ValidateAudience = true,
 					ValidIssuer = options.Issuer,
 					ValidAudience = options.Audience
+				};
+				x.Events = new JwtBearerEvents()
+				{
+					OnMessageReceived = context =>
+					{
+						var accessToken = context.Request.Query["access_token"];
+						var path = context.HttpContext.Request.Path;
+						if (!string.IsNullOrEmpty(accessToken) &&
+						    (path.StartsWithSegments("/notificationhub")))
+						{
+							context.Token = accessToken;
+						}
+
+						return Task.CompletedTask;
+					}
 				};
 			});
 		services.Replace(new ServiceDescriptor(typeof(ITokenManager), typeof(JwtBearerTokenManager), ServiceLifetime.Singleton));
