@@ -1,26 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace Chaldea.Fate.RhoAias;
-
-[Authorize(Roles = Role.User)]
-internal class NotificationHub : Hub
-{
-	private readonly ILogger<NotificationHub> _logger;
-
-	public NotificationHub(ILogger<NotificationHub> logger)
-	{
-		_logger = logger;
-	}
-
-	public override Task OnConnectedAsync()
-	{
-		var userId = Context.User.UserId();
-		_logger.LogInformation($"User connected: {userId}");
-		return base.OnConnectedAsync();
-	}
-}
 
 public interface INotificationManager
 {
@@ -29,13 +9,13 @@ public interface INotificationManager
 
 internal class NotificationManager : INotificationManager
 {
-	private readonly IHubContext<NotificationHub> _hubContext;
+	private readonly IHubContext<UserHub> _userHubContext;
 	private readonly IMetrics _metrics;
 	private Timer _metricsTimer;
 
-	public NotificationManager(IHubContext<NotificationHub> hubContext, IMetrics metrics)
+	public NotificationManager(IHubContext<UserHub> userHubContext, IMetrics metrics)
 	{
-		_hubContext = hubContext;
+		_userHubContext = userHubContext;
 		_metrics = metrics;
 	}
 
@@ -49,7 +29,7 @@ internal class NotificationManager : INotificationManager
 		_metricsTimer = new Timer(state =>
 		{
 			var metrics = _metrics.GetMetrics();
-			_hubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
+			_userHubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
 		}, null, 3000, 3000);
 	}
 }

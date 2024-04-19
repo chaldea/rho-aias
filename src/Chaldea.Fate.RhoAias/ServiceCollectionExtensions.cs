@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddSignalR().AddMessagePackProtocol();
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
 		services.AddSingleton<IForwarderManager, ForwarderManager>();
-		services.AddSingleton(typeof(IRepository<>), typeof(MemoryRepository<>));
+		services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 		services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
             var endpoint = obj as IEndpointRouteBuilder;
             endpoint?.MapReverseProxy();
             endpoint?.MapHub<ClientHub>("/clienthub");
-            endpoint?.MapHub<NotificationHub>("/notificationhub");
+            endpoint?.MapHub<UserHub>("/userhub");
         }
         return app;
     }

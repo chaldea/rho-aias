@@ -16,7 +16,7 @@ public interface IRepository<TEntity> where TEntity : class
 	Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes);
 }
 
-internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : class
+internal class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : class
 {
 	private readonly List<TEntity> _db = new List<TEntity>();
 
@@ -28,7 +28,8 @@ internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
 
 	public Task<int> CountAsync()
 	{
-		throw new NotImplementedException();
+		var count = _db.Count();
+		return Task.FromResult(count);
 	}
 
 	public Task<TEntity> InsertAsync(TEntity entity)
@@ -44,7 +45,7 @@ internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
 
 	public Task UpdateManyAsync(IEnumerable<TEntity> entities)
 	{
-		throw new NotImplementedException();
+		return Task.CompletedTask;
 	}
 
 	public Task DeleteAsync(TEntity entity)
@@ -55,12 +56,17 @@ internal class MemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
 
 	public Task DeleteManyAsync(IEnumerable<TEntity> entities)
 	{
-		throw new NotImplementedException();
+		foreach (var entity in entities)
+		{
+			_db.Remove(entity);
+		}
+		return Task.CompletedTask;
 	}
 
 	public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes)
 	{
-		throw new NotImplementedException();
+		var result = _db.FirstOrDefault(predicate.Compile());
+		return Task.FromResult(result);
 	}
 
 	public Task<List<TEntity>> GetListAsync(params Expression<Func<TEntity, object>>[] includes)

@@ -137,7 +137,7 @@ const Overview: React.FC = () => {
       connectEnabled={!!token}
       accessTokenFactory={() => token!}
       dependencies={[token]}
-      url={`${window.location.origin}/notificationhub`}
+      url={`${window.location.origin}/userhub`}
     >
       <PageContainer {...defaultPageContainer} className={styles.container} style={{ padding: 24 }}>
         <Row gutter={24}>

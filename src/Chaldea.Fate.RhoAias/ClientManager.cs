@@ -97,6 +97,7 @@ internal class ClientManager : IClientManager
 	public async Task ResetClientStatusAsync()
 	{
 		var clients = await _clientRepository.GetListAsync(x => x.Status);
+		if (clients.Count <= 0) return;
 		foreach (var client in clients)
 		{
 			client.Status = false;
