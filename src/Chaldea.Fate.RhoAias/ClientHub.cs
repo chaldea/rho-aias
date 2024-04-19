@@ -19,15 +19,10 @@ internal class ClientHub : Hub
     }
 
     [HubMethodName("Register")]
-    public async Task RegisterAsync(Client register)
+    public async Task<Result> RegisterAsync(Client register)
     {
 	    register.Update(Context);
-	    var result = await _clientManager.RegisterClientAsync(register);
-	    if (!result)
-	    {
-		    _logger.LogError($"UnAuthorized connection：{register.Id}");
-            Context.Abort();
-	    }
+	    return await _clientManager.RegisterClientAsync(register);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

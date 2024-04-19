@@ -42,16 +42,4 @@ public class Proxy
     {
         return string.Join(",", Hosts);
     }
-
-    public bool IsHttp()
-    {
-        return Type is ProxyType.HTTP or ProxyType.HTTPS;
-    }
-
-    public bool HasUri(Uri? uri)
-    {
-        if (!IsHttp()) return false;
-        if (uri == null) return false;
-        return uri.Host == LocalIP && uri.Port == LocalPort;
-    }
 }

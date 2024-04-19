@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias.Repository.Sqlite;
 
@@ -14,13 +15,16 @@ internal class RhoAiasDbMigrator : IDbMigrator
 {
 	private readonly IConfiguration _configuration;
 	private readonly IEnumerable<IDataSeeder> _dataSeeders;
+	private readonly ILogger<RhoAiasDbMigrator> _logger;
 	private readonly IServiceProvider _serviceProvider;
 
 	public RhoAiasDbMigrator(
+		ILogger<RhoAiasDbMigrator> logger,
 		IServiceProvider serviceProvider, 
 		IConfiguration configuration,
 		IEnumerable<IDataSeeder> dataSeeders)
 	{
+		_logger = logger;
 		_serviceProvider = serviceProvider;
 		_configuration = configuration;
 		_dataSeeders = dataSeeders;
@@ -28,6 +32,7 @@ internal class RhoAiasDbMigrator : IDbMigrator
 
 	public async Task MigrateAsync()
 	{
+		_logger.LogInformation("Migrate database.");
 		var str = $"{_configuration.GetConnectionString("RhoAias").TrimEnd(';')};";
 		var match = Regex.Match(str, "(Filename|Data Source)=(.*?);");
 		if (match.Groups.Count > 1)
@@ -39,7 +44,11 @@ internal class RhoAiasDbMigrator : IDbMigrator
 		{
 			var dbContext = scope.ServiceProvider.GetRequiredService<RhoAiasDbContext>();
 			await dbContext.Database.MigrateAsync();
-			foreach (var dataSeeder in _dataSeeders) await dataSeeder.SeedAsync();
+		}
+		foreach (var dataSeeder in _dataSeeders)
+		{
+			_logger.LogInformation($"Exec dataseed: {dataSeeder.GetType().Name}");
+			await dataSeeder.SeedAsync();
 		}
 	}
 }

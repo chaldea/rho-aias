@@ -2,7 +2,7 @@
 
 public interface IClientManager
 {
-	Task<bool> RegisterClientAsync(Client register);
+	Task<Result> RegisterClientAsync(Client register);
 	Task UnRegisterClientAsync(string connectionId);
 	Task CreateClientAsync(Client entity);
 	Task RemoveClientAsync(Guid id);
@@ -30,10 +30,14 @@ internal class ClientManager : IClientManager
 		_metrics = metrics;
 	}
 
-	public async Task<bool> RegisterClientAsync(Client register)
+	public async Task<Result> RegisterClientAsync(Client register)
 	{
+		var result = register.VersionCheck();
+		if (!result.IsSuccess)
+			return result;
 		var client = await _clientRepository.GetAsync(x => x.Id == register.Id, y => y.Proxies);
-		if (client == null) return false;
+		if (client == null)
+			return Result.Error(ErrorCode.InvalidClientToken.ToError());
 		client.Endpoint = register.Endpoint;
 		client.ConnectionId = register.ConnectionId;
 		client.Status = register.Status;
@@ -49,7 +53,7 @@ internal class ClientManager : IClientManager
 		if (client.Proxies is { Count: > 0 }) _forwarderManager.Register(client.Proxies.ToList());
 		await _clientRepository.UpdateAsync(client);
 		_metrics.UpDownClientOnline(1);
-		return true;
+		return Result.Success();
 	}
 
 	public async Task UnRegisterClientAsync(string connectionId)

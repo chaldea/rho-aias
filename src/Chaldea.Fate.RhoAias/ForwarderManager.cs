@@ -9,7 +9,7 @@ internal interface IForwarderManager
     void Register(List<Proxy> proxies);
     void UnRegister(List<Proxy> proxies);
     Task ForwardAsync(string requestId, IConnectionLifetimeFeature lifetime, IConnectionTransportFeature transport);
-    ValueTask<Stream> CreateAndWaitAsync(Uri? uri, CancellationToken cancellation);
+    ValueTask<Stream> CreateAndWaitAsync(string proxyName, CancellationToken cancellation);
 }
 
 internal class ForwarderManager : IForwarderManager
@@ -46,10 +46,9 @@ internal class ForwarderManager : IForwarderManager
         }
     }
 
-    public async ValueTask<Stream> CreateAndWaitAsync(Uri? uri, CancellationToken cancellation)
+    public async ValueTask<Stream> CreateAndWaitAsync(string proxyName, CancellationToken cancellation)
     {
-        // There may be more than one, just take one of them.
-        var forwarder = _forwarders.Values.FirstOrDefault(x => x.Proxy.HasUri(uri));
+		var forwarder = _forwarders.Values.FirstOrDefault(x => x.Proxy.Name == proxyName);
         if (forwarder != null)
         {
             return await forwarder.CreateAsync(cancellation);

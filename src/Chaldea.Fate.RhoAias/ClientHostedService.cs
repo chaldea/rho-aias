@@ -19,8 +19,8 @@ internal class ClientHostedService : IHostedService
 
     public ClientHostedService(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options)
     {
-	    var version = typeof(ClientHostedService).Assembly.GetName().Version?.ToString();
-	    logger.LogInformation($"RhoAias Client Version: {version}");
+	    var version = Utilities.GetVersionName();
+		logger.LogInformation($"RhoAias Client Version: {version}");
 		_logger = logger;
         _options = options.Value;
         _client = new Client
@@ -35,28 +35,62 @@ internal class ClientHostedService : IHostedService
                 config.Transports = HttpTransportType.WebSockets;
                 config.AccessTokenProvider = () => Task.FromResult(_options.Token);
             })
-            .WithAutomaticReconnect()
+            .WithAutomaticReconnect(new SignalRRetryPolicy())
             .AddMessagePackProtocol()
             .Build();
-        // note: Do not use the async method
-        _connection.On<string, Proxy>("CreateForwarder", CreateForwarder);
+		_connection.Reconnecting += Connection_Reconnecting;
+		_connection.Reconnected += Connection_Reconnected;
+		_connection.Closed += Connection_Closed;
+		// note: Do not use the async method
+		_connection.On<string, Proxy>("CreateForwarder", CreateForwarder);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _connection.StartAsync(cancellationToken);
-        await RegisterAsync();
+	    try
+	    {
+		    await _connection.StartAsync(cancellationToken);
+		    await RegisterAsync(cancellationToken);
+	    }
+	    catch
+	    {
+		    _logger.LogError("Failed to connect to the server.");
+		    Environment.Exit(0);
+		}
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _connection.StopAsync(cancellationToken);
+	    await _connection.StopAsync(cancellationToken);
     }
 
-    private async Task RegisterAsync()
+	private Task Connection_Reconnecting(Exception? arg)
     {
-        await _connection.InvokeAsync("Register", _client);
+	    _logger.LogInformation("Connection reconnecting...");
+        return Task.CompletedTask;
     }
+
+	private async Task Connection_Reconnected(string? arg)
+	{
+		_logger.LogInformation("Connection reconnected.");
+		await RegisterAsync(CancellationToken.None);
+	}
+
+	private Task Connection_Closed(Exception? arg)
+	{
+		_logger.LogError("Connection closed");
+        return Task.CompletedTask;
+	}
+
+	private async Task RegisterAsync(CancellationToken cancellationToken)
+	{
+		var result = await _connection.InvokeAsync<Result>("Register", _client, cancellationToken);
+		if (!result.IsSuccess)
+		{
+            _logger.LogError(result.Message);
+            await _connection.StopAsync(cancellationToken);
+		}
+	}
 
     private void CreateForwarder(string requestId, Proxy proxy)
     {
@@ -99,4 +133,12 @@ internal class ClientHostedService : IHostedService
         await socket.ConnectAsync(dnsEndPoint);
         return socket;
     }
+}
+
+public class SignalRRetryPolicy : IRetryPolicy
+{
+	public TimeSpan? NextRetryDelay(RetryContext retryContext)
+	{
+		return TimeSpan.FromSeconds(5);
+	}
 }

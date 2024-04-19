@@ -4,7 +4,8 @@ namespace Chaldea.Fate.RhoAias;
 
 public interface INotificationManager
 {
-	void EnableNotification();
+	void StartNotification();
+	Task StopNotificationAsync();
 }
 
 internal class NotificationManager : INotificationManager
@@ -19,9 +20,14 @@ internal class NotificationManager : INotificationManager
 		_metrics = metrics;
 	}
 
-	public void EnableNotification()
+	public void StartNotification()
 	{
 		EnableMetricNotification();
+	}
+
+	public async Task StopNotificationAsync()
+	{
+		await _metricsTimer.DisposeAsync();
 	}
 
 	private void EnableMetricNotification()
