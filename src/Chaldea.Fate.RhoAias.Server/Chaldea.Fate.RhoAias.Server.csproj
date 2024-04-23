@@ -17,8 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Chaldea.Fate.RhoAias.Acme.LetsEncrypt\Chaldea.Fate.RhoAias.Acme.LetsEncrypt.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Authentication.JwtBearer\Chaldea.Fate.RhoAias.Authentication.JwtBearer.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Dashboard\Chaldea.Fate.RhoAias.Dashboard.csproj" />
+    <ProjectReference Include="..\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Metrics.Prometheus\Chaldea.Fate.RhoAias.Metrics.Prometheus.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Repository.Sqlite\Chaldea.Fate.RhoAias.Repository.Sqlite.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj" />

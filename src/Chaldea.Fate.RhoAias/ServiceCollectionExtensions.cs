@@ -28,10 +28,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITokenManager, TokenManager>();
 		services.AddSingleton<IClientManager, ClientManager>();
 		services.AddSingleton<IProxyManager, ProxyManager>();
+		services.AddSingleton<ICertManager, CertManager>();
 		services.AddSingleton<IUserManager, UserManager>();
 		services.AddSingleton<IMetrics, Metrics>();
 		services.AddSingleton<INotificationManager, NotificationManager>();
 		services.AddHostedService<ServerHostedService>();
+		services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
 		return services;
     }
 
@@ -55,11 +57,24 @@ public static class ServiceCollectionExtensions
         {
 	        var options = new RhoAiasServerOptions();
 	        context.Configuration.GetSection("RhoAias:Server").Bind(options);
-	        serverOptions.Listen(IPAddress.Any, options.Bridge);
+	        var certificateSelector = serverOptions.ApplicationServices.GetService<IServerCertificateSelector>();
+			serverOptions.Listen(IPAddress.Any, options.Bridge);
 	        serverOptions.Listen(IPAddress.Any, options.Http);
 	        serverOptions.Listen(IPAddress.Any, options.Https, listenOptions =>
 	        {
-		        listenOptions.UseHttps();
+		        listenOptions.UseHttps(httpsOptions =>
+		        {
+			        if (certificateSelector is null)
+			        {
+				        throw new InvalidOperationException("");
+			        }
+			        var fallbackSelector = httpsOptions.ServerCertificateSelector;
+			        httpsOptions.ServerCertificateSelector = (connectionContext, domainName) =>
+			        {
+				        var primaryCert = certificateSelector.Select(connectionContext!, domainName);
+				        return primaryCert ?? fallbackSelector?.Invoke(connectionContext, domainName);
+			        };
+				});
 	        });
         });
 		return builder;

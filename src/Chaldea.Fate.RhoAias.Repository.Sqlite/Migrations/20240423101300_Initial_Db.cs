@@ -12,6 +12,26 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Certs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CertType = table.Column<int>(type: "INTEGER", nullable: false),
+                    Domain = table.Column<string>(type: "TEXT", nullable: false),
+                    Expires = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Issuer = table.Column<string>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    DnsProvider = table.Column<string>(type: "TEXT", nullable: true),
+                    DnsRecordId = table.Column<string>(type: "TEXT", nullable: true),
+                    CertInfo = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Certs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
@@ -75,6 +95,9 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Certs");
+
             migrationBuilder.DropTable(
                 name: "Proxies");
 

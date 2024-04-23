@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -29,6 +30,7 @@ public interface IRhoAiasApplicationBuilder
 	IServiceProvider Services { get; }
 	IApplicationBuilder ApplicationBuilder { get; }
 	IEndpointRouteBuilder EndpointRouteBuilder { get; }
+	ILogger Logger { get; }
 }
 
 internal class RhoAiasApplicationBuilder : IRhoAiasApplicationBuilder
@@ -39,9 +41,11 @@ internal class RhoAiasApplicationBuilder : IRhoAiasApplicationBuilder
 		ApplicationBuilder = app;
 		EndpointRouteBuilder = app;
 		Configuration = app.Configuration;
+		Logger = app.Logger;
 	}
 	public IConfiguration Configuration { get; }
 	public IServiceProvider Services { get; }
 	public IApplicationBuilder ApplicationBuilder { get; }
 	public IEndpointRouteBuilder EndpointRouteBuilder { get; }
+	public ILogger Logger { get; }
 }

@@ -2,7 +2,6 @@
 using System.Diagnostics.Metrics;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -46,6 +45,7 @@ internal class Metrics : IMetrics
 		_cpuCounter = new("Processor", "% Idle Time", "_Total");
 		_memCounter = new("Memory", "% Committed Bytes In Use");
 
+		// create metrics for OpenTelemetry (usage: eg Prometheus)
 		var meter = meterFactory.Create("RhoAias");
 		_clientGauge = meter.CreateObservableGauge("clients", GetClients);
 		_trafficTotalGauge = meter.CreateObservableGauge("traffic.total", GetNetworkTrafficTotal);
@@ -54,6 +54,7 @@ internal class Metrics : IMetrics
 		_systemGauge = meter.CreateObservableGauge("system", GetSystemUsage);
 	}
 
+	// create metrics for self api
 	public IDictionary<string, object> GetMetrics()
 	{
 		var metrics = new Dictionary<string, object>();

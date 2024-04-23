@@ -11,5 +11,7 @@ internal class AutoMapperProfile : Profile
 		CreateMap<Proxy, ProxyDto>();
 		CreateMap<ProxyDto, Proxy>();
 		CreateMap<User, UserProfileDto>();
+		CreateMap<Cert, CertDto>();
+		CreateMap<CertCreateDto, Cert>();
 	}
 }

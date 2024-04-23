@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
 {
     [DbContext(typeof(RhoAiasDbContext))]
-    [Migration("20240415093357_Initial_Db")]
+    [Migration("20240423101300_Initial_Db")]
     partial class Initial_Db
     {
         /// <inheritdoc />
@@ -19,6 +19,47 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+
+            modelBuilder.Entity("Chaldea.Fate.RhoAias.Cert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CertInfo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CertType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DnsProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DnsRecordId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("Expires")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Issuer")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Certs");
+                });
 
             modelBuilder.Entity("Chaldea.Fate.RhoAias.Client", b =>
                 {

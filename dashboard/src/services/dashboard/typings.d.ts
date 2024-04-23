@@ -1,4 +1,23 @@
 declare namespace API {
+  type CertCreateDto = {
+    certType?: number;
+    domain?: string;
+    expires?: string;
+    issuer?: string;
+    email?: string;
+    dnsProvider?: DnsProvider;
+  };
+
+  type CertDto = {
+    id?: string;
+    certType?: number;
+    domain?: string;
+    expires?: string;
+    issuer?: string;
+    email?: string;
+    status?: number;
+  };
+
   type ClientCreateDto = {
     name?: string;
   };
@@ -13,12 +32,21 @@ declare namespace API {
     status?: boolean;
   };
 
+  type deleteCertRemoveParams = {
+    id?: string;
+  };
+
   type deleteClientRemoveParams = {
     id?: string;
   };
 
   type deleteProxyRemoveParams = {
     id?: string;
+  };
+
+  type DnsProvider = {
+    name?: string;
+    config?: string;
   };
 
   type LoginDto = {

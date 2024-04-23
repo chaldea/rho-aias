@@ -2,7 +2,7 @@
 
 namespace Chaldea.Fate.RhoAias;
 
-internal class Utilities
+public class Utilities
 {
 	public static Version? GetVersion()
 	{
@@ -14,5 +14,16 @@ internal class Utilities
 	public static string GetVersionName()
 	{
 		return GetVersion()?.ToString() ?? string.Empty;
+	}
+
+	public static string EnsurePath(params string[] paths)
+	{
+		var path = Path.Combine(paths);
+		if (!Directory.Exists(path))
+		{
+			Directory.CreateDirectory(path);
+		}
+
+		return path;
 	}
 }
