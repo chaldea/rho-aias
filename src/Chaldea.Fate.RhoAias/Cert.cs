@@ -29,21 +29,15 @@ public class Cert
 
 	public AcmeStatus Status { get; set; }
 
-	public DnsProvider? DnsProvider { get; set; }
+	public Guid? DnsProviderId { get; set; }
 
-	public string? DnsRecordId { get; set; }
+	public DnsProvider? DnsProvider { get; set; }
 
 	public CertInfo? CertInfo { get; set; }
 
 	public Cert UpdateExpires()
 	{
 		Expires = DateTime.UtcNow.AddMonths(3);
-		return this;
-	}
-
-	public Cert UpdateDnsRecordId(string? recordId)
-	{
-		DnsRecordId = recordId;
 		return this;
 	}
 

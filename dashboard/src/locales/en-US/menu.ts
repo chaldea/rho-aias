@@ -53,4 +53,5 @@ export default {
   'menu.clients': 'Clients',
   'menu.proxies': 'Forwards',
   'menu.certs': 'Certs',
+  'menu.dns-providers': 'DNS Providers',
 };

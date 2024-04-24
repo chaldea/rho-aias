@@ -12,6 +12,7 @@ internal class RhoAiasDbContext : DbContext
 	public virtual DbSet<Proxy> Proxies { get; set; }
 	public virtual DbSet<Cert> Certs { get; set; }
 	public virtual DbSet<User> Users { get; set; }
+	public virtual DbSet<DnsProvider> DnsProviders { get; set; }
 
 	public RhoAiasDbContext(DbContextOptions<RhoAiasDbContext> options)
 		: base(options)
@@ -22,9 +23,10 @@ internal class RhoAiasDbContext : DbContext
 	{
 		builder.Entity<Cert>(b =>
 		{
-			b.Property(x => x.DnsProvider).HasJsonConversion();
 			b.Property(x => x.CertInfo).HasJsonConversion();
 		});
+		builder.Entity<Cert>()
+			.Ignore(t => t.DnsProvider);
 	}
 }
 

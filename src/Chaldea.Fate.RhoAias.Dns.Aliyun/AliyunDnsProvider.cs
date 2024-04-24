@@ -19,12 +19,13 @@ internal class AliyunDnsProvider : IDnsProvider
 		try
 		{
 			var client = CreateClient(provider);
-			var request = new AddDomainRecordRequest();
-			request.DomainName = domain;
-			request.RR = "_acme-challenge";
-			request.Type = "TXT";
-			request.Value = value;
-			var response = await client.AddDomainRecordAsync(request);
+			var response = await client.AddDomainRecordAsync(new AddDomainRecordRequest
+			{
+				DomainName = domain,
+				RR = "_acme-challenge",
+				Type = "TXT",
+				Value = value
+			});
 			if (response.StatusCode == 200) return response.Body.RecordId;
 			return null;
 		}
@@ -37,13 +38,19 @@ internal class AliyunDnsProvider : IDnsProvider
 
 	public async Task<bool> RemoveAsync(DnsProvider provider, string id)
 	{
-		var client = CreateClient(provider);
-		var request = new DeleteDomainRecordRequest
+		try
 		{
-			RecordId = id
-		};
-		var response = await client.DeleteDomainRecordAsync(request);
-		if (response.StatusCode == 200) return true;
+			var client = CreateClient(provider);
+			var request = new DeleteDomainRecordRequest
+			{
+				RecordId = id
+			};
+			var response = await client.DeleteDomainRecordAsync(request);
+			if (response.StatusCode == 200) return true;
+		}
+		catch (Exception e)
+		{
+		}
 		return false;
 	}
 

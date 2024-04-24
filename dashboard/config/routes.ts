@@ -36,6 +36,12 @@ export default [
     component: './certs',
   },
   {
+    path: '/dns-providers',
+    name: 'dns-providers',
+    icon: 'Global',
+    component: './dns-providers',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [

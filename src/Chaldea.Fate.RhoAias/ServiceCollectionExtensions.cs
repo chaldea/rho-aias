@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
 		services.AddSingleton<IProxyManager, ProxyManager>();
 		services.AddSingleton<ICertManager, CertManager>();
 		services.AddSingleton<IUserManager, UserManager>();
+		services.AddSingleton<IDnsProviderManager, DnsProviderManager>();
 		services.AddSingleton<IMetrics, Metrics>();
 		services.AddSingleton<INotificationManager, NotificationManager>();
 		services.AddHostedService<ServerHostedService>();

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Chaldea.Fate.RhoAias.Dashboard.Controllers;
 
 namespace Chaldea.Fate.RhoAias.Dashboard;
 
@@ -13,5 +14,7 @@ internal class AutoMapperProfile : Profile
 		CreateMap<User, UserProfileDto>();
 		CreateMap<Cert, CertDto>();
 		CreateMap<CertCreateDto, Cert>();
+		CreateMap<DnsProviderDto, DnsProvider>();
+		CreateMap<DnsProvider, DnsProviderDto>();
 	}
 }

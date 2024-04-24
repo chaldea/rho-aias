@@ -22,8 +22,7 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
                     Issuer = table.Column<string>(type: "TEXT", nullable: false),
                     Email = table.Column<string>(type: "TEXT", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    DnsProvider = table.Column<string>(type: "TEXT", nullable: true),
-                    DnsRecordId = table.Column<string>(type: "TEXT", nullable: true),
+                    DnsProviderId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CertInfo = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -46,6 +45,21 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DnsProviders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Provider = table.Column<string>(type: "TEXT", nullable: false),
+                    Config = table.Column<string>(type: "TEXT", nullable: false),
+                    LatestRecordId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DnsProviders", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -97,6 +111,9 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Certs");
+
+            migrationBuilder.DropTable(
+                name: "DnsProviders");
 
             migrationBuilder.DropTable(
                 name: "Proxies");

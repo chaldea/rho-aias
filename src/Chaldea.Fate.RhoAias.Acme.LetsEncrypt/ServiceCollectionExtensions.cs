@@ -19,17 +19,19 @@ public static class ServiceCollectionExtensions
 
 	public static IRhoAiasApplicationBuilder UseAhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
 	{
-		app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}", async (IMemoryCache cache, HttpContext context, string token) =>
-		{
-			app.Logger.LogInformation($"acme-challenge: {token}");
-			if (cache.TryGetValue(token, out var value))
+		app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}",
+			async (IMemoryCache cache, HttpContext context, string token) =>
 			{
-				context.Response.ContentType = "text/plain";
-				await context.Response.WriteAsync(value.ToString());
-				return;
-			}
-			context.Response.StatusCode = 404;
-		});
+				app.Logger.LogInformation($"acme-challenge: {token}");
+				if (cache.TryGetValue(token, out var value))
+				{
+					context.Response.ContentType = "text/plain";
+					await context.Response.WriteAsync(value.ToString());
+					return;
+				}
+
+				context.Response.StatusCode = 404;
+			}).ExcludeFromDescription(); // ignore for swagger
 		return app;
 	}
 }

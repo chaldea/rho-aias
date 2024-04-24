@@ -11,18 +11,20 @@ public interface ICertManager
 	Task RemoveCertAsync(Guid id);
 	Task<List<Cert>> GetCertListAsync();
 	X509Certificate2? GetCert(string domain);
+	Task IssueCertAsync(Guid id);
 }
 
 public interface IAcmeProvider
 {
 	Task<CertInfo> CreateCertAsync(Cert cert);
-	Task<byte[]> GetCertFileAsync(string fileName);
+	Task<byte[]> ReadCertFileAsync(string fileName);
 }
 
 internal class CertManager : ICertManager
 {
 	private readonly ILogger<CertManager> _logger;
 	private readonly IRepository<Cert> _certRepository;
+	private readonly IRepository<DnsProvider> _dnsProviderRepository;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ConcurrentDictionary<string, Task> _certJobs = new();
 	private readonly ConcurrentDictionary<string, X509Certificate2> _challengeCerts =
@@ -30,11 +32,13 @@ internal class CertManager : ICertManager
 
 	public CertManager(
 		ILogger<CertManager> logger, 
-		IRepository<Cert> certRepository, 
+		IRepository<Cert> certRepository,
+		IRepository<DnsProvider> dnsProviderRepository,
 		IServiceProvider serviceProvider)
 	{
 		_logger = logger;
 		_certRepository = certRepository;
+		_dnsProviderRepository = dnsProviderRepository;
 		_serviceProvider = serviceProvider;
 	}
 
@@ -47,6 +51,20 @@ internal class CertManager : ICertManager
 			return;
 		}
 		_certJobs.TryAdd(entity.Domain, Task.Factory.StartNew(async() =>
+		{
+			await IssueCertAsync(entity);
+		}));
+	}
+
+	public async Task IssueCertAsync(Guid id)
+	{
+		var entity = await _certRepository.GetAsync(x => x.Id == id);
+		if (entity == null) return;
+		if (_certJobs.ContainsKey(entity.Domain))
+		{
+			return;
+		}
+		_certJobs.TryAdd(entity.Domain, Task.Factory.StartNew(async () =>
 		{
 			await IssueCertAsync(entity);
 		}));
@@ -65,7 +83,6 @@ internal class CertManager : ICertManager
 			return cert;
 		}
 
-		_logger.LogInformation($"Select new cert for domain: {domain}");
 		cert = GetCertAsync(domain).GetAwaiter().GetResult();
 		if (cert == null)
 		{
@@ -91,6 +108,10 @@ internal class CertManager : ICertManager
 		_logger.LogInformation("Running cert issue job.");
 		try
 		{
+			if (cert.DnsProviderId.HasValue)
+			{
+				cert.DnsProvider = await _dnsProviderRepository.GetAsync(x => x.Id == cert.DnsProviderId.Value);
+			}
 			var provider = _serviceProvider.GetKeyedService<IAcmeProvider>(cert.Issuer);
 			if (provider == null)
 			{
@@ -111,20 +132,32 @@ internal class CertManager : ICertManager
 		if (entity == null) return;
 		entity.UpdateCertInfo(certInfo)
 			.UpdateStatus(status)
-			.UpdateDnsRecordId(cert.DnsRecordId)
 			.UpdateExpires();
 		await _certRepository.UpdateAsync(entity);
+		if (cert is { DnsProviderId: not null, DnsProvider: not null })
+		{
+			await _dnsProviderRepository.UpdateAsync(cert.DnsProvider);
+		}
 		_certJobs.TryRemove(entity.Domain, out _);
 	}
 
 	private async Task<X509Certificate2?> GetCertAsync(string domain)
 	{
 		var certItem = await _certRepository.GetAsync(x => x.Domain == domain);
-		if (certItem == null) return null;
+		if (certItem == null)
+		{
+			// try to get wildcard cert
+			var wildcard = "*" + domain.Substring(domain.IndexOf("."));
+			certItem = await _certRepository.GetAsync(
+				x => x.Domain == wildcard && x.CertType == CertType.WildcardDomain);
+			if (certItem == null) return null;
+		}
+
+		_logger.LogInformation($"Select new cert for domain: {domain}, certId: {certItem.Id}");
 		var provider = _serviceProvider.GetKeyedService<IAcmeProvider>(certItem.Issuer);
 		if (provider != null && certItem.CertInfo != null)
 		{
-			var pfx = await provider.GetCertFileAsync(certItem.CertInfo.File);
+			var pfx = await provider.ReadCertFileAsync(certItem.CertInfo.File);
 			var cert = new X509Certificate2(pfx, certItem.CertInfo.Password, X509KeyStorageFlags.Exportable);
 			return cert;
 		}

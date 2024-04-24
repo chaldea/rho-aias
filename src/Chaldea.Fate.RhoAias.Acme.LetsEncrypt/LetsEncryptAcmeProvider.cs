@@ -70,7 +70,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 		};
 	}
 
-	public async Task<byte[]> GetCertFileAsync(string fileName)
+	public async Task<byte[]> ReadCertFileAsync(string fileName)
 	{
 		var path = Utilities.EnsurePath(AppContext.BaseDirectory, _options.Value.CertRootDirectory);
 		var certPath = Path.Combine(path, fileName);
@@ -115,14 +115,15 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 		var dnsChallenge = await authz.Dns();
 		if (dnsChallenge == null) throw new Exception("Invalid dnsChallenge.");
 		var dnsTxt = acme.AccountKey.DnsTxt(dnsChallenge.Token);
-		var dnsProvider = _serviceProvider.GetKeyedService<IDnsProvider>(cert.DnsProvider.Name);
-		if (!string.IsNullOrEmpty(cert.DnsRecordId))
+		var dnsProvider = _serviceProvider.GetKeyedService<IDnsProvider>(cert.DnsProvider.Provider);
+		if (!string.IsNullOrEmpty(cert.DnsProvider.LatestRecordId))
 		{
-			await dnsProvider.RemoveAsync(cert.DnsProvider, cert.DnsRecordId);
+			var result = await dnsProvider.RemoveAsync(cert.DnsProvider, cert.DnsProvider.LatestRecordId);
+			if(!result) _logger.LogWarning("Delete dns record failed.");
 		}
 		var dnsRecordId = await dnsProvider.CreateAsync(cert.DnsProvider, cert.TrimDomain(), dnsTxt);
-		if (dnsRecordId == null) throw new Exception("Dns parsing failed, Please check the dns provider configuration.");
-		cert.DnsRecordId = dnsRecordId;
+		if (dnsRecordId == null) throw new Exception("Add dns record failed, Please check the dns provider configuration.");
+		cert.DnsProvider.LatestRecordId = dnsRecordId;
 		await RetryValidateAsync(dnsChallenge);
 	}
 

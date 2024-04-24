@@ -53,4 +53,5 @@ export default {
   'menu.clients': '客户端列表',
   'menu.proxies': '转发列表',
   'menu.certs': '证书管理',
+  'menu.dns-providers': 'DNS服务商',
 };

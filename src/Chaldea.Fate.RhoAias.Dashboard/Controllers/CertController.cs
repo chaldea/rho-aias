@@ -11,7 +11,7 @@ public class CertCreateDto
 	public DateTime? Expires { get; set; }
 	public string Issuer { get; set; }
 	public string Email { get; set; }
-	public DnsProvider? DnsProvider  { get; set; }
+	public Guid? DnsProviderId  { get; set; }
 }
 
 public class CertDto

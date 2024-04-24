@@ -29,10 +29,7 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
                     b.Property<int>("CertType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("DnsProvider")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DnsRecordId")
+                    b.Property<Guid?>("DnsProviderId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Domain")
@@ -86,6 +83,32 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("Chaldea.Fate.RhoAias.DnsProvider", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LatestRecordId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DnsProviders");
                 });
 
             modelBuilder.Entity("Chaldea.Fate.RhoAias.Proxy", b =>

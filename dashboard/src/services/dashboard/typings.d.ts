@@ -1,11 +1,13 @@
 declare namespace API {
+  type AcmeStatus = 0 | 1 | 2;
+
   type CertCreateDto = {
     certType?: number;
     domain?: string;
     expires?: string;
     issuer?: string;
     email?: string;
-    dnsProvider?: DnsProvider;
+    dnsProviderId?: string;
   };
 
   type CertDto = {
@@ -15,7 +17,7 @@ declare namespace API {
     expires?: string;
     issuer?: string;
     email?: string;
-    status?: number;
+    status?: AcmeStatus;
   };
 
   type ClientCreateDto = {
@@ -40,12 +42,18 @@ declare namespace API {
     id?: string;
   };
 
+  type deleteDnsProviderRemoveParams = {
+    id?: string;
+  };
+
   type deleteProxyRemoveParams = {
     id?: string;
   };
 
-  type DnsProvider = {
+  type DnsProviderDto = {
+    id?: string;
     name?: string;
+    provider?: string;
     config?: string;
   };
 

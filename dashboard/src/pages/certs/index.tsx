@@ -1,4 +1,5 @@
 import { deleteCertRemove, getCertList, putCertCreate } from '@/services/dashboard/cert';
+import { getDnsProviderList } from '@/services/dashboard/dnsProvider';
 import { defaultPageContainer } from '@/shared/page';
 import { useStyles } from '@/shared/style';
 import { PlusOutlined } from '@ant-design/icons';
@@ -9,15 +10,15 @@ import {
   ProColumns,
   ProFormSelect,
   ProFormText,
-  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
 import { Button, Modal } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const Certs: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [certType, setCertType] = useState<number>(0);
+  const [dnsProviders, setDnsProviders] = useState<{ value: string; label: string }[]>([]);
   const [modal, contextHolder] = Modal.useModal();
   const { styles } = useStyles();
   const actionRef = useRef<ActionType>();
@@ -42,6 +43,7 @@ const Certs: React.FC = () => {
     {
       title: '有效期',
       dataIndex: 'expires',
+      valueType: 'dateTime',
     },
     {
       title: '状态',
@@ -86,6 +88,16 @@ const Certs: React.FC = () => {
       ],
     },
   ];
+
+  const loadDnsProvider = async () => {
+    const result = await getDnsProviderList();
+    const data = result.map((x) => ({ value: x.id!, label: x.name! }));
+    setDnsProviders(data);
+  };
+
+  useEffect(() => {
+    loadDnsProvider();
+  }, []);
 
   return (
     <PageContainer {...defaultPageContainer} className={styles.container}>
@@ -157,16 +169,7 @@ const Certs: React.FC = () => {
         <ProFormText name="email" label="邮箱" />
         {certType == 1 && (
           <>
-            <ProFormSelect
-              name={['dnsProvider', 'name']}
-              label="DNS提供商"
-              options={[{ value: 'Aliyun', label: '阿里云' }]}
-            />
-            <ProFormTextArea
-              name={['dnsProvider', 'config']}
-              label="DNS接口配置"
-              placeholder="配置内容JSON"
-            />
+            <ProFormSelect name="dnsProviderId" label="DNS提供商" options={dnsProviders} />
           </>
         )}
       </ModalForm>
