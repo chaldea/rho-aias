@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { createStyles } from 'antd-style';
 import { postUserLogin } from '@/services/dashboard/user';
+import { removeToken, setToken } from '@/shared/token';
 
 const useStyles = createStyles(({ token }) => {
   return {
@@ -115,7 +116,7 @@ const Login: React.FC = () => {
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
-        window.sessionStorage.setItem('AccessToken', msg.token || '');
+        setToken(msg.token || '');
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
@@ -125,7 +126,7 @@ const Login: React.FC = () => {
       console.log(msg);
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
-      window.sessionStorage.removeItem('AccessToken');
+      removeToken();
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
@@ -133,7 +134,7 @@ const Login: React.FC = () => {
       });
       console.log(error);
       message.error(defaultLoginFailureMessage);
-      window.sessionStorage.removeItem('AccessToken');
+      removeToken();
     }
   };
   const { status, type: loginType } = userLoginState;

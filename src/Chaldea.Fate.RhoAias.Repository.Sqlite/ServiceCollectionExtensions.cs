@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
 	public static IRhoAiasConfigurationBuilder AddRhoAiasSqlite(this IRhoAiasConfigurationBuilder builder)
 	{
 		var configuration = builder.Configuration;
-		builder.Services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetConnectionString("RhoAias")));
+		builder.Services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetRhoAiasConnectionString()));
 		builder.Services.Replace(new ServiceDescriptor(typeof(IRepository<>), typeof(SqliteRepository<>), ServiceLifetime.Singleton));
 		builder.Services.AddTransient<IDbMigrator, RhoAiasDbMigrator>();
 		return builder;

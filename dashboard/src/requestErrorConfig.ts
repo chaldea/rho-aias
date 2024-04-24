@@ -1,6 +1,7 @@
 ﻿import type { RequestOptions } from '@@/plugin-request/request';
 import type { RequestConfig } from '@umijs/max';
 import { message, notification } from 'antd';
+import { getToken, loginOut } from './shared/token';
 
 // 错误处理方案： 错误类型
 enum ErrorShowType {
@@ -73,6 +74,9 @@ export const errorConfig: RequestConfig = {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
         message.error(`Response status:${error.response.status}`);
+        if (error.response.status === 401) {
+          loginOut();
+        }
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
         // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
@@ -94,7 +98,7 @@ export const errorConfig: RequestConfig = {
       if (config.skipToken) {
         return config;
       }
-      const token = window.sessionStorage.getItem('AccessToken');
+      const token = getToken();
       const authHeader = { 'Authorization': `Bearer ${token}` };
       return { ...config, headers: authHeader };
     },

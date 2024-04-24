@@ -10,7 +10,7 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 		{
 			var configuration = BuildConfiguration();
 			var builder = new DbContextOptionsBuilder<RhoAiasDbContext>()
-				.UseSqlite(configuration.GetConnectionString("RhoAias"));
+				.UseSqlite(configuration.GetRhoAiasConnectionString());
 
 			return new RhoAiasDbContext(builder.Options);
 		}

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { createSignalRContext } from 'react-signalr/signalr';
 import * as signalR from '@microsoft/signalr';
 import { Tiny } from '@ant-design/plots';
+import { getToken } from '@/shared/token';
 
 const topColResponsiveProps = {
   xs: 24,
@@ -34,7 +35,7 @@ type Metric = {
   system_memory: number;
 };
 
-const token = window.sessionStorage.getItem('AccessToken');
+const token = getToken();
 const SignalRContext = createSignalRContext();
 
 function formatBytes(bytes: number, decimals: number = 2) {
