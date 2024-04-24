@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+
+FROM node:20.12.2 AS node
+WORKDIR /build
+COPY dashboard dashboard
+WORKDIR /build/dashboard
+RUN npm install -g pnpm
+RUN pnpm install && npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_VERSION
+WORKDIR /build
+COPY src src
+COPY --from=node /build/dashboard/dist ./src/Chaldea.Fate.RhoAias.Dashboard/wwwroot
+WORKDIR /build/src/Chaldea.Fate.RhoAias.Server
+RUN echo BUILD_VERSION:$BUILD_VERSION
+RUN dotnet publish Chaldea.Fate.RhoAias.Server.csproj -c Release -o /dist /p:AssemblyVersion=$BUILD_VERSION /p:Version=$BUILD_VERSION
+
+FROM base AS run
+ENV RhoAias__Server__Bridge=8024
+ENV RhoAias__Server__Http=80
+ENV RhoAias__Server__Https=443
+ENV RhoAias__Server__EnableNotification=true
+VOLUME /app/data
+VOLUME /app/certs
+WORKDIR /app
+COPY --from=build /dist .
+ENTRYPOINT ["dotnet", "Chaldea.Fate.RhoAias.Server.dll"]

@@ -5,6 +5,7 @@ public interface IClientManager
 	Task<Result> RegisterClientAsync(Client register);
 	Task UnRegisterClientAsync(string connectionId);
 	Task CreateClientAsync(Client entity);
+	Task CreateDefaultClientAsync(Client entity);
 	Task RemoveClientAsync(Guid id);
 	Task<List<Client>> GetClientListAsync();
 	Task InitClientMetricsAsync();
@@ -71,12 +72,26 @@ internal class ClientManager : IClientManager
 
 	public async Task CreateClientAsync(Client entity)
 	{
-		var cid = Guid.NewGuid();
-		entity.Id = cid;
-		entity.Token = await _tokenManager.CreateAsync(cid, Role.Client, DateTime.UtcNow.AddYears(10));
+		if (await _clientRepository.AnyAsync(x => x.Name == entity.Name))
+		{
+			return;
+		}
+		entity.Id = Guid.NewGuid();
+		entity.Token = await _tokenManager.CreateAsync(entity.Id, Role.Client, DateTime.UtcNow.AddYears(10));
 		await _clientRepository.InsertAsync(entity);
 		_metrics.UpDownClientTotal(1);
 	}
+
+	public async Task CreateDefaultClientAsync(Client entity)
+	{
+		if (await _clientRepository.AnyAsync(x => x.Name == entity.Name))
+		{
+			return;
+		}
+
+		await _clientRepository.InsertAsync(entity);
+	}
+
 
 	public async Task RemoveClientAsync(Guid id)
 	{

@@ -1,0 +1,42 @@
+version: '3.7'
+
+x-rhoaias-build: &rhoaias-build
+  context: ../
+  args:
+    BUILD_VERSION: 1.0.0
+
+services:
+  rhoaias-server:
+    container_name: rhoaias-server
+    image: chaldea/rhoaias-server
+    restart: always
+    build:
+      dockerfile: ./docker/Dockerfile-Server
+      <<: *rhoaias-build
+    environment:
+      RhoAias__Server__Bridge: 8024
+      RhoAias__Server__Http: 80
+      RhoAias__Server__Https: 443
+      RhoAias__Server__EnableNotification: true
+    ports:
+      - 8024:8024
+    volumes:
+      - rhoaias_server_data:/app/data
+      - rhoaias_server_certs:/app/certs
+
+  rhoaias-client:
+    container_name: rhoaias-client
+    image: chaldea/rhoaias-client
+    restart: always
+    build:
+      dockerfile: ./docker/Dockerfile-Client
+      <<: *rhoaias-build
+    environment:
+      RhoAias__Client__ServerUrl: http://rhoaias-server:8024
+      RhoAias__Client__Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50IiwibmFtZWlkIjoiN2U4OWM5YmUtNDI3OC00YWNmLWI1ZmItYTFlYzlhNjc0NTJjIiwibmJmIjoxNzEzOTQ2ODE5LCJleHAiOjIwMjk0Nzk2MTksImlhdCI6MTcxMzk0NjgxOSwiaXNzIjoiUmhvQWlhcyIsImF1ZCI6IlJob0FpYXMifQ.uBWI6GSf74JzdKSdisXtxwUkVEjyqP0JnKCJ2NYhGi4
+    depends_on:
+      - rhoaias-server
+
+volumes: 
+  rhoaias_server_data:
+  rhoaias_server_certs:

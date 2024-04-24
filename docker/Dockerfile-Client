@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_VERSION
+WORKDIR /build
+COPY src src
+WORKDIR /build/src/Chaldea.Fate.RhoAias.Client
+RUN dotnet publish Chaldea.Fate.RhoAias.Client.csproj -c Release -o /dist /p:AssemblyVersion=$BUILD_VERSION /p:Version=$BUILD_VERSION
+
+FROM base AS run
+ENV RhoAias__Client__ServerUrl=
+ENV RhoAias__Client__Token=
+WORKDIR /app
+COPY --from=build /dist .
+ENTRYPOINT ["dotnet", "Chaldea.Fate.RhoAias.Client.dll"]

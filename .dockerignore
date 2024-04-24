@@ -1,0 +1,36 @@
+# env
+.git
+.github
+.vs
+.vscode
+.gitattributes
+.gitignore
+.prettierrc
+.dockerignore
+.gitignore
+.prettierignore
+
+# dotnet
+**/Debug/
+**/DebugPublic/
+**/Release/
+**/Releases/
+**/x64/
+**/x86/
+**/bld/
+**/Bin/
+**/Obj/
+**/Log/
+**/log/
+**/test/
+
+# nodejs
+**/dist
+**/node_modules
+**/.umi
+**/.umi-production
+**/npm-debug.log*
+**/yarn-error.log
+
+# data
+**/data/*.db

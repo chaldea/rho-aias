@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Configuration;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ internal class RhoAiasDbMigrator : IDbMigrator
 	public async Task MigrateAsync()
 	{
 		_logger.LogInformation("Migrate database.");
-		var str = $"{_configuration.GetConnectionString("RhoAias").TrimEnd(';')};";
+		var str = $"{_configuration.GetRhoAiasConnectionString().TrimEnd(';')};";
 		var match = Regex.Match(str, "(Filename|Data Source)=(.*?);");
 		if (match.Groups.Count > 1)
 		{

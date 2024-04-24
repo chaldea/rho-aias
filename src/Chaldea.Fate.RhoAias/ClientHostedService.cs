@@ -21,6 +21,8 @@ internal class ClientHostedService : IHostedService
     {
 	    var version = Utilities.GetVersionName();
 		logger.LogInformation($"RhoAias Client Version: {version}");
+		logger.LogInformation($"RhoAias Client Token:");
+		logger.LogInformation($"{options.Value.Token}");
 		_logger = logger;
         _options = options.Value;
         _client = new Client
@@ -29,7 +31,7 @@ internal class ClientHostedService : IHostedService
 			Proxies = _options.Proxies
         };
         _connection = new HubConnectionBuilder()
-            .WithUrl(new Uri($"{_options.Url}/clienthub"), config =>
+            .WithUrl(new Uri($"{_options.ServerUrl}/clienthub"), config =>
             {
                 config.SkipNegotiation = true;
                 config.Transports = HttpTransportType.WebSockets;
@@ -116,7 +118,7 @@ internal class ClientHostedService : IHostedService
 
     private async Task<Stream> CreateRemote(string requestId, CancellationToken cancellationToken)
     {
-        var uri = new Uri($"{_options.Url}");
+        var uri = new Uri($"{_options.ServerUrl}");
         var socket = await ConnectAsync(uri.Host, uri.Port);
         var serverStream = new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
         var reverse = $"PROXY /{requestId} HTTP/1.1\r\nHost: {uri.Host}:{uri.Port}\r\n\r\n";

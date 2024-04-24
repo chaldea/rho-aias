@@ -52,6 +52,7 @@ function formatBytes(bytes: number, decimals: number = 2) {
 
 const getPrecent = (used: number, total: number) => {
   const p = used / total;
+  if (isNaN(p)) return 0.0001;
   return p === 0 ? 0.0001 : +p.toFixed(4);
 };
 

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿// using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
@@ -8,7 +8,7 @@ namespace Chaldea.Fate.RhoAias;
 public interface IMetrics
 {
 	IDictionary<string, object> GetMetrics();
-	void UpDownClientTotal(int count);
+	void UpDownClientTotal(int count, bool reset = false);
 	void UpDownClientOnline(int count);
 }
 
@@ -22,28 +22,28 @@ internal class Metrics : IMetrics
 	// network traffic
 	private readonly ObservableGauge<long> _trafficTotalGauge;
 	private readonly ObservableGauge<float> _trafficSecGauge;
-	private readonly PerformanceCounter _trafficInSec;
-	private readonly PerformanceCounter _trafficOutSec;
-	private readonly PerformanceCounter _trafficTotalSec;
+	// private readonly PerformanceCounter _trafficInSec;
+	// private readonly PerformanceCounter _trafficOutSec;
+	// private readonly PerformanceCounter _trafficTotalSec;
 
 	// network connections
 	private readonly ObservableGauge<int> _connectionGauge;
 
 	// system
 	private readonly ObservableGauge<float> _systemGauge;
-	private readonly PerformanceCounter _cpuCounter;
-	private readonly PerformanceCounter _memCounter;
+	// private readonly PerformanceCounter _cpuCounter;
+	// private readonly PerformanceCounter _memCounter;
 	private readonly NetworkInterface? _networkInterface;
 
 	public Metrics(IMeterFactory meterFactory)
 	{
-		var instance = GetNetworkInterfaceName();
-		_networkInterface = GetNetworkInterface(instance);
-		_trafficInSec = new("Network Interface", "Bytes Received/sec", instance);
-		_trafficOutSec = new("Network Interface", "Bytes Sent/sec", instance);
-		_trafficTotalSec = new("Network Interface", "Bytes Total/sec", instance);
-		_cpuCounter = new("Processor", "% Idle Time", "_Total");
-		_memCounter = new("Memory", "% Committed Bytes In Use");
+		// var instance = GetNetworkInterfaceName();
+		// _networkInterface = GetNetworkInterface(instance);
+		// _trafficInSec = new("Network Interface", "Bytes Received/sec", instance);
+		// _trafficOutSec = new("Network Interface", "Bytes Sent/sec", instance);
+		// _trafficTotalSec = new("Network Interface", "Bytes Total/sec", instance);
+		// _cpuCounter = new("Processor", "% Idle Time", "_Total");
+		// _memCounter = new("Memory", "% Committed Bytes In Use");
 
 		// create metrics for OpenTelemetry (usage: eg Prometheus)
 		var meter = meterFactory.Create("RhoAias");
@@ -86,8 +86,13 @@ internal class Metrics : IMetrics
 		return metrics;
 	}
 
-	public void UpDownClientTotal(int count)
+	public void UpDownClientTotal(int count, bool reset = false)
 	{
+		if (reset)
+		{
+			_clientTotal = count;
+			return;
+		}
 		_clientTotal += count;
 	}
 
@@ -126,9 +131,9 @@ internal class Metrics : IMetrics
 	{
 		return new List<Measurement<float>>
 		{
-			new(_trafficInSec.NextValue(), new KeyValuePair<string, object?>("type", "in_sec")),
-			new(_trafficOutSec.NextValue(), new KeyValuePair<string, object?>("type", "out_sec")),
-			new(_trafficTotalSec.NextValue(), new KeyValuePair<string, object?>("type", "total_sec")),
+			new(0, new KeyValuePair<string, object?>("type", "in_sec")),
+			new(0, new KeyValuePair<string, object?>("type", "out_sec")),
+			new(0, new KeyValuePair<string, object?>("type", "total_sec")),
 		};
 	}
 
@@ -147,47 +152,47 @@ internal class Metrics : IMetrics
 
 	private List<Measurement<float>> GetSystemUsage()
 	{
-		var idle = _cpuCounter.NextValue();
-		var cpuUsage = idle == 0 ? 0 : 100 - idle;
+		// var idle = _cpuCounter.NextValue();
+		// var cpuUsage = idle == 0 ? 0 : 100 - idle;
 		return new List<Measurement<float>>
 		{
-			new(cpuUsage, new KeyValuePair<string, object?>("label", "cpu")),
-			new(_memCounter.NextValue(), new KeyValuePair<string, object?>("label", "memory"))
+			new(0, new KeyValuePair<string, object?>("label", "cpu")),
+			new(0, new KeyValuePair<string, object?>("label", "memory"))
 		};
 	}
 
-	private string GetNetworkInterfaceName()
-	{
-		var pcg = new PerformanceCounterCategory("Network Interface");
-		var names = pcg.GetInstanceNames();
-		string name = null;
-		foreach (var n in names)
-		{
-			if (Regex.IsMatch(n, @"\b(Wi-Fi|USB|Bluetooth)\b", RegexOptions.IgnoreCase))
-			{
-				continue;
-			}
-			name = n;
-			break;
-		}
-		if (name == null)
-		{
-			name = names[0];
-		}
-		return name;
-	}
-
-	private NetworkInterface? GetNetworkInterface(string name)
-	{
-		var interfaces = NetworkInterface.GetAllNetworkInterfaces();
-		foreach (var ni in interfaces)
-		{
-			if (ni.Description == name)
-			{
-				return ni;
-			}
-		}
-
-		return null;
-	}
+	// private string GetNetworkInterfaceName()
+	// {
+	// 	var pcg = new PerformanceCounterCategory("Network Interface");
+	// 	var names = pcg.GetInstanceNames();
+	// 	string name = null;
+	// 	foreach (var n in names)
+	// 	{
+	// 		if (Regex.IsMatch(n, @"\b(Wi-Fi|USB|Bluetooth)\b", RegexOptions.IgnoreCase))
+	// 		{
+	// 			continue;
+	// 		}
+	// 		name = n;
+	// 		break;
+	// 	}
+	// 	if (name == null)
+	// 	{
+	// 		name = names[0];
+	// 	}
+	// 	return name;
+	// }
+	//
+	// private NetworkInterface? GetNetworkInterface(string name)
+	// {
+	// 	var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+	// 	foreach (var ni in interfaces)
+	// 	{
+	// 		if (ni.Description == name)
+	// 		{
+	// 			return ni;
+	// 		}
+	// 	}
+	//
+	// 	return null;
+	// }
 }
