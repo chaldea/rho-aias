@@ -14,17 +14,18 @@ public interface IMetrics
 
 internal class Metrics : IMetrics
 {
+	private readonly NetworkInterface? _networkInterface;
+	private readonly Stopwatch _sw = new();
+	private readonly IMetricsCollector _collector;
+
 	// client metrics
 	private readonly ObservableGauge<int> _clientGauge;
 
 	// network connections
 	private readonly ObservableGauge<int> _connectionGauge;
-	private readonly NetworkInterface? _networkInterface;
-	private readonly Process _process;
-	private readonly Stopwatch _sw = new();
 
 	// system
-	private readonly ObservableGauge<double> _systemGauge;
+	private readonly ObservableGauge<float> _systemGauge;
 	private readonly ObservableGauge<float> _trafficSecGauge;
 
 	// network traffic
@@ -43,8 +44,20 @@ internal class Metrics : IMetrics
 
 	public Metrics(IMeterFactory meterFactory)
 	{
-		_process = Process.GetCurrentProcess();
 		_networkInterface = GetNetworkInterface();
+
+		if (OperatingSystem.IsWindows())
+		{
+			_collector = new CollectorWindows();
+		}
+		else if (OperatingSystem.IsLinux())
+		{
+			_collector = new CollectorLinux();
+		}
+		else
+		{
+			_collector = new CollectorDefault();
+		}
 
 		// create metrics for OpenTelemetry (usage: eg Prometheus)
 		var meter = meterFactory.Create("RhoAias");
@@ -157,16 +170,9 @@ internal class Metrics : IMetrics
 		};
 	}
 
-	private List<Measurement<double>> GetSystemUsage()
+	private List<Measurement<float>> GetSystemUsage()
 	{
-		var memInfo = GC.GetGCMemoryInfo();
-		var cpuUsage = _process.TotalProcessorTime.TotalSeconds;
-		var memUsage = _process.WorkingSet64 / (double)memInfo.TotalAvailableMemoryBytes * 100;
-		return new List<Measurement<double>>
-		{
-			new(cpuUsage, new KeyValuePair<string, object?>("label", "cpu")),
-			new(memUsage, new KeyValuePair<string, object?>("label", "memory"))
-		};
+		return _collector.GetSystemUsage();
 	}
 
 	private NetworkInterface? GetNetworkInterface()
