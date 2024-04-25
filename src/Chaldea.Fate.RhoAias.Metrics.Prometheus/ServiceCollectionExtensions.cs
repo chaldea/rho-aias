@@ -17,8 +17,6 @@ public static class ServiceCollectionExtensions
 		builder.Services.AddOpenTelemetry().WithMetrics(b =>
 		{
 			b.AddPrometheusExporter();
-			// "Microsoft.AspNetCore.Hosting",
-			// "Microsoft.AspNetCore.Server.Kestrel",
 			b.AddMeter(options.Meters);
 		});
 		return builder;

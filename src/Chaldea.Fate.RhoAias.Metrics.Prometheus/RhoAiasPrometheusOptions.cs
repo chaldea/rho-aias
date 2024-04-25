@@ -2,5 +2,13 @@
 
 public class RhoAiasPrometheusOptions
 {
-	public string[] Meters { get; set; } = new[] { "RhoAias" };
+	// default Meters
+	public string[] Meters { get; set; } = new[]
+	{
+		"RhoAias",
+		// "System.Net.Http",
+		// "System.Net.Sockets",
+		// "Microsoft.AspNetCore.Hosting",
+		// "Microsoft.AspNetCore.Server.Kestrel"
+	};
 }

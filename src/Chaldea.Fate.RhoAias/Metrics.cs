@@ -1,4 +1,4 @@
-﻿// using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
@@ -16,34 +16,35 @@ internal class Metrics : IMetrics
 {
 	// client metrics
 	private readonly ObservableGauge<int> _clientGauge;
-	private int _clientTotal = 0;
-	private int _clientOnline = 0;
-
-	// network traffic
-	private readonly ObservableGauge<long> _trafficTotalGauge;
-	private readonly ObservableGauge<float> _trafficSecGauge;
-	// private readonly PerformanceCounter _trafficInSec;
-	// private readonly PerformanceCounter _trafficOutSec;
-	// private readonly PerformanceCounter _trafficTotalSec;
 
 	// network connections
 	private readonly ObservableGauge<int> _connectionGauge;
+	private readonly NetworkInterface? _networkInterface;
+	private readonly Process _process;
+	private readonly Stopwatch _sw = new();
 
 	// system
-	private readonly ObservableGauge<float> _systemGauge;
-	// private readonly PerformanceCounter _cpuCounter;
-	// private readonly PerformanceCounter _memCounter;
-	private readonly NetworkInterface? _networkInterface;
+	private readonly ObservableGauge<double> _systemGauge;
+	private readonly ObservableGauge<float> _trafficSecGauge;
+
+	// network traffic
+	private readonly ObservableGauge<long> _trafficTotalGauge;
+	private int _clientOnline;
+	private int _clientTotal;
+	private long _totalIn;
+
+	private long _totalInOffset;
+	private long _totalInOut;
+	private long _totalInOutSec;
+	private long _totalInSec;
+	private long _totalOut;
+	private long _totalOutOffset;
+	private long _totalOutSec;
 
 	public Metrics(IMeterFactory meterFactory)
 	{
-		// var instance = GetNetworkInterfaceName();
-		// _networkInterface = GetNetworkInterface(instance);
-		// _trafficInSec = new("Network Interface", "Bytes Received/sec", instance);
-		// _trafficOutSec = new("Network Interface", "Bytes Sent/sec", instance);
-		// _trafficTotalSec = new("Network Interface", "Bytes Total/sec", instance);
-		// _cpuCounter = new("Processor", "% Idle Time", "_Total");
-		// _memCounter = new("Memory", "% Committed Bytes In Use");
+		_process = Process.GetCurrentProcess();
+		_networkInterface = GetNetworkInterface();
 
 		// create metrics for OpenTelemetry (usage: eg Prometheus)
 		var meter = meterFactory.Create("RhoAias");
@@ -58,30 +59,16 @@ internal class Metrics : IMetrics
 	public IDictionary<string, object> GetMetrics()
 	{
 		var metrics = new Dictionary<string, object>();
-		foreach (var client in GetClients())
-		{
-			metrics[$"client_{client.Tags[0].Value}"] = client.Value;
-		}
+		foreach (var client in GetClients()) metrics[$"client_{client.Tags[0].Value}"] = client.Value;
 
-		foreach (var traffic in GetNetworkTrafficTotal())
-		{
-			metrics[$"traffic_{traffic.Tags[0].Value}"] = traffic.Value;
-		}
+		foreach (var traffic in GetNetworkTrafficTotal()) metrics[$"traffic_{traffic.Tags[0].Value}"] = traffic.Value;
 
-		foreach (var traffic in GetNetworkTrafficSec())
-		{
-			metrics[$"traffic_{traffic.Tags[0].Value}"] = traffic.Value;
-		}
+		foreach (var traffic in GetNetworkTrafficSec()) metrics[$"traffic_{traffic.Tags[0].Value}"] = traffic.Value;
 
 		foreach (var connection in GetNetworkConnections())
-		{
 			metrics[$"connection_{connection.Tags[0].Value}"] = connection.Value;
-		}
 
-		foreach (var system in GetSystemUsage())
-		{
-			metrics[$"system_{system.Tags[0].Value}"] = system.Value;
-		}
+		foreach (var system in GetSystemUsage()) metrics[$"system_{system.Tags[0].Value}"] = system.Value;
 
 		return metrics;
 	}
@@ -93,6 +80,7 @@ internal class Metrics : IMetrics
 			_clientTotal = count;
 			return;
 		}
+
 		_clientTotal += count;
 	}
 
@@ -112,18 +100,38 @@ internal class Metrics : IMetrics
 
 	private List<Measurement<long>> GetNetworkTrafficTotal()
 	{
-		var totalIn = 0L;
-		var totalOut = 0L;
 		if (_networkInterface != null)
 		{
 			var s = _networkInterface.GetIPv4Statistics();
-			totalIn = s.BytesReceived;
-			totalOut = s.BytesSent;
+			var durationIn = s.BytesReceived - _totalInOffset;
+			var durationOut = s.BytesSent - _totalOutOffset;
+			if (_sw.IsRunning)
+			{
+				if (_sw.Elapsed.TotalSeconds >= 1)
+				{
+					_sw.Stop();
+					_totalInSec = (long)((durationIn - _totalIn) / _sw.Elapsed.TotalSeconds);
+					_totalOutSec = (long)((durationOut - _totalOut) / _sw.Elapsed.TotalSeconds);
+					_totalInOutSec = (long)((durationIn + durationOut - _totalInOut) / _sw.Elapsed.TotalSeconds);
+					_totalIn = durationIn;
+					_totalOut = durationOut;
+					_totalInOut = durationIn + durationOut;
+					_sw.Restart();
+				}
+			}
+			else
+			{
+				_totalIn = durationIn;
+				_totalOut = durationOut;
+				_totalInOut = durationIn + durationOut;
+				_sw.Start();
+			}
 		}
+
 		return new List<Measurement<long>>
 		{
-			new(totalIn, new KeyValuePair<string, object?>("type", "in_total")),
-			new(totalOut, new KeyValuePair<string, object?>("type", "out_total")),
+			new(_totalIn, new KeyValuePair<string, object?>("type", "in_total")),
+			new(_totalOut, new KeyValuePair<string, object?>("type", "out_total"))
 		};
 	}
 
@@ -131,9 +139,9 @@ internal class Metrics : IMetrics
 	{
 		return new List<Measurement<float>>
 		{
-			new(0, new KeyValuePair<string, object?>("type", "in_sec")),
-			new(0, new KeyValuePair<string, object?>("type", "out_sec")),
-			new(0, new KeyValuePair<string, object?>("type", "total_sec")),
+			new(_totalInSec, new KeyValuePair<string, object?>("type", "in_sec")),
+			new(_totalOutSec, new KeyValuePair<string, object?>("type", "out_sec")),
+			new(_totalInOutSec, new KeyValuePair<string, object?>("type", "total_sec"))
 		};
 	}
 
@@ -142,7 +150,6 @@ internal class Metrics : IMetrics
 		var properties = IPGlobalProperties.GetIPGlobalProperties();
 		var tcpConnections = properties.GetActiveTcpConnections().Length;
 		var udpConnections = properties.GetActiveUdpListeners().Length;
-
 		return new List<Measurement<int>>
 		{
 			new(tcpConnections, new KeyValuePair<string, object?>("type", "tcp")),
@@ -150,49 +157,39 @@ internal class Metrics : IMetrics
 		};
 	}
 
-	private List<Measurement<float>> GetSystemUsage()
+	private List<Measurement<double>> GetSystemUsage()
 	{
-		// var idle = _cpuCounter.NextValue();
-		// var cpuUsage = idle == 0 ? 0 : 100 - idle;
-		return new List<Measurement<float>>
+		var memInfo = GC.GetGCMemoryInfo();
+		var cpuUsage = _process.TotalProcessorTime.TotalSeconds;
+		var memUsage = _process.WorkingSet64 / (double)memInfo.TotalAvailableMemoryBytes * 100;
+		return new List<Measurement<double>>
 		{
-			new(0, new KeyValuePair<string, object?>("label", "cpu")),
-			new(0, new KeyValuePair<string, object?>("label", "memory"))
+			new(cpuUsage, new KeyValuePair<string, object?>("label", "cpu")),
+			new(memUsage, new KeyValuePair<string, object?>("label", "memory"))
 		};
 	}
 
-	// private string GetNetworkInterfaceName()
-	// {
-	// 	var pcg = new PerformanceCounterCategory("Network Interface");
-	// 	var names = pcg.GetInstanceNames();
-	// 	string name = null;
-	// 	foreach (var n in names)
-	// 	{
-	// 		if (Regex.IsMatch(n, @"\b(Wi-Fi|USB|Bluetooth)\b", RegexOptions.IgnoreCase))
-	// 		{
-	// 			continue;
-	// 		}
-	// 		name = n;
-	// 		break;
-	// 	}
-	// 	if (name == null)
-	// 	{
-	// 		name = names[0];
-	// 	}
-	// 	return name;
-	// }
-	//
-	// private NetworkInterface? GetNetworkInterface(string name)
-	// {
-	// 	var interfaces = NetworkInterface.GetAllNetworkInterfaces();
-	// 	foreach (var ni in interfaces)
-	// 	{
-	// 		if (ni.Description == name)
-	// 		{
-	// 			return ni;
-	// 		}
-	// 	}
-	//
-	// 	return null;
-	// }
+	private NetworkInterface? GetNetworkInterface()
+	{
+		var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+		foreach (var ni in interfaces)
+		{
+			if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+			    ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel ||
+			    ni.OperationalStatus != OperationalStatus.Up)
+				continue;
+			if (Regex.IsMatch(ni.Name, @"\b(Wi-Fi|USB|Bluetooth|lo)\b", RegexOptions.IgnoreCase)) continue;
+			InitCounter(ni);
+			return ni;
+		}
+
+		return null;
+	}
+
+	private void InitCounter(NetworkInterface ni)
+	{
+		var s = ni.GetIPv4Statistics();
+		_totalInOffset = s.BytesReceived;
+		_totalOutOffset = s.BytesSent;
+	}
 }
