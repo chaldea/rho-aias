@@ -24,7 +24,7 @@ export const Question = () => {
         color: '#FFFFFF',
       }}
       onClick={() => {
-        window.open('https://pro.ant.design/docs/getting-started');
+        window.open('https://github.com/chaldea/rho-aias');
       }}
     >
       <QuestionCircleOutlined />
