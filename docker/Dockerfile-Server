@@ -5,7 +5,8 @@ WORKDIR /build
 COPY dashboard dashboard
 WORKDIR /build/dashboard
 RUN npm install -g pnpm
-RUN pnpm install && npm run build
+RUN pnpm install
+RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_VERSION
