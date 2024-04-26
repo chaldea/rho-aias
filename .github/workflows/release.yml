@@ -2,13 +2,13 @@ name: Release
 
 on:
   push:
-    branches:
-      - ci
-    # tags:
-    #   - '*'
+    # branches:
+    #   - ci
+    tags:
+      - '*'
 
 env:
-  VERSION: 0.1.1
+  VERSION: 1.0.0
 
 jobs:
   docker:
