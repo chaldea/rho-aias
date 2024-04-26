@@ -134,10 +134,6 @@ internal class CertManager : ICertManager
 			.UpdateStatus(status)
 			.UpdateExpires();
 		await _certRepository.UpdateAsync(entity);
-		if (cert is { DnsProviderId: not null, DnsProvider: not null })
-		{
-			await _dnsProviderRepository.UpdateAsync(cert.DnsProvider);
-		}
 		_certJobs.TryRemove(entity.Domain, out _);
 	}
 

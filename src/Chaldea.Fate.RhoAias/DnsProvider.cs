@@ -20,4 +20,5 @@ public interface IDnsProvider
 {
 	Task<string?> CreateAsync(DnsProvider provider, string domain, string value);
 	Task<bool> RemoveAsync(DnsProvider provider, string id);
+	Task<string?> ExistsAsync(DnsProvider provider, string domain);
 }

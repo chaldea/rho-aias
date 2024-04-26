@@ -54,6 +54,41 @@ internal class AliyunDnsProvider : IDnsProvider
 		return false;
 	}
 
+	public async Task<string?> ExistsAsync(DnsProvider provider, string domain)
+	{
+		try
+		{
+			var client = CreateClient(provider);
+			var response = await client.DescribeDomainRecordsAsync(new DescribeDomainRecordsRequest
+			{
+				DomainName = domain,
+				RRKeyWord = "_acme-challenge"
+			});
+			if (response.StatusCode != 200)
+			{
+				return null;
+			}
+
+			if (response.Body.TotalCount <= 0)
+			{
+				return null;
+			}
+
+			var record = response.Body.DomainRecords.Record.FirstOrDefault();
+			if (record == null)
+			{
+				return null;
+			}
+
+			return record.RecordId;
+		}
+		catch (Exception e)
+		{
+		}
+
+		return null;
+	}
+
 	private AliyunClient CreateClient(DnsProvider provider)
 	{
 		var config = provider.GetConfig<Config>();
