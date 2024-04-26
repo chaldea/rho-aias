@@ -1,0 +1,86 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias", "src\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj", "{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Server", "src\Chaldea.Fate.RhoAias.Server\Chaldea.Fate.RhoAias.Server.csproj", "{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Client", "src\Chaldea.Fate.RhoAias.Client\Chaldea.Fate.RhoAias.Client.csproj", "{00C38ADB-C24E-4750-B58E-164A9E7C4A22}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Dashboard", "src\Chaldea.Fate.RhoAias.Dashboard\Chaldea.Fate.RhoAias.Dashboard.csproj", "{9B50ADF3-926D-40A9-AD04-047FCDACD133}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Repository.Sqlite", "src\Chaldea.Fate.RhoAias.Repository.Sqlite\Chaldea.Fate.RhoAias.Repository.Sqlite.csproj", "{6D12ECE3-8C95-47BD-8D50-3012737B2626}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Authentication.JwtBearer", "src\Chaldea.Fate.RhoAias.Authentication.JwtBearer\Chaldea.Fate.RhoAias.Authentication.JwtBearer.csproj", "{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Metrics.Prometheus", "src\Chaldea.Fate.RhoAias.Metrics.Prometheus\Chaldea.Fate.RhoAias.Metrics.Prometheus.csproj", "{D5062435-9698-414F-9C3D-C3FB3C44E6AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Acme.LetsEncrypt", "src\Chaldea.Fate.RhoAias.Acme.LetsEncrypt\Chaldea.Fate.RhoAias.Acme.LetsEncrypt.csproj", "{53BD0F2A-05B4-406C-A487-78318521B86F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Dns.Aliyun", "src\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj", "{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B50ADF3-926D-40A9-AD04-047FCDACD133}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B50ADF3-926D-40A9-AD04-047FCDACD133}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B50ADF3-926D-40A9-AD04-047FCDACD133}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B50ADF3-926D-40A9-AD04-047FCDACD133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D12ECE3-8C95-47BD-8D50-3012737B2626}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D12ECE3-8C95-47BD-8D50-3012737B2626}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D12ECE3-8C95-47BD-8D50-3012737B2626}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D12ECE3-8C95-47BD-8D50-3012737B2626}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53BD0F2A-05B4-406C-A487-78318521B86F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53BD0F2A-05B4-406C-A487-78318521B86F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53BD0F2A-05B4-406C-A487-78318521B86F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53BD0F2A-05B4-406C-A487-78318521B86F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E0420760-4A04-4D22-BEE9-A3B3D7E1BA89} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{61D90FF0-07AB-4D06-BFF5-27D22B609FC3} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{00C38ADB-C24E-4750-B58E-164A9E7C4A22} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{9B50ADF3-926D-40A9-AD04-047FCDACD133} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{6D12ECE3-8C95-47BD-8D50-3012737B2626} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{B01A33FB-7C4F-46CF-9D25-1890C05CAC88} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{D5062435-9698-414F-9C3D-C3FB3C44E6AD} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{53BD0F2A-05B4-406C-A487-78318521B86F} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {828DE202-19FE-4CAD-9E30-54D55E5A87DA}
+	EndGlobalSection
+EndGlobal
