@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj" />
+    <ProjectReference Include="..\Chaldea.Fate.RhoAias.IngressController\Chaldea.Fate.RhoAias.IngressController.csproj" />
   </ItemGroup>
 
   <ItemGroup>

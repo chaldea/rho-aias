@@ -19,9 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Metrics.Prometheus", "src\Chaldea.Fate.RhoAias.Metrics.Prometheus\Chaldea.Fate.RhoAias.Metrics.Prometheus.csproj", "{D5062435-9698-414F-9C3D-C3FB3C44E6AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Acme.LetsEncrypt", "src\Chaldea.Fate.RhoAias.Acme.LetsEncrypt\Chaldea.Fate.RhoAias.Acme.LetsEncrypt.csproj", "{53BD0F2A-05B4-406C-A487-78318521B86F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Acme.LetsEncrypt", "src\Chaldea.Fate.RhoAias.Acme.LetsEncrypt\Chaldea.Fate.RhoAias.Acme.LetsEncrypt.csproj", "{53BD0F2A-05B4-406C-A487-78318521B86F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Dns.Aliyun", "src\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj", "{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Dns.Aliyun", "src\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj", "{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.IngressController", "src\Chaldea.Fate.RhoAias.IngressController\Chaldea.Fate.RhoAias.IngressController.csproj", "{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{D5062435-9698-414F-9C3D-C3FB3C44E6AD} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 		{53BD0F2A-05B4-406C-A487-78318521B86F} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 		{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
+		{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE} = {0CB9EEC9-9F2A-41B3-ADA4-D5177D80822E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {828DE202-19FE-4CAD-9E30-54D55E5A87DA}
