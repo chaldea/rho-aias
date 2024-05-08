@@ -6,6 +6,7 @@ public interface IProxyManager
 	Task RemoveProxyAsync(Guid id);
 	Task<List<Proxy>> GetProxyListAsync();
 	Task<int> CountProxyAsync();
+	Task UpdateProxyListAsync(Guid clientId, List<Proxy> proxies);
 }
 
 internal class ProxyManager : IProxyManager
@@ -46,5 +47,29 @@ internal class ProxyManager : IProxyManager
 	public async Task<int> CountProxyAsync()
 	{
 		return await _proxyRepository.CountAsync();
+	}
+
+	public async Task UpdateProxyListAsync(Guid clientId, List<Proxy> proxies)
+	{
+		var list = await _proxyRepository.GetListAsync(x => x.ClientId == clientId);
+		var update = new List<Proxy>();
+		var insert = new List<Proxy>();
+		foreach (var proxy in proxies)
+		{
+			proxy.ClientId = clientId;
+			var exists = list.FirstOrDefault(x => x.Name == proxy.Name);
+			if (exists != null)
+			{
+				exists.Update(proxy);
+				update.Add(exists);
+			}
+			else
+			{
+				insert.Add(proxy);
+			}
+		}
+		await _proxyRepository.UpdateManyAsync(update);
+		await _proxyRepository.InsertManyAsync(insert);
+		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
 	}
 }

@@ -14,6 +14,7 @@ public class ProxyDto
 	public int? RemotePort { get; set; }
 	public string? Path { get; set; }
 	public string[]? Hosts { get; set; }
+	public string? Destination { get; set; }
 	public Guid? ClientId { get; set; }
 	public ClientDto? Client { get; set; }
 }

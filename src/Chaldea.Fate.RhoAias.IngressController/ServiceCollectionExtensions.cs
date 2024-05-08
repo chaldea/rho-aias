@@ -18,19 +18,21 @@ public static class ServiceCollectionExtensions
 
 	public static IServiceCollection AddAhoAiasIngressController(this IServiceCollection services, IConfiguration configuration)
 	{
-		if (configuration.GetValue<bool>("RhoAias:IngressController:Enable"))
+		var options = new RhoAiasIngressControllerOptions();
+		configuration.GetSection("RhoAias:IngressController").Bind(options);
+		if (options.Enable)
 		{
 			services.AddKubernetesControllerRuntime(configuration);
 			services.Replace(new ServiceDescriptor(typeof(IIngressResourceStatusUpdater), typeof(IngressResourceStatusUpdater), ServiceLifetime.Singleton));
 			services.AddSingleton<IUpdateConfig, KubernetesConfigProvider>();
-			services.Configure<YarpOptions>(configuration.GetSection("RhoAias:IngressController"));
-			services.Configure<YarpOptions>(option =>
+			services.Configure<YarpOptions>(yarp =>
 			{
-				// set default value of YarpOptions
-				option.ControllerClass = option.ControllerClass ?? "microsoft.com/ingress-yarp";
-				option.DefaultSslCertificate = option.DefaultSslCertificate ?? "yarp/yarp-ingress-tls";
-				option.ControllerServiceName = option.ControllerServiceName ?? "ingress-yarp-controller";
-				option.ControllerServiceNamespace = option.ControllerServiceNamespace ?? "yarp";
+				// reset YarpOptions
+				yarp.ControllerClass = options.ControllerClass;
+				yarp.ServerCertificates = options.ServerCertificates;
+				yarp.DefaultSslCertificate = options.DefaultSslCertificate;
+				yarp.ControllerServiceName = options.ControllerServiceName;
+				yarp.ControllerServiceNamespace = options.ControllerServiceNamespace;
 			});
 		}
 		return services;

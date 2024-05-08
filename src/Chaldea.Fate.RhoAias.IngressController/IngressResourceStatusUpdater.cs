@@ -6,6 +6,7 @@ internal class IngressResourceStatusUpdater : IIngressResourceStatusUpdater
 {
 	public Task UpdateStatusAsync(CancellationToken cancellationToken)
 	{
+		// no need to send message
 		return Task.CompletedTask;
 	}
 }

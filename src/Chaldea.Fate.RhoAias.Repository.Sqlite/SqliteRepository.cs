@@ -32,6 +32,13 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
 			return r.Entity;
 		}
 
+		public async Task InsertManyAsync(IEnumerable<TEntity> entities)
+		{
+			await using var context = _contextFactory.CreateDbContext();
+			await context.Set<TEntity>().AddRangeAsync(entities);
+			await context.SaveChangesAsync();
+		}
+
 		public async Task<TEntity> UpdateAsync(TEntity entity)
 		{
 			await using var context = _contextFactory.CreateDbContext();
