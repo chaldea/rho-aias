@@ -49,27 +49,35 @@ internal class ProxyManager : IProxyManager
 		return await _proxyRepository.CountAsync();
 	}
 
-	public async Task UpdateProxyListAsync(Guid clientId, List<Proxy> proxies)
+	public async Task UpdateProxyListAsync(Guid clientId, List<Proxy>? proxies)
 	{
-		var list = await _proxyRepository.GetListAsync(x => x.ClientId == clientId);
-		var update = new List<Proxy>();
-		var insert = new List<Proxy>();
-		foreach (var proxy in proxies)
+		// serverProxies is from server db.
+		var serverProxies = await _proxyRepository.GetListAsync(x => x.ClientId == clientId);
+		var allProxies = serverProxies;
+		if (proxies != null)
 		{
-			proxy.ClientId = clientId;
-			var exists = list.FirstOrDefault(x => x.Name == proxy.Name);
-			if (exists != null)
+			var update = new List<Proxy>();
+			var insert = new List<Proxy>();
+			// proxies is from client config.(eg: appsettings, or k8s-ingress)
+			foreach (var proxy in proxies)
 			{
-				exists.Update(proxy);
-				update.Add(exists);
+				proxy.ClientId = clientId;
+				var exists = serverProxies.FirstOrDefault(x => x.Name == proxy.Name);
+				if (exists != null)
+				{
+					exists.Update(proxy);
+					update.Add(exists); // update from client
+				}
+				else
+				{
+					insert.Add(proxy); // add new from client
+				}
 			}
-			else
-			{
-				insert.Add(proxy);
-			}
+
+			await _proxyRepository.UpdateManyAsync(update);
+			await _proxyRepository.InsertManyAsync(insert);
+			allProxies = serverProxies.Concat(insert).ToList();
 		}
-		await _proxyRepository.UpdateManyAsync(update);
-		await _proxyRepository.InsertManyAsync(insert);
-		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
+		if (allProxies is { Count: > 0 }) _forwarderManager.Register(allProxies);
 	}
 }

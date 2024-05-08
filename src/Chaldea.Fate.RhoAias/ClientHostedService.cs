@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,22 +50,23 @@ public interface IClientConnection
 internal class ClientConnection : IClientConnection
 {
 	private readonly ILogger<ClientHostedService> _logger;
+	private readonly IConfiguration _configuration;
 	private readonly HubConnection _connection;
 	private readonly RhoAiasClientOptions _options;
 	private readonly Client _client;
 
-	public ClientConnection(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options)
+	public ClientConnection(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options, IConfiguration configuration)
 	{
 		var version = Utilities.GetVersionName();
 		logger.LogInformation($"RhoAias Client Version: {version}");
 		logger.LogInformation($"RhoAias Client Token:");
 		logger.LogInformation($"{options.Value.Token}");
 		_logger = logger;
+		_configuration = configuration;
 		_options = options.Value;
 		_client = new Client
 		{
 			Version = version,
-			Proxies = _options.Proxies
 		};
 		_connection = new HubConnectionBuilder()
 			.WithUrl(new Uri($"{_options.ServerUrl}/clienthub"), config =>
@@ -127,11 +129,20 @@ internal class ClientConnection : IClientConnection
 
 	private async Task RegisterAsync(CancellationToken cancellationToken)
 	{
+		// register client info
 		var result = await _connection.InvokeAsync<Result>("Register", _client, cancellationToken);
 		if (!result.IsSuccess)
 		{
 			_logger.LogError(result.Message);
 			await _connection.StopAsync(cancellationToken);
+			return;
+		}
+
+		// todo: IngressController not belong here. need to refactor.
+		// register proxies
+		if (!_configuration.GetValue<bool>("RhoAias:IngressController:Enable"))
+		{
+			await _connection.InvokeAsync("UpdateProxy", _options.Proxies, cancellationToken);
 		}
 	}
 
