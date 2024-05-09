@@ -114,7 +114,7 @@ spec:
       containers:
         - name: rho-aias-controller
           imagePullPolicy: IfNotPresent
-          image: docker.flexem.com/test/rho-aias:1.0.2
+          image: chaldea/rho-aias:latest
           env:
             - name: RhoAias__IngressController__Enable
               value: "True"
