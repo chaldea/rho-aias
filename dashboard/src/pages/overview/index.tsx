@@ -9,6 +9,7 @@ import { createSignalRContext } from 'react-signalr/signalr';
 import * as signalR from '@microsoft/signalr';
 import { Tiny } from '@ant-design/plots';
 import { getToken } from '@/shared/token';
+import { useIntl } from '@umijs/max';
 
 const topColResponsiveProps = {
   xs: 24,
@@ -93,9 +94,9 @@ const Overview: React.FC = () => {
     system_memory: 0,
   });
   const [summary, setSummary] = useState<API.SummaryDto>();
-
   const [totalIn, setTotalIn] = useState<number>(0);
   const [totalOut, setTotalOut] = useState<number>(0);
+  const intl = useIntl();
 
   const updateMetrics = (args: Metric) => {
     setMetrics(args);
@@ -121,8 +122,8 @@ const Overview: React.FC = () => {
 
   SignalRContext.useSignalREffect(
     'metrics',
-    (args: Metric) => {
-      updateMetrics(args);
+    (...args: any) => {
+      updateMetrics(args[0]);
     },
     [],
   );
@@ -146,7 +147,7 @@ const Overview: React.FC = () => {
           <Col {...topColResponsiveProps}>
             <StatisticCard
               statistic={{
-                title: <h3>客户端总数</h3>,
+                title: <h3>{intl.formatMessage({ id: 'pages.overview.clientAll' })}</h3>,
                 value: metrics.client_all,
                 icon: <DatabaseOutlined style={{ fontSize: 40, color: '#66AFF4' }} />,
               }}
@@ -155,7 +156,7 @@ const Overview: React.FC = () => {
           <Col {...topColResponsiveProps}>
             <StatisticCard
               statistic={{
-                title: <h3>在线数量</h3>,
+                title: <h3>{intl.formatMessage({ id: 'pages.overview.clientOnline' })}</h3>,
                 value: metrics.client_online,
                 icon: <CloudServerOutlined style={{ fontSize: 40, color: '#C7A9F0' }} />,
               }}
@@ -164,7 +165,7 @@ const Overview: React.FC = () => {
           <Col {...topColResponsiveProps}>
             <StatisticCard
               statistic={{
-                title: <h3>流入流量</h3>,
+                title: <h3>{intl.formatMessage({ id: 'pages.overview.inTotal' })}</h3>,
                 value: formatBytes(metrics.traffic_in_total),
               }}
               chart={<Tiny.Ring {...getConfig(totalIn, '#66AFF4')} />}
@@ -174,7 +175,7 @@ const Overview: React.FC = () => {
           <Col {...topColResponsiveProps}>
             <StatisticCard
               statistic={{
-                title: <h3>流出流量</h3>,
+                title: <h3>{intl.formatMessage({ id: 'pages.overview.outTotal' })}</h3>,
                 value: formatBytes(metrics.traffic_out_total),
               }}
               chart={<Tiny.Ring {...getConfig(totalOut, '#62DAAA')} />}

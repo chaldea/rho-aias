@@ -14,6 +14,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
+import { useIntl } from '@umijs/max';
 import { Button, Flex, Modal, Popconfirm, Space } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
@@ -52,6 +53,7 @@ const Forwards: React.FC = () => {
   const [clients, setClients] = useState<{ value: string; label: string }[]>([]);
   const [modal, contextHolder] = Modal.useModal();
   const { styles } = useStyles();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<API.ProxyDto>[] = [
     {
@@ -60,28 +62,28 @@ const Forwards: React.FC = () => {
       width: 48,
     },
     {
-      title: '名称',
+      title: intl.formatMessage({ id: 'pages.proxies.name' }),
       dataIndex: 'name',
     },
     {
-      title: '类型',
+      title: intl.formatMessage({ id: 'pages.proxies.type' }),
       dataIndex: 'type',
       valueEnum: proxyTypeEnum,
     },
     {
-      title: '转发规则',
+      title: intl.formatMessage({ id: 'pages.proxies.forward' }),
       render: (text, record, _, action) => forwardAddr(record),
     },
     {
-      title: '客户端',
+      title: intl.formatMessage({ id: 'pages.proxies.client' }),
       render: (text, record, _, action) => record.client?.name,
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'pages.proxies.operation' }),
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">编辑</a>,
+        <a key="edit">{intl.formatMessage({ id: 'pages.proxies.operation.edit' })}</a>,
         <a
           key="delete"
           onClick={async () => {
@@ -96,7 +98,7 @@ const Forwards: React.FC = () => {
             }
           }}
         >
-          删除
+          {intl.formatMessage({ id: 'pages.proxies.operation.delete' })}
         </a>,
       ],
     },
@@ -116,7 +118,7 @@ const Forwards: React.FC = () => {
     <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.ProxyDto>
         rowKey="id"
-        headerTitle="转发列表"
+        headerTitle={intl.formatMessage({ id: 'pages.proxies.headerTitle' })}
         actionRef={actionRef}
         search={false}
         columns={columns}
@@ -129,7 +131,7 @@ const Forwards: React.FC = () => {
               setOpen(true);
             }}
           >
-            新建
+            {intl.formatMessage({ id: 'pages.proxies.create' })}
           </Button>,
         ]}
         request={async (params) => {
@@ -143,7 +145,7 @@ const Forwards: React.FC = () => {
       />
 
       <ModalForm<API.ProxyDto>
-        title="创建转发规则"
+        title={intl.formatMessage({ id: 'pages.proxies.createTitle' })}
         width={500}
         open={open}
         modalProps={{ maskClosable: false, destroyOnClose: true }}
@@ -164,11 +166,15 @@ const Forwards: React.FC = () => {
           }
         }}
       >
-        <ProFormText name="name" label="名称" />
-        <ProFormSelect name="clientId" label="客户端" options={clients} />
+        <ProFormText name="name" label={intl.formatMessage({ id: 'pages.proxies.name' })} />
+        <ProFormSelect
+          name="clientId"
+          label={intl.formatMessage({ id: 'pages.proxies.client' })}
+          options={clients}
+        />
         <ProFormSelect
           name="type"
-          label="类型"
+          label={intl.formatMessage({ id: 'pages.proxies.type' })}
           options={[
             { value: 0, label: 'HTTP' },
             { value: 1, label: 'HTTPS' },
@@ -179,7 +185,7 @@ const Forwards: React.FC = () => {
         {[2, 3].includes(proxyType) && (
           <ProFormMoney
             name="remotePort"
-            label="端口"
+            label={intl.formatMessage({ id: 'pages.proxies.remotePort' })}
             fieldProps={{
               moneySymbol: false,
             }}
@@ -192,22 +198,25 @@ const Forwards: React.FC = () => {
             <ProFormTextArea
               colProps={{ span: 24 }}
               name="hosts"
-              label="域名"
-              placeholder="请求域名，多个域名使用换行"
+              label={intl.formatMessage({ id: 'pages.proxies.hosts' })}
+              placeholder={intl.formatMessage({ id: 'pages.proxies.hosts.placeholder' })}
             />
             <ProFormText name="path" label="Path" initialValue="/{**catch-all}" />
             <ProFormText
               name="destination"
-              label="目标地址"
+              label={intl.formatMessage({ id: 'pages.proxies.destination' })}
               placeholder="http://127.0.0.1:123/api"
             />
           </>
         ) : (
           <>
-            <ProFormText name="localIP" label="目标IP" />
+            <ProFormText
+              name="localIP"
+              label={intl.formatMessage({ id: 'pages.proxies.localIP' })}
+            />
             <ProFormMoney
               name="localPort"
-              label="目标端口"
+              label={intl.formatMessage({ id: 'pages.proxies.localPort' })}
               fieldProps={{
                 moneySymbol: false,
               }}

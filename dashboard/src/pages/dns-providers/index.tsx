@@ -12,10 +12,10 @@ import {
   PageContainer,
   ProColumns,
   ProFormSelect,
-  ProFormText,
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
+import { useIntl } from '@umijs/max';
 import { Button, Modal } from 'antd';
 import { useRef, useState } from 'react';
 
@@ -23,6 +23,7 @@ const DnsProviders: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [modal, contextHolder] = Modal.useModal();
   const { styles } = useStyles();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<API.DnsProviderDto>[] = [
     {
@@ -31,20 +32,20 @@ const DnsProviders: React.FC = () => {
       width: 48,
     },
     {
-      title: '名称',
+      title: intl.formatMessage({ id: 'pages.dns-providers.name' }),
       dataIndex: 'name',
     },
     {
-      title: '配置',
+      title: intl.formatMessage({ id: 'pages.dns-providers.config' }),
       dataIndex: 'config',
       ellipsis: true,
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'pages.dns-providers.operation' }),
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">编辑</a>,
+        <a key="edit">{intl.formatMessage({ id: 'pages.dns-providers.operation.edit' })}</a>,
         <a
           key="delete"
           onClick={async () => {
@@ -59,7 +60,7 @@ const DnsProviders: React.FC = () => {
             }
           }}
         >
-          删除
+          {intl.formatMessage({ id: 'pages.dns-providers.operation.delete' })}
         </a>,
       ],
     },
@@ -69,7 +70,7 @@ const DnsProviders: React.FC = () => {
     <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.DnsProviderDto>
         rowKey="id"
-        headerTitle="DNS服务商列表"
+        headerTitle={intl.formatMessage({ id: 'pages.dns-providers.headerTitle' })}
         actionRef={actionRef}
         search={false}
         columns={columns}
@@ -82,7 +83,7 @@ const DnsProviders: React.FC = () => {
               setOpen(true);
             }}
           >
-            新建
+            {intl.formatMessage({ id: 'pages.dns-providers.create' })}
           </Button>,
         ]}
         request={async (params) => {
@@ -96,7 +97,7 @@ const DnsProviders: React.FC = () => {
       />
 
       <ModalForm<API.DnsProviderDto>
-        title="创建DNS提供商"
+        title={intl.formatMessage({ id: 'pages.dns-providers.createTitle' })}
         width={500}
         open={open}
         modalProps={{ maskClosable: false, destroyOnClose: true }}
@@ -114,13 +115,18 @@ const DnsProviders: React.FC = () => {
       >
         <ProFormSelect
           name="provider"
-          label="服务商"
-          options={[{ value: 'Aliyun', label: '阿里云' }]}
+          label={intl.formatMessage({ id: 'pages.dns-providers.provider' })}
+          options={[
+            {
+              value: 'Aliyun',
+              label: intl.formatMessage({ id: 'pages.dns-providers.provider.aliyun' }),
+            },
+          ]}
         />
         <ProFormTextArea
           name="config"
-          label="DNS接口配置"
-          placeholder="配置内容JSON"
+          label={intl.formatMessage({ id: 'pages.dns-providers.config' })}
+          placeholder={intl.formatMessage({ id: 'pages.dns-providers.config.placeholder' })}
           fieldProps={{ style: { height: 200 } }}
         />
       </ModalForm>
