@@ -1,19 +1,22 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: rho-aias
 ---
+# Source: ingress-rho-aias/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: rho-aias-serviceaccount
-  namespace: rho-aias
+  labels:
+    helm.sh/chart: ingress-rho-aias-0.1.0
+    app.kubernetes.io/name: ingress-rho-aias
+    app.kubernetes.io/instance: ingress-rho-aias
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
 ---
+# Source: ingress-rho-aias/templates/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: rho-aias-ingress-clusterrole
-  namespace: rho-aias
 rules:
   - apiGroups:
       - ""
@@ -74,6 +77,7 @@ rules:
       - get
       - update
 ---
+# Source: ingress-rho-aias/templates/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -85,48 +89,53 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: rho-aias-serviceaccount
-    namespace: rho-aias
 ---
+# Source: ingress-rho-aias/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-rho-aias
+  labels:
+    helm.sh/chart: ingress-rho-aias-0.1.0
+    app.kubernetes.io/name: ingress-rho-aias
+    app.kubernetes.io/instance: ingress-rho-aias
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    app: ingress-rho-aias-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-rho-aias
+      app.kubernetes.io/instance: ingress-rho-aias
+      app: ingress-rho-aias-controller
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: ingress-rho-aias-0.1.0
+        app.kubernetes.io/name: ingress-rho-aias
+        app.kubernetes.io/instance: ingress-rho-aias
+        app.kubernetes.io/version: "1.16.0"
+        app.kubernetes.io/managed-by: Helm
+        app: ingress-rho-aias-controller
+    spec:
+      serviceAccountName: rho-aias-serviceaccount
+      containers:
+        - name: ingress-rho-aias
+          image: "chaldea/rhoaias-client:latest"
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+# Source: ingress-rho-aias/templates/ingressclass.yaml
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: rho-aias
 spec:
   controller: chaldea.cn/ingress-rho-aias
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: ingress-rho-aias-controller
-  name: ingress-rho-aias
-  namespace: rho-aias
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ingress-rho-aias-controller
-  template:
-    metadata:
-      labels:
-        app: ingress-rho-aias-controller
-    spec:
-      containers:
-        - name: rho-aias-controller
-          imagePullPolicy: IfNotPresent
-          image: docker.flexem.com/test/rho-aias:1.0.2
-          env:
-            - name: RhoAias__IngressController__Enable
-              value: "True"
-            - name: RhoAias__Client__ServerUrl
-              value: <SERVER_URL>
-            - name: RhoAias__Client__Token
-              value: <TOKEN>
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 500Mi
-      serviceAccountName: rho-aias-serviceaccount
