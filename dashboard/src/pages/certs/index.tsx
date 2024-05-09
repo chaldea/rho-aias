@@ -12,6 +12,7 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
+import { useIntl } from '@umijs/max';
 import { Button, Modal } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
@@ -21,6 +22,7 @@ const Certs: React.FC = () => {
   const [dnsProviders, setDnsProviders] = useState<{ value: string; label: string }[]>([]);
   const [modal, contextHolder] = Modal.useModal();
   const { styles } = useStyles();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<API.CertDto>[] = [
     {
@@ -29,46 +31,46 @@ const Certs: React.FC = () => {
       width: 48,
     },
     {
-      title: '域名',
+      title: intl.formatMessage({ id: 'pages.certs.domain' }),
       dataIndex: 'domain',
     },
     {
-      title: '颁发机构',
+      title: intl.formatMessage({ id: 'pages.certs.issuer' }),
       dataIndex: 'issuer',
     },
     {
-      title: '邮箱',
+      title: intl.formatMessage({ id: 'pages.certs.email' }),
       dataIndex: 'email',
     },
     {
-      title: '有效期',
+      title: intl.formatMessage({ id: 'pages.certs.expires' }),
       dataIndex: 'expires',
       valueType: 'dateTime',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'pages.certs.status' }),
       dataIndex: 'status',
       valueEnum: {
         0: {
-          text: '颁发中',
+          text: intl.formatMessage({ id: 'pages.certs.status.0' }),
           status: 'Default',
         },
         1: {
-          text: '已生效',
+          text: intl.formatMessage({ id: 'pages.certs.status.1' }),
           status: 'Success',
         },
         2: {
-          text: '颁发失败',
+          text: intl.formatMessage({ id: 'pages.certs.status.2' }),
           status: 'Error',
         },
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'pages.certs.operation' }),
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">编辑</a>,
+        <a key="edit">{intl.formatMessage({ id: 'pages.certs.operation.edit' })}</a>,
         <a
           key="delete"
           onClick={async () => {
@@ -83,7 +85,7 @@ const Certs: React.FC = () => {
             }
           }}
         >
-          删除
+          {intl.formatMessage({ id: 'pages.certs.operation.delete' })}
         </a>,
       ],
     },
@@ -103,7 +105,7 @@ const Certs: React.FC = () => {
     <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.CertDto>
         rowKey="id"
-        headerTitle="证书列表"
+        headerTitle={intl.formatMessage({ id: 'pages.certs.headerTitle' })}
         actionRef={actionRef}
         search={false}
         columns={columns}
@@ -116,7 +118,7 @@ const Certs: React.FC = () => {
               setOpen(true);
             }}
           >
-            申请
+            {intl.formatMessage({ id: 'pages.certs.create' })}
           </Button>,
         ]}
         request={async (params) => {
@@ -130,7 +132,7 @@ const Certs: React.FC = () => {
       />
 
       <ModalForm<API.CertCreateDto>
-        title="申请证书"
+        title={intl.formatMessage({ id: 'pages.certs.createTitle' })}
         width={500}
         open={open}
         modalProps={{ maskClosable: false, destroyOnClose: true }}
@@ -151,25 +153,33 @@ const Certs: React.FC = () => {
       >
         <ProFormSelect
           name="certType"
-          label="证书类型"
+          label={intl.formatMessage({ id: 'pages.certs.certType' })}
           options={[
-            { value: 0, label: '单域名' },
-            { value: 1, label: '泛域名' },
+            { value: 0, label: intl.formatMessage({ id: 'pages.certs.certType.0' }) },
+            { value: 1, label: intl.formatMessage({ id: 'pages.certs.certType.1' }) },
           ]}
         />
         <ProFormText
           name="domain"
-          label={certType == 0 ? '单域名(eg: test.sample.com)' : '泛域名(eg: *.sample.com)'}
+          label={intl.formatMessage({ id: 'pages.certs.domain' })}
+          placeholder={intl.formatMessage(
+            { id: 'pages.certs.domain.placeholder' },
+            { domain: certType == 0 ? 'test.sample.com' : '*.sample.com' },
+          )}
         />
         <ProFormSelect
           name="issuer"
-          label="颁发者"
+          label={intl.formatMessage({ id: 'pages.certs.issuer' })}
           options={[{ value: 'LetsEncrypt', label: 'LetsEncrypt' }]}
         />
-        <ProFormText name="email" label="邮箱" />
+        <ProFormText name="email" label={intl.formatMessage({ id: 'pages.certs.email' })} />
         {certType == 1 && (
           <>
-            <ProFormSelect name="dnsProviderId" label="DNS提供商" options={dnsProviders} />
+            <ProFormSelect
+              name="dnsProviderId"
+              label={intl.formatMessage({ id: 'pages.certs.dnsProvider' })}
+              options={dnsProviders}
+            />
           </>
         )}
       </ModalForm>

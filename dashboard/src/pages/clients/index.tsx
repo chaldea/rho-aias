@@ -10,6 +10,7 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
+import { useIntl } from '@umijs/max';
 import { Button, Modal } from 'antd';
 import { useRef, useState } from 'react';
 
@@ -18,6 +19,7 @@ const Clients: React.FC = () => {
   const [modal, contextHolder] = Modal.useModal();
   const actionRef = useRef<ActionType>();
   const { styles } = useStyles();
+  const intl = useIntl();
   const columns: ProColumns<API.ClientDto>[] = [
     {
       dataIndex: 'index',
@@ -25,43 +27,43 @@ const Clients: React.FC = () => {
       width: 48,
     },
     {
-      title: '名称',
+      title: intl.formatMessage({ id: 'pages.clients.name' }),
       dataIndex: 'name',
     },
     {
-      title: '版本',
+      title: intl.formatMessage({ id: 'pages.clients.version' }),
       dataIndex: 'version',
     },
     {
-      title: 'IP',
+      title: intl.formatMessage({ id: 'pages.clients.ip' }),
       dataIndex: 'endpoint',
     },
     {
-      title: 'Token',
+      title: intl.formatMessage({ id: 'pages.clients.token' }),
       dataIndex: 'token',
       copyable: true,
       ellipsis: true,
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'pages.clients.status' }),
       dataIndex: 'status',
       valueEnum: {
         true: {
-          text: '在线',
+          text: intl.formatMessage({ id: 'pages.clients.status.true' }),
           status: 'Success',
         },
         false: {
-          text: '离线',
+          text: intl.formatMessage({ id: 'pages.clients.status.false' }),
           status: 'Default',
         },
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'pages.clients.operation' }),
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">编辑</a>,
+        <a key="edit">{intl.formatMessage({ id: 'pages.clients.operation.edit' })}</a>,
         <a
           key="delete"
           onClick={async () => {
@@ -76,7 +78,7 @@ const Clients: React.FC = () => {
             }
           }}
         >
-          删除
+          {intl.formatMessage({ id: 'pages.clients.operation.delete' })}
         </a>,
       ],
     },
@@ -86,7 +88,7 @@ const Clients: React.FC = () => {
     <PageContainer {...defaultPageContainer} className={styles.container}>
       <ProTable<API.ClientDto>
         rowKey="id"
-        headerTitle="客户端列表"
+        headerTitle={intl.formatMessage({ id: 'pages.clients.headerTitle' })}
         actionRef={actionRef}
         search={false}
         columns={columns}
@@ -99,7 +101,7 @@ const Clients: React.FC = () => {
               setOpen(true);
             }}
           >
-            新建
+            {intl.formatMessage({ id: 'pages.clients.create' })}
           </Button>,
         ]}
         request={async (params) => {
@@ -113,7 +115,7 @@ const Clients: React.FC = () => {
       />
 
       <ModalForm<API.ClientCreateDto>
-        title="创建客户端"
+        title={intl.formatMessage({ id: 'pages.clients.createTitle' })}
         width={500}
         open={open}
         onOpenChange={(visible) => setOpen(visible)}
@@ -127,9 +129,8 @@ const Clients: React.FC = () => {
           }
         }}
       >
-        <ProFormText name="name" label="名称" />
+        <ProFormText name="name" label={intl.formatMessage({ id: 'pages.clients.name' })} />
       </ModalForm>
-
       {contextHolder}
     </PageContainer>
   );
