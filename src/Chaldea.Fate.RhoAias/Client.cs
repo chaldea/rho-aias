@@ -35,6 +35,14 @@ public class Client
 		Status = true;
 	}
 
+    public void Update(Client register)
+    {
+	    Endpoint = register.Endpoint;
+	    ConnectionId = register.ConnectionId;
+	    Status = register.Status;
+	    Version = register.Version;
+	}
+
     private bool VersionCheck(Version? serverVersion)
     {
 	    if (serverVersion == null) return false;

@@ -78,6 +78,7 @@ declare namespace API {
     remotePort?: number;
     path?: string;
     hosts?: string[];
+    destination?: string;
     clientId?: string;
     client?: ClientDto;
   };

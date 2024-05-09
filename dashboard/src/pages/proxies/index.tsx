@@ -1,4 +1,3 @@
-import ThemeSwitch from '@/components/ThemeSwitch';
 import { getClientList } from '@/services/dashboard/client';
 import { deleteProxyRemove, getProxyList, putProxyCreate } from '@/services/dashboard/proxy';
 import { defaultPageContainer } from '@/shared/page';
@@ -30,7 +29,7 @@ const forwardAddr = (record: API.ProxyDto) => {
   let target = '';
   if ([0, 1].includes(record.type!)) {
     hosts = record.hosts!.map((x) => `${proxyTypeEnum[record.type!].text}://${x}`);
-    target = `${proxyTypeEnum[record.type!].text}://${record.localIP}:${record.localPort}`;
+    target = record.destination || '';
   } else {
     hosts = [`:${record.remotePort}`];
     target = `${record.localIP}:${record.localPort}`;
@@ -105,7 +104,7 @@ const Forwards: React.FC = () => {
 
   const getClients = async () => {
     const result = await getClientList();
-    const data = result.map((x) => ({ value: x.id!, label: x.name! }));
+    const data = result.map((x: any) => ({ value: x.id!, label: x.name! }));
     setClients(data);
   };
 
@@ -188,7 +187,7 @@ const Forwards: React.FC = () => {
             max={65535}
           />
         )}
-        {[0, 1].includes(proxyType) && (
+        {[0, 1].includes(proxyType) ? (
           <>
             <ProFormTextArea
               colProps={{ span: 24 }}
@@ -196,19 +195,27 @@ const Forwards: React.FC = () => {
               label="域名"
               placeholder="请求域名，多个域名使用换行"
             />
-            <ProFormText name="path" label="Path" initialValue="{**catch-all}" />
+            <ProFormText name="path" label="Path" initialValue="/{**catch-all}" />
+            <ProFormText
+              name="destination"
+              label="目标地址"
+              placeholder="http://127.0.0.1:123/api"
+            />
+          </>
+        ) : (
+          <>
+            <ProFormText name="localIP" label="目标IP" />
+            <ProFormMoney
+              name="localPort"
+              label="目标端口"
+              fieldProps={{
+                moneySymbol: false,
+              }}
+              min={0}
+              max={65535}
+            />
           </>
         )}
-        <ProFormText name="localIP" label="目标IP" />
-        <ProFormMoney
-          name="localPort"
-          label="目标端口"
-          fieldProps={{
-            moneySymbol: false,
-          }}
-          min={0}
-          max={65535}
-        />
       </ModalForm>
       {contextHolder}
     </PageContainer>

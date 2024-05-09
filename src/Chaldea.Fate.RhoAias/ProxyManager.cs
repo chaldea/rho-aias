@@ -6,6 +6,7 @@ public interface IProxyManager
 	Task RemoveProxyAsync(Guid id);
 	Task<List<Proxy>> GetProxyListAsync();
 	Task<int> CountProxyAsync();
+	Task UpdateProxyListAsync(Guid clientId, List<Proxy> proxies);
 }
 
 internal class ProxyManager : IProxyManager
@@ -46,5 +47,37 @@ internal class ProxyManager : IProxyManager
 	public async Task<int> CountProxyAsync()
 	{
 		return await _proxyRepository.CountAsync();
+	}
+
+	public async Task UpdateProxyListAsync(Guid clientId, List<Proxy>? proxies)
+	{
+		// serverProxies is from server db.
+		var serverProxies = await _proxyRepository.GetListAsync(x => x.ClientId == clientId);
+		var allProxies = serverProxies;
+		if (proxies != null)
+		{
+			var update = new List<Proxy>();
+			var insert = new List<Proxy>();
+			// proxies is from client config.(eg: appsettings, or k8s-ingress)
+			foreach (var proxy in proxies)
+			{
+				proxy.ClientId = clientId;
+				var exists = serverProxies.FirstOrDefault(x => x.Name == proxy.Name);
+				if (exists != null)
+				{
+					exists.Update(proxy);
+					update.Add(exists); // update from client
+				}
+				else
+				{
+					insert.Add(proxy); // add new from client
+				}
+			}
+
+			await _proxyRepository.UpdateManyAsync(update);
+			await _proxyRepository.InsertManyAsync(insert);
+			allProxies = serverProxies.Concat(insert).ToList();
+		}
+		if (allProxies is { Count: > 0 }) _forwarderManager.Register(allProxies);
 	}
 }

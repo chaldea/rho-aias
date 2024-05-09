@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using System.Text;
 using System.Net.Sockets;
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Yarp.ReverseProxy.Configuration;
 
@@ -105,22 +106,32 @@ internal class WebForwarder : ForwarderBase
         var config = _proxyConfigProvider.GetConfig();
         var routes = config.Routes.ToList();
         var clusters = config.Clusters.ToList();
-        routes.RemoveAll(x => x.RouteId == proxy.Name);
+        routes.RemoveAll(x => x.ClusterId == proxy.Name);
         clusters.RemoveAll(x => x.ClusterId == proxy.Name);
-        routes.Add(new RouteConfig
+        if (proxy is { RouteConfig: not null, ClusterConfig: not null })
         {
-            ClusterId = proxy.Name,
-            RouteId = proxy.Name,
-            Match = new RouteMatch { Path = proxy.Path, Hosts = proxy.Hosts }
-        });
-        clusters.Add(new ClusterConfig
+	        var route = JsonSerializer.Deserialize<RouteConfig>(proxy.RouteConfig);
+	        var cluster = JsonSerializer.Deserialize<ClusterConfig>(proxy.ClusterConfig);
+            if(route != null) routes.Add(route);
+            if(cluster != null) clusters.Add(cluster);
+        }
+        else
         {
-            ClusterId = proxy.Name,
-            Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "destination", new DestinationConfig() {Address = $"{proxy.GetUrl()}"} }
-            }
-        });
+	        routes.Add(new RouteConfig
+	        {
+		        ClusterId = proxy.Name,
+		        RouteId = proxy.Name,
+		        Match = new RouteMatch { Path = proxy.Path, Hosts = proxy.Hosts }
+	        });
+	        clusters.Add(new ClusterConfig
+	        {
+		        ClusterId = proxy.Name,
+		        Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
+		        {
+			        { "destination", new DestinationConfig() {Address = $"{proxy.GetUrl()}"} }
+		        }
+	        });
+		}
         (_proxyConfigProvider as InMemoryConfigProvider).Update(routes, clusters);
     }
 

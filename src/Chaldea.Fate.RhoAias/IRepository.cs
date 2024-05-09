@@ -7,6 +7,7 @@ public interface IRepository<TEntity> where TEntity : class
 	Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
 	Task<int> CountAsync();
 	Task<TEntity> InsertAsync(TEntity entity);
+	Task InsertManyAsync(IEnumerable<TEntity> entities);
 	Task<TEntity> UpdateAsync(TEntity entity);
 	Task UpdateManyAsync(IEnumerable<TEntity> entities);
 	Task DeleteAsync(TEntity entity);
@@ -36,6 +37,12 @@ internal class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity 
 	{
 		_db.Add(entity);
 		return Task.FromResult(entity);
+	}
+
+	public Task InsertManyAsync(IEnumerable<TEntity> entities)
+	{
+		_db.AddRange(entities);
+		return Task.CompletedTask;
 	}
 
 	public Task<TEntity> UpdateAsync(TEntity entity)

@@ -36,22 +36,10 @@ internal class ClientManager : IClientManager
 		var result = register.VersionCheck();
 		if (!result.IsSuccess)
 			return result;
-		var client = await _clientRepository.GetAsync(x => x.Id == register.Id, y => y.Proxies);
+		var client = await _clientRepository.GetAsync(x => x.Id == register.Id);
 		if (client == null)
 			return Result.Error(ErrorCode.InvalidClientToken.ToError());
-		client.Endpoint = register.Endpoint;
-		client.ConnectionId = register.ConnectionId;
-		client.Status = register.Status;
-		client.Version = register.Version;
-		// if client has proxies, replace to server.
-		if (register.Proxies is { Count: > 0 })
-		{
-			client.Proxies?.Clear();
-			client.Proxies = register.Proxies;
-		}
-
-		// register all proxies
-		if (client.Proxies is { Count: > 0 }) _forwarderManager.Register(client.Proxies.ToList());
+		client.Update(register);
 		await _clientRepository.UpdateAsync(client);
 		_metrics.UpDownClientOnline(1);
 		return Result.Success();

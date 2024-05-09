@@ -1,0 +1,132 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: rho-aias
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rho-aias-serviceaccount
+  namespace: rho-aias
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rho-aias-ingress-clusterrole
+  namespace: rho-aias
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+      - namespaces
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services/status
+    verbs:
+      - get
+  - apiGroups:
+      - networking.k8s.io
+      - extensions
+      - networking.internal.knative.dev
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - networking.k8s.io
+      - extensions
+      - networking.internal.knative.dev
+    resources:
+      - ingresses/status
+    verbs:
+      - get
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rho-aias-ingress-clusterrole-nisa-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rho-aias-ingress-clusterrole
+subjects:
+  - kind: ServiceAccount
+    name: rho-aias-serviceaccount
+    namespace: rho-aias
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: rho-aias
+spec:
+  controller: chaldea.cn/ingress-rho-aias
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ingress-rho-aias-controller
+  name: ingress-rho-aias
+  namespace: rho-aias
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-rho-aias-controller
+  template:
+    metadata:
+      labels:
+        app: ingress-rho-aias-controller
+    spec:
+      containers:
+        - name: rho-aias-controller
+          imagePullPolicy: IfNotPresent
+          image: chaldea/rho-aias:latest
+          env:
+            - name: RhoAias__IngressController__Enable
+              value: "True"
+            - name: RhoAias__Client__ServerUrl
+              value: <SERVER_URL>
+            - name: RhoAias__Client__Token
+              value: <TOKEN>
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+      serviceAccountName: rho-aias-serviceaccount

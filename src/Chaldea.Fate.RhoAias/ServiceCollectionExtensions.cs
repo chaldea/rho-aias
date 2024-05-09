@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
             var endpoint = obj as IEndpointRouteBuilder;
             endpoint?.MapReverseProxy();
             endpoint?.MapHub<ClientHub>("/clienthub");
-            endpoint?.MapHub<UserHub>("/userhub");
+			endpoint?.MapHub<UserHub>("/userhub");
         }
         return app;
     }
@@ -101,7 +101,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRhoAiasClient(this IServiceCollection services, IConfiguration configuration)
     {
 	    services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
-	    services.AddHostedService<ClientHostedService>();
+		services.AddSingleton<IClientConnection, ClientConnection>();
+		services.AddHostedService<ClientHostedService>();
 	    return services;
     }
 }
