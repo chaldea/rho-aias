@@ -9,8 +9,8 @@ public class ProxyDto
 	public Guid? Id { get; set; }
 	public string Name { get; set; }
 	public ProxyType Type { get; set; }
-	public string LocalIP { get; set; }
-	public int LocalPort { get; set; }
+	public string? LocalIP { get; set; }
+	public int? LocalPort { get; set; }
 	public int? RemotePort { get; set; }
 	public string? Path { get; set; }
 	public string[]? Hosts { get; set; }

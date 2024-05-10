@@ -32,7 +32,7 @@ const forwardAddr = (record: API.ProxyDto) => {
     hosts = record.hosts!.map((x) => `${proxyTypeEnum[record.type!].text}://${x}`);
     target = record.destination || '';
   } else {
-    hosts = [`:${record.remotePort}`];
+    hosts = [`0.0.0.0:${record.remotePort}`];
     target = `${record.localIP}:${record.localPort}`;
   }
 
