@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
 		var app = builder.ApplicationBuilder;
 		var endpoint = builder.EndpointRouteBuilder;
 		app.UseSpaStaticFiles();
-		app.UseSpa(spa =>
+		app.UseDashboardSpa(spa =>
 		{
 			spa.Options.DefaultPage = "/index.html";
 		});
