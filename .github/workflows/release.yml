@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    # branches:
-    #   - ci
     tags:
       - '*'
 
@@ -21,9 +19,10 @@ jobs:
           if [ $? -eq 0 ]; then
             VERSION=${TAG:1}
           fi
-          echo "Build Version: ${VERSION}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Docker Build
         run: |
+          echo "Build Version: ${VERSION}"
           docker build -f docker/Dockerfile-Server -t chaldea/rhoaias-server:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
           docker build -f docker/Dockerfile-Client -t chaldea/rhoaias-client:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
       - name: Docker Push
