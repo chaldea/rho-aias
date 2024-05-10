@@ -71,7 +71,7 @@ public class Proxy
         return string.Join(",", Hosts);
     }
 
-    public Proxy Update(Proxy proxy)
+    public void Update(Proxy proxy)
     {
         Type = proxy.Type;
         LocalIP = proxy.LocalIP;
@@ -82,6 +82,15 @@ public class Proxy
         Destination = proxy.Destination;
         RouteConfig = proxy.RouteConfig;
         ClusterConfig = proxy.ClusterConfig;
-        return this;
+    }
+
+    public void UpdateLocalIp()
+    {
+	    if (string.IsNullOrEmpty(LocalIP) && !string.IsNullOrEmpty(Destination))
+	    {
+            var uri = new Uri(Destination);
+            LocalIP = uri.Host;
+            LocalPort = uri.Port;
+	    }
     }
 }

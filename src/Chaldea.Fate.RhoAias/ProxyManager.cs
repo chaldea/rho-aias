@@ -23,6 +23,7 @@ internal class ProxyManager : IProxyManager
 	public async Task CreateProxyAsync(Proxy entity)
 	{
 		entity.Id = Guid.NewGuid();
+		entity.UpdateLocalIp();
 		await _proxyRepository.InsertAsync(entity);
 		var proxies = await _proxyRepository.GetListAsync(x => x.Id == entity.Id && x.Client.Status, x => x.Client);
 		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
@@ -52,8 +53,9 @@ internal class ProxyManager : IProxyManager
 	public async Task UpdateProxyListAsync(Guid clientId, List<Proxy>? proxies)
 	{
 		// serverProxies is from server db.
-		var serverProxies = await _proxyRepository.GetListAsync(x => x.ClientId == clientId);
+		var serverProxies = await _proxyRepository.GetListAsync(x => x.ClientId == clientId, y => y.Client);
 		var allProxies = serverProxies;
+		var client = serverProxies.FirstOrDefault()?.Client;
 		if (proxies != null)
 		{
 			var update = new List<Proxy>();
@@ -62,14 +64,17 @@ internal class ProxyManager : IProxyManager
 			foreach (var proxy in proxies)
 			{
 				proxy.ClientId = clientId;
+				proxy.Client = client;
 				var exists = serverProxies.FirstOrDefault(x => x.Name == proxy.Name);
 				if (exists != null)
 				{
 					exists.Update(proxy);
+					exists.UpdateLocalIp();
 					update.Add(exists); // update from client
 				}
 				else
 				{
+					proxy.UpdateLocalIp();
 					insert.Add(proxy); // add new from client
 				}
 			}
