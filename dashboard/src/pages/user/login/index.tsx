@@ -1,11 +1,5 @@
-import {
-  AlipayCircleOutlined,
-  LockOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
-} from '@ant-design/icons';
-import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
 import { Alert, message } from 'antd';
 import Settings from '../../../../config/defaultSettings';
@@ -50,18 +44,6 @@ const useStyles = createStyles(({ token }) => {
     },
   };
 });
-
-const ActionIcons = () => {
-  const { styles } = useStyles();
-
-  return (
-    <>
-      <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.action} />
-      <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
-      <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} />
-    </>
-  );
-};
 
 const Lang = () => {
   const { styles } = useStyles();
@@ -163,13 +145,38 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo.svg" />}
-          title="Rho Aias"
-          subTitle=" "
+          title={
+            <span
+              style={{
+                backgroundImage: 'linear-gradient(to right, #26C3FF, #0D6EFF)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            >
+              Rho Aias
+            </span>
+          }
+          subTitle={
+            <>
+              <h2>Log in to your account</h2>
+              <div>A simple and easy-to-use reverse proxy tool</div>
+            </>
+          }
           initialValues={{
             autoLogin: true,
           }}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginDto);
+          }}
+          submitter={{
+            submitButtonProps: {
+              size: 'large',
+              style: {
+                width: '100%',
+                backgroundColor: '#0086C9',
+              },
+            },
           }}
         >
           {status === 'error' && loginType === 'account' && (
@@ -228,15 +235,6 @@ const Login: React.FC = () => {
               />
             </>
           )}
-          <div
-            style={{
-              marginBottom: 24,
-            }}
-          >
-            <ProFormCheckbox noStyle name="autoLogin">
-              <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
-            </ProFormCheckbox>
-          </div>
         </LoginForm>
       </div>
     </div>

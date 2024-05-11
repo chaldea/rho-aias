@@ -17,7 +17,7 @@ const ThemeSwitch: React.FC = () => {
       settings.navTheme = 'light';
       settings.token = {
         sider: {
-          colorMenuBackground: '#2E4051',
+          colorMenuBackground: '#065986',
           colorBgCollapsedButton: '#FFFFFF',
           colorTextMenu: '#FFFFFF',
           colorTextMenuSelected: '#FFFFFF',
