@@ -36,3 +36,18 @@ export async function deleteClientRemove(
     ...(options || {}),
   });
 }
+
+/** 此处后端没有提供注释 POST /api/dashboard/client/update */
+export async function postClientUpdate(
+  body: API.ClientCreateDto,
+  options?: { [key: string]: any },
+) {
+  return request<any>('/api/dashboard/client/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

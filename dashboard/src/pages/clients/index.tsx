@@ -1,4 +1,9 @@
-import { deleteClientRemove, getClientList, putClientCreate } from '@/services/dashboard/client';
+import {
+  deleteClientRemove,
+  getClientList,
+  postClientUpdate,
+  putClientCreate,
+} from '@/services/dashboard/client';
 import { defaultPageContainer } from '@/shared/page';
 import { useStyles } from '@/shared/style';
 import { PlusOutlined } from '@ant-design/icons';
@@ -17,6 +22,7 @@ import { useRef, useState } from 'react';
 const Clients: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [editItem, setEditItem] = useState<API.ClientCreateDto>();
   const actionRef = useRef<ActionType>();
   const { styles } = useStyles();
   const intl = useIntl();
@@ -63,13 +69,21 @@ const Clients: React.FC = () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">{intl.formatMessage({ id: 'pages.clients.operation.edit' })}</a>,
+        <a
+          key="edit"
+          onClick={() => {
+            setEditItem({ id: record.id, name: record.name });
+            setOpen(true);
+          }}
+        >
+          {intl.formatMessage({ id: 'pages.clients.operation.edit' })}
+        </a>,
         <a
           key="delete"
           onClick={async () => {
             const confirmed = await modal.confirm({
-              title: '系统提示',
-              content: '确定要删除该客户端及其转发配置？',
+              title: intl.formatMessage({ id: 'pages.clients.deleteTitle' }),
+              content: intl.formatMessage({ id: 'pages.clients.deleteMessage' }),
             });
 
             if (confirmed) {
@@ -118,18 +132,43 @@ const Clients: React.FC = () => {
         title={intl.formatMessage({ id: 'pages.clients.createTitle' })}
         width={500}
         open={open}
-        onOpenChange={(visible) => setOpen(visible)}
+        onOpenChange={(visible) => {
+          setOpen(visible);
+          if (!visible) {
+            setEditItem(undefined);
+          }
+        }}
         onFinish={async (values: API.ClientCreateDto) => {
           try {
-            await putClientCreate(values);
+            if (editItem) {
+              values.id = editItem.id;
+              await postClientUpdate(values);
+            } else {
+              await putClientCreate(values);
+            }
             actionRef.current?.reload();
             return true;
           } catch (error) {
             return false;
           }
         }}
+        initialValues={editItem}
+        modalProps={{
+          maskClosable: false,
+          destroyOnClose: true,
+        }}
       >
-        <ProFormText name="name" label={intl.formatMessage({ id: 'pages.clients.name' })} />
+        <ProFormText
+          name="name"
+          label={intl.formatMessage({ id: 'pages.clients.name' })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.clients.name.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.clients.name.placeholder' })}
+        />
       </ModalForm>
       {contextHolder}
     </PageContainer>

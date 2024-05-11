@@ -21,6 +21,7 @@ declare namespace API {
   };
 
   type ClientCreateDto = {
+    id?: string;
     name?: string;
   };
 
@@ -83,7 +84,7 @@ declare namespace API {
     client?: ClientDto;
   };
 
-  type ProxyType = 0 | 1 | 2 | 3;
+  type ProxyType = 1 | 2 | 3 | 4;
 
   type SummaryDto = {
     version?: string;

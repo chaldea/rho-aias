@@ -36,3 +36,15 @@ export async function deleteProxyRemove(
     ...(options || {}),
   });
 }
+
+/** 此处后端没有提供注释 POST /api/dashboard/proxy/update */
+export async function postProxyUpdate(body: API.ProxyDto, options?: { [key: string]: any }) {
+  return request<any>('/api/dashboard/proxy/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

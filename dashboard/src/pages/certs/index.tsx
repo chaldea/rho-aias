@@ -75,8 +75,8 @@ const Certs: React.FC = () => {
           key="delete"
           onClick={async () => {
             const confirmed = await modal.confirm({
-              title: '系统提示',
-              content: '确定要删除该证书？删除后可能导致域名无法访问。',
+              title: intl.formatMessage({ id: 'pages.certs.deleteTitle' }),
+              content: intl.formatMessage({ id: 'pages.certs.deleteMessage' }),
             });
 
             if (confirmed) {
@@ -158,30 +158,67 @@ const Certs: React.FC = () => {
             { value: 0, label: intl.formatMessage({ id: 'pages.certs.certType.0' }) },
             { value: 1, label: intl.formatMessage({ id: 'pages.certs.certType.1' }) },
           ]}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.certs.certType.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.certs.certType.placeholder' })}
         />
-        <ProFormText
-          name="domain"
-          label={intl.formatMessage({ id: 'pages.certs.domain' })}
-          placeholder={intl.formatMessage(
-            { id: 'pages.certs.domain.placeholder' },
-            { domain: certType == 0 ? 'test.sample.com' : '*.sample.com' },
-          )}
-        />
-        <ProFormSelect
-          name="issuer"
-          label={intl.formatMessage({ id: 'pages.certs.issuer' })}
-          options={[{ value: 'LetsEncrypt', label: 'LetsEncrypt' }]}
-        />
-        <ProFormText name="email" label={intl.formatMessage({ id: 'pages.certs.email' })} />
         {certType == 1 && (
           <>
             <ProFormSelect
               name="dnsProviderId"
               label={intl.formatMessage({ id: 'pages.certs.dnsProvider' })}
               options={dnsProviders}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.certs.dnsProvider.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage({ id: 'pages.certs.dnsProvider.placeholder' })}
             />
           </>
         )}
+        <ProFormSelect
+          name="issuer"
+          label={intl.formatMessage({ id: 'pages.certs.issuer' })}
+          options={[{ value: 'LetsEncrypt', label: 'LetsEncrypt' }]}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.certs.issuer.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.certs.issuer.placeholder' })}
+        />
+        <ProFormText
+          name="domain"
+          label={intl.formatMessage({ id: 'pages.certs.domain' })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.certs.domain.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage(
+            { id: 'pages.certs.domain.placeholder' },
+            { domain: certType == 0 ? 'test.sample.com' : '*.sample.com' },
+          )}
+        />
+        <ProFormText
+          name="email"
+          label={intl.formatMessage({ id: 'pages.certs.email' })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.certs.email.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.certs.email.placeholder' })}
+        />
       </ModalForm>
       {contextHolder}
     </PageContainer>

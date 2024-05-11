@@ -43,6 +43,14 @@ public class ProxyController : ControllerBase
 		await _proxyManager.CreateProxyAsync(entity);
 	}
 
+	[HttpPost]
+	[Route("update")]
+	public async Task UpdateAsync(ProxyDto dto)
+	{
+		var entity = _mapper.Map<ProxyDto, Proxy>(dto);
+		await _proxyManager.UpdateProxyAsync(entity);
+	}
+
 	[HttpDelete]
 	[Route("remove")]
 	public async Task RemoveAsync(Guid id)
