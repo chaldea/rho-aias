@@ -4,7 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chaldea.Fate.RhoAias.Dashboard;
 
-public record ClientCreateDto(string Name);
+public class ClientCreateDto
+{
+	public Guid? Id { get; set; }
+	public string Name { get; set; }
+}
 
 public class ClientDto
 {
@@ -37,6 +41,14 @@ public class ClientController : ControllerBase
 	{
 		var entity = _mapper.Map<ClientCreateDto, Client>(dto);
 		await _clientManager.CreateClientAsync(entity);
+	}
+
+	[HttpPost]
+	[Route("update")]
+	public async Task UpdateAsync(ClientCreateDto dto)
+	{
+		var entity = _mapper.Map<ClientCreateDto, Client>(dto);
+		await _clientManager.UpdateClientAsync(entity);
 	}
 
 	[HttpDelete]

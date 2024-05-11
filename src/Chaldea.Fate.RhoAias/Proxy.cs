@@ -6,10 +6,11 @@ namespace Chaldea.Fate.RhoAias;
 
 public enum ProxyType
 {
-	HTTP,
-	HTTPS,
-	TCP,
-	UDP,
+	HTTP = 1,
+	[Obsolete("Use http only.")]
+	HTTPS = 2,
+	TCP = 3,
+	UDP = 4,
 }
 
 [MessagePackObject]
@@ -38,7 +39,7 @@ public class Proxy
 		var item = cluster.Destinations.FirstOrDefault();
 		Id = Guid.NewGuid();
 		Name = route.ClusterId;
-		Type = ProxyType.HTTPS;
+		Type = ProxyType.HTTP;
 		LocalIP = string.Empty;
 		Path = route.Match.Path;
 		Hosts = route.Match.Hosts?.ToArray();
@@ -50,7 +51,7 @@ public class Proxy
 	public string GetSchema() => Type switch
     {
         ProxyType.HTTP => "http",
-        ProxyType.HTTPS => "https",
+        ProxyType.HTTPS => "http",
         ProxyType.TCP => "tcp",
         ProxyType.UDP => "udp",
         _ => string.Empty
@@ -73,6 +74,7 @@ public class Proxy
 
     public void Update(Proxy proxy)
     {
+        Name = proxy.Name;
         Type = proxy.Type;
         LocalIP = proxy.LocalIP;
         LocalPort = proxy.LocalPort;

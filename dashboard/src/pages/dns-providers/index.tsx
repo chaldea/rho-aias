@@ -45,13 +45,12 @@ const DnsProviders: React.FC = () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">{intl.formatMessage({ id: 'pages.dns-providers.operation.edit' })}</a>,
         <a
           key="delete"
           onClick={async () => {
             const confirmed = await modal.confirm({
-              title: '系统提示',
-              content: '确定要删除该转发配置',
+              title: intl.formatMessage({ id: 'pages.dns-providers.deleteTitle' }),
+              content: intl.formatMessage({ id: 'pages.dns-providers.deleteMessage' }),
             });
 
             if (confirmed) {
@@ -122,12 +121,25 @@ const DnsProviders: React.FC = () => {
               label: intl.formatMessage({ id: 'pages.dns-providers.provider.aliyun' }),
             },
           ]}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.dns-providers.provider.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.dns-providers.provider.placeholder' })}
         />
         <ProFormTextArea
           name="config"
           label={intl.formatMessage({ id: 'pages.dns-providers.config' })}
-          placeholder={intl.formatMessage({ id: 'pages.dns-providers.config.placeholder' })}
           fieldProps={{ style: { height: 200 } }}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.dns-providers.config.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.dns-providers.config.placeholder' })}
         />
       </ModalForm>
       {contextHolder}

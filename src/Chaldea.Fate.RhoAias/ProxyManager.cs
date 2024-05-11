@@ -3,6 +3,7 @@
 public interface IProxyManager
 {
 	Task CreateProxyAsync(Proxy entity);
+	Task UpdateProxyAsync(Proxy entity);
 	Task RemoveProxyAsync(Guid id);
 	Task<List<Proxy>> GetProxyListAsync();
 	Task<int> CountProxyAsync();
@@ -22,10 +23,26 @@ internal class ProxyManager : IProxyManager
 
 	public async Task CreateProxyAsync(Proxy entity)
 	{
+		if (await _proxyRepository.AnyAsync(x => x.Name == entity.Name))
+		{
+			return;
+		}
 		entity.Id = Guid.NewGuid();
 		entity.UpdateLocalIp();
 		await _proxyRepository.InsertAsync(entity);
 		var proxies = await _proxyRepository.GetListAsync(x => x.Id == entity.Id && x.Client.Status, x => x.Client);
+		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
+	}
+
+	public async Task UpdateProxyAsync(Proxy entity)
+	{
+		if (await _proxyRepository.AnyAsync(x => x.Name == entity.Name && x.Id != entity.Id)) return;
+		var item = await _proxyRepository.GetAsync(x => x.Id == entity.Id);
+		if (item == null) return;
+		item.Update(entity);
+		item.UpdateLocalIp();
+		await _proxyRepository.UpdateAsync(item);
+		var proxies = await _proxyRepository.GetListAsync(x => x.Id == item.Id && x.Client.Status, x => x.Client);
 		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
 	}
 

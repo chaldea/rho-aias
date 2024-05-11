@@ -1,5 +1,10 @@
 import { getClientList } from '@/services/dashboard/client';
-import { deleteProxyRemove, getProxyList, putProxyCreate } from '@/services/dashboard/proxy';
+import {
+  deleteProxyRemove,
+  getProxyList,
+  postProxyUpdate,
+  putProxyCreate,
+} from '@/services/dashboard/proxy';
 import { defaultPageContainer } from '@/shared/page';
 import { useStyles } from '@/shared/style';
 import { PlusOutlined } from '@ant-design/icons';
@@ -15,12 +20,12 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Button, Flex, Modal, Popconfirm, Space } from 'antd';
+import { Button, Flex, Modal, Popconfirm, Space, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
 const proxyTypeEnum: any = {
   0: { text: 'http' },
-  1: { text: 'https' },
+  1: { text: 'http' },
   2: { text: 'tcp' },
   3: { text: 'udp' },
 };
@@ -52,6 +57,7 @@ const Forwards: React.FC = () => {
   const [proxyType, setProxyType] = useState<number>(0);
   const [clients, setClients] = useState<{ value: string; label: string }[]>([]);
   const [modal, contextHolder] = Modal.useModal();
+  const [editItem, setEditItem] = useState<API.ProxyDto>();
   const { styles } = useStyles();
   const intl = useIntl();
   const actionRef = useRef<ActionType>();
@@ -83,13 +89,25 @@ const Forwards: React.FC = () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a key="edit">{intl.formatMessage({ id: 'pages.proxies.operation.edit' })}</a>,
+        <a
+          key="edit"
+          onClick={() => {
+            const edit = { ...record };
+            if (edit.hosts) {
+              edit.hosts = edit.hosts.join('\n') as any;
+            }
+            setEditItem(edit);
+            setOpen(true);
+          }}
+        >
+          {intl.formatMessage({ id: 'pages.proxies.operation.edit' })}
+        </a>,
         <a
           key="delete"
           onClick={async () => {
             const confirmed = await modal.confirm({
-              title: '系统提示',
-              content: '确定要删除该转发配置',
+              title: intl.formatMessage({ id: 'pages.proxies.deleteTitle' }),
+              content: intl.formatMessage({ id: 'pages.proxies.deleteMessage' }),
             });
 
             if (confirmed) {
@@ -148,8 +166,17 @@ const Forwards: React.FC = () => {
         title={intl.formatMessage({ id: 'pages.proxies.createTitle' })}
         width={500}
         open={open}
-        modalProps={{ maskClosable: false, destroyOnClose: true }}
-        onOpenChange={(visible) => setOpen(visible)}
+        modalProps={{
+          maskClosable: false,
+          destroyOnClose: true,
+        }}
+        initialValues={editItem || { path: '/{**catch-all}' }}
+        onOpenChange={(visible) => {
+          setOpen(visible);
+          if (!visible) {
+            setEditItem(undefined);
+          }
+        }}
         onValuesChange={(changed) => {
           if (changed.type !== undefined) setProxyType(changed.type);
         }}
@@ -158,7 +185,12 @@ const Forwards: React.FC = () => {
             if (values.hosts) {
               values.hosts = (values.hosts as any).split(/\r?\n/);
             }
-            await putProxyCreate(values);
+            if (editItem) {
+              values.id = editItem.id;
+              await postProxyUpdate(values);
+            } else {
+              await putProxyCreate(values);
+            }
             actionRef.current?.reload();
             return true;
           } catch (error) {
@@ -166,53 +198,115 @@ const Forwards: React.FC = () => {
           }
         }}
       >
-        <ProFormText name="name" label={intl.formatMessage({ id: 'pages.proxies.name' })} />
+        <ProFormText
+          name="name"
+          label={intl.formatMessage({ id: 'pages.proxies.name' })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.proxies.name.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.proxies.name.placeholder' })}
+        />
         <ProFormSelect
           name="clientId"
           label={intl.formatMessage({ id: 'pages.proxies.client' })}
           options={clients}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.proxies.client.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.proxies.client.placeholder' })}
         />
         <ProFormSelect
           name="type"
           label={intl.formatMessage({ id: 'pages.proxies.type' })}
           options={[
             { value: 0, label: 'HTTP' },
-            { value: 1, label: 'HTTPS' },
             { value: 2, label: 'TCP' },
             { value: 3, label: 'UDP' },
           ]}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.proxies.type.required' }),
+            },
+          ]}
+          placeholder={intl.formatMessage({ id: 'pages.proxies.type.placeholder' })}
         />
-        {[2, 3].includes(proxyType) && (
-          <ProFormMoney
-            name="remotePort"
-            label={intl.formatMessage({ id: 'pages.proxies.remotePort' })}
-            fieldProps={{
-              moneySymbol: false,
-            }}
-            min={0}
-            max={65535}
-          />
-        )}
         {[0, 1].includes(proxyType) ? (
           <>
             <ProFormTextArea
               colProps={{ span: 24 }}
               name="hosts"
               label={intl.formatMessage({ id: 'pages.proxies.hosts' })}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.hosts.required' }),
+                },
+              ]}
               placeholder={intl.formatMessage({ id: 'pages.proxies.hosts.placeholder' })}
+              tooltip={intl.formatMessage({ id: 'pages.proxies.hosts.tooltip' })}
             />
-            <ProFormText name="path" label="Path" initialValue="/{**catch-all}" />
+            <ProFormText
+              name="path"
+              label="Path"
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.path.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage(
+                { id: 'pages.proxies.path.placeholder' },
+                { path: `/{**catch-all}` },
+              )}
+            />
             <ProFormText
               name="destination"
               label={intl.formatMessage({ id: 'pages.proxies.destination' })}
-              placeholder="http://127.0.0.1:123/api"
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.destination.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage({ id: 'pages.proxies.destination.placeholder' })}
             />
           </>
         ) : (
           <>
+            <ProFormMoney
+              name="remotePort"
+              label={intl.formatMessage({ id: 'pages.proxies.remotePort' })}
+              fieldProps={{
+                moneySymbol: false,
+              }}
+              min={0}
+              max={65535}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.remotePort.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage({ id: 'pages.proxies.remotePort.placeholder' })}
+              tooltip={intl.formatMessage({ id: 'pages.proxies.remotePort.tooltip' })}
+            />
             <ProFormText
               name="localIP"
               label={intl.formatMessage({ id: 'pages.proxies.localIP' })}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.localIP.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage({ id: 'pages.proxies.localIP.placeholder' })}
             />
             <ProFormMoney
               name="localPort"
@@ -222,6 +316,13 @@ const Forwards: React.FC = () => {
               }}
               min={0}
               max={65535}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'pages.proxies.localPort.required' }),
+                },
+              ]}
+              placeholder={intl.formatMessage({ id: 'pages.proxies.localPort.placeholder' })}
             />
           </>
         )}
