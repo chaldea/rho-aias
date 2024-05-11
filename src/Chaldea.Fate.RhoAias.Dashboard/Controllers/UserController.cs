@@ -51,7 +51,8 @@ public class UserController : ControllerBase
 		{
 			return new LoginResultDto
 			{
-				Status = "error"
+				Status = "error",
+				Type = dto.Type
 			};
 		}
 
@@ -61,13 +62,15 @@ public class UserController : ControllerBase
 			return new LoginResultDto
 			{
 				Status = "ok",
-				Token = token
+				Token = token,
+				Type = dto.Type
 			};
 		}
 
 		return new LoginResultDto
 		{
-			Status = "error"
+			Status = "error",
+			Type = dto.Type
 		};
 	}
 
