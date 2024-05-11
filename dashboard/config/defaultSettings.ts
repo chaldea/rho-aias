@@ -9,7 +9,7 @@ const Settings: ProLayoutProps & {
 } = {
   navTheme: 'light',
   // 拂晓蓝
-  colorPrimary: '#1890ff',
+  colorPrimary: '#0086C9',
   layout: 'side',
   contentWidth: 'Fluid',
   fixedHeader: false,
@@ -25,7 +25,7 @@ const Settings: ProLayoutProps & {
     //https://procomponents.ant.design/components/layout#%E9%80%9A%E8%BF%87-token-%E4%BF%AE%E6%94%B9%E6%A0%B7%E5%BC%8F
     sider: {
       // colorMenuBackground: '#FFFFFF',
-      colorMenuBackground: '#2E4051',
+      colorMenuBackground: '#065986',
       colorBgCollapsedButton: '#FFFFFF',
       colorTextMenu: '#FFFFFF',
       colorTextMenuSelected: '#FFFFFF',
