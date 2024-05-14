@@ -111,6 +111,7 @@ const Clients: React.FC = () => {
             key="button"
             icon={<PlusOutlined />}
             type="primary"
+            size="middle"
             onClick={() => {
               setOpen(true);
             }}

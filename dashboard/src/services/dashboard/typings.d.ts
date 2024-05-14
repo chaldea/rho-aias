@@ -86,6 +86,12 @@ declare namespace API {
 
   type ProxyType = 1 | 2 | 3 | 4;
 
+  type Result = {
+    isSuccess?: boolean;
+    code?: number;
+    message?: string;
+  };
+
   type SummaryDto = {
     version?: string;
     bindPort?: number;
@@ -93,6 +99,12 @@ declare namespace API {
     httpsPort?: number;
     proxies?: number;
     certs?: number;
+  };
+
+  type UserChangePasswordDto = {
+    oldPassword?: string;
+    newPassword?: string;
+    confirmedPassword?: string;
   };
 
   type UserProfileDto = {
