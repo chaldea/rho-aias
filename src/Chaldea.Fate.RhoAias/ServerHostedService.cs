@@ -1,47 +1,63 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Chaldea.Fate.RhoAias;
 
-internal class ServerHostedService : IHostedService
+internal class ServerHostedService : BackgroundService
 {
 	private readonly ILogger<ServerHostedService> _logger;
 	private readonly IOptions<RhoAiasServerOptions> _options;
 	private readonly IClientManager _clientManager;
-	private readonly INotificationManager _notificationManager;
+	private readonly IHubContext<UserHub> _userHubContext;
+	private readonly IMetrics _metrics;
 
 	public ServerHostedService(
 		ILogger<ServerHostedService> logger,
 		IOptions<RhoAiasServerOptions> options, 
-		IClientManager clientManager, 
-		INotificationManager notificationManager)
+		IClientManager clientManager,
+		IHubContext<UserHub> userHubContext,
+		IMetrics metrics)
 	{
 		_logger = logger;
 		_options = options;
 		_clientManager = clientManager;
-		_notificationManager = notificationManager;
+		_userHubContext = userHubContext;
+		_metrics = metrics;
 	}
 
-	public async Task StartAsync(CancellationToken cancellationToken)
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	{
+		await InitializeAsync(stoppingToken);
+		await MonitorAsync(stoppingToken);
+	}
+
+	private async Task InitializeAsync(CancellationToken stoppingToken)
 	{
 		_logger.LogInformation("Initialize metrics collector.");
 		await _clientManager.InitClientMetricsAsync();
 		_logger.LogInformation("Initialize client data.");
 		await _clientManager.ResetClientStatusAsync();
-		if (_options.Value.EnableNotification)
-		{
-			_logger.LogInformation("Start notification.");
-			_notificationManager.StartNotification();
-		}
 	}
 
-	public async Task StopAsync(CancellationToken cancellationToken)
+	private async Task MonitorAsync(CancellationToken stoppingToken)
 	{
-		if (_options.Value.EnableNotification)
+		if (_options.Value.EnableMetricsMonitor)
 		{
-			_logger.LogInformation("Stop notification.");
-			await _notificationManager.StopNotificationAsync();
+			while (!stoppingToken.IsCancellationRequested)
+			{
+				try
+				{
+					await Task.Delay(3000, stoppingToken);
+					var metrics = _metrics.GetMetrics();
+					await _userHubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, $"Error occurred executing MetricsMonitor.");
+				}
+			}
 		}
 	}
 }

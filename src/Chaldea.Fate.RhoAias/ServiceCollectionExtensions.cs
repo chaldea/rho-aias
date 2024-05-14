@@ -32,9 +32,9 @@ public static class ServiceCollectionExtensions
 		services.AddSingleton<IUserManager, UserManager>();
 		services.AddSingleton<IDnsProviderManager, DnsProviderManager>();
 		services.AddSingleton<IMetrics, Metrics>();
-		services.AddSingleton<INotificationManager, NotificationManager>();
-		services.AddHostedService<ServerHostedService>();
 		services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
+		services.AddHostedService<ServerHostedService>();
+		services.AddHostedService<CertRenewJob>();
 		return services;
     }
 
