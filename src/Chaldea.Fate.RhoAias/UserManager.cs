@@ -5,6 +5,7 @@ public interface IUserManager
 	Task CreateAsync(User user);
 	Task<User?> GetAsync(Guid id);
 	Task<User?> GetAsync(string name);
+	Task UpdateAsync(User entity);
 }
 
 internal class UserManager : IUserManager
@@ -34,5 +35,10 @@ internal class UserManager : IUserManager
 	public async Task<User?> GetAsync(Guid id)
 	{
 		return await _userRepository.GetAsync(x => x.Id == id);
+	}
+
+	public async Task UpdateAsync(User entity)
+	{
+		await _userRepository.UpdateAsync(entity);
 	}
 }

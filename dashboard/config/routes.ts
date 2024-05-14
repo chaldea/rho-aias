@@ -42,6 +42,10 @@ export default [
     component: './dns-providers',
   },
   {
+    path: '/user/account',
+    component: './user/account',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [

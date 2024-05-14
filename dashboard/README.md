@@ -1,24 +1,21 @@
-# Ant Design Pro
+# Rho-Aias Dashboard
 
-This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
+This project is the Dashboard project of the Rho-Aias. Which is a front-end project based on react.
 
 ## Environment Prepare
+
+Install `pnpm`:
+```bash
+npm install -g pnpm
+```
 
 Install `node_modules`:
 
 ```bash
-npm install
-```
-
-or
-
-```bash
-yarn
+pnpm install
 ```
 
 ## Provided Scripts
-
-Ant Design Pro provides some useful script to help you quick start and build with web project, code style check and test.
 
 Scripts provided in `package.json`. It's safe to modify or add additional script:
 
@@ -34,24 +31,6 @@ npm start
 npm run build
 ```
 
-### Check code style
-
-```bash
-npm run lint
-```
-
-You can also use script to auto fix some lint error:
-
-```bash
-npm run lint:fix
-```
-
-### Test code
-
-```bash
-npm test
-```
-
 ## More
 
-You can view full document on our [official website](https://pro.ant.design). And welcome any feedback in our [github](https://github.com/ant-design/ant-design-pro).
+This project uses [antd-pro](https://procomponents.ant.design) as the UI framework, which can be found in the [documentation](https://procomponents.ant.design/docs).

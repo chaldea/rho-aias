@@ -30,12 +30,20 @@ public struct Result
     }
 }
 
+/*
+ * Module
+ * 100-199: clients
+ * 200-299: proxies
+ * 300-399: certs
+ * 400-499: dns
+ * 500-599: user
+ */
 internal enum ErrorCode
 {
 	[Description("Invalid client token, please update the token.")]
-	InvalidClientToken = 1,
+	InvalidClientToken = 100,
 	[Description("Invalid client version, server version: {0}, client version: {1}.")]
-	InvalidClientVersion = 1,
+	InvalidClientVersion = 102,
 }
 
 internal static class ErrorCodeExtensions

@@ -25,6 +25,13 @@ public class UserProfileDto
 	public string Avatar { get; set; }
 }
 
+public class UserChangePasswordDto
+{
+	public string OldPassword { get; set; }
+	public string NewPassword { get; set; }
+	public string ConfirmedPassword { get; set; }
+}
+
 [Authorize(Roles = Role.User)]
 [ApiController]
 [Route("api/dashboard/user")]
@@ -81,5 +88,20 @@ public class UserController : ControllerBase
 		var id = User.UserId();
 		var user = await _userManager.GetAsync(id);
 		return _mapper.Map<User, UserProfileDto>(user);
+	}
+
+	[HttpPost]
+	[Route("change-password")]
+	public async Task<Result> ChangePasswordAsync(UserChangePasswordDto dto)
+	{
+		var id = User.UserId();
+		var user = await _userManager.GetAsync(id);
+		if (!user.VerifyPassword(dto.OldPassword))
+		{
+			return Result.Error((500, "Password error."));
+		}
+		user.HashPassword(dto.NewPassword);
+		await _userManager.UpdateAsync(user);
+		return Result.Success();
 	}
 }
