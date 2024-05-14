@@ -12,6 +12,7 @@ public interface ICertManager
 	Task<List<Cert>> GetCertListAsync();
 	X509Certificate2? GetCert(string domain);
 	Task IssueCertAsync(Guid id);
+	Task RenewAllAsync();
 }
 
 public interface IAcmeProvider
@@ -98,7 +99,30 @@ internal class CertManager : ICertManager
 		var cert = await _certRepository.GetAsync(x => x.Id == id);
 		if (cert == null) return;
 		await _certRepository.DeleteAsync(cert);
-		// todo: remove cert jon.
+		// todo: remove cert job with cancellationToken, need to refactor.
+		_certJobs.TryRemove(cert.Domain, out _);
+	}
+
+	public async Task RenewAllAsync()
+	{
+		_logger.LogInformation("Check certs is expired.");
+		// get all expired certs
+		var certs = await _certRepository.GetListAsync(x => x.Expires < DateTime.UtcNow);
+		if (certs.Count > 0)
+		{
+			foreach (var cert in certs)
+			{
+				_logger.LogInformation($"Cert {cert.Domain} is expired, renew it.");
+				if (_certJobs.ContainsKey(cert.Domain))
+				{
+					return;
+				}
+				_certJobs.TryAdd(cert.Domain, Task.Factory.StartNew(async () =>
+				{
+					await IssueCertAsync(cert);
+				}));
+			}
+		}
 	}
 
 	private async Task IssueCertAsync(Cert cert)
