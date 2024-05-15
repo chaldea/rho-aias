@@ -1,34 +1,33 @@
 ﻿using System.Text.Json;
-using MessagePack;
+using System.Text.Json.Serialization;
 using Yarp.ReverseProxy.Configuration;
 
 namespace Chaldea.Fate.RhoAias;
 
 public enum ProxyType
 {
-	HTTP = 1,
+	HTTP = 0,
 	[Obsolete("Use http only.")]
-	HTTPS = 2,
-	TCP = 3,
-	UDP = 4,
+	HTTPS = 1,
+	TCP = 2,
+	UDP = 3,
 }
 
-[MessagePackObject]
 public class Proxy
 {
-    [Key(0)] public Guid Id { get; set; }
-    [Key(1)] public string Name { get; set; }
-    [Key(2)] public ProxyType Type { get; set; }
-    [Key(3)] public string LocalIP { get; set; }
-    [Key(4)] public int LocalPort { get; set; }
-    [Key(5)] public int RemotePort { get; set; }
-    [Key(6)] public string? Path { get; set; }
-    [Key(7)] public string[]? Hosts { get; set; }
-	[Key(8)] public string? Destination { get; set; }
-	[Key(9)] public string? RouteConfig { get; set; }
-    [Key(10)] public string? ClusterConfig { get; set; }
-	[IgnoreMember] public Guid ClientId { get; set; }
-	[IgnoreMember] public Client? Client { get; set; }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public ProxyType Type { get; set; }
+    public string LocalIP { get; set; }
+    public int LocalPort { get; set; }
+    public int RemotePort { get; set; }
+    public string? Path { get; set; }
+    public string[]? Hosts { get; set; }
+	public string? Destination { get; set; }
+	public string? RouteConfig { get; set; }
+    public string? ClusterConfig { get; set; }
+	[JsonIgnore] public Guid ClientId { get; set; }
+	[JsonIgnore] public Client? Client { get; set; }
 
 	public Proxy()
 	{

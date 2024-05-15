@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
         services.Configure<RhoAiasServerOptions>(configuration.GetSection("RhoAias:Server"));
         services.AddReverseProxy().LoadFromMemory();
         services.AddHttpContextAccessor();
-        services.AddSignalR().AddMessagePackProtocol();
+        services.AddSignalR();
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
 		services.AddSingleton<IForwarderManager, ForwarderManager>();
 		services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));

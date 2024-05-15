@@ -25,16 +25,23 @@ internal class CertRenewJob : BackgroundService
 		if (_options.Value.AutoRenewCerts)
 		{
 			using PeriodicTimer timer = new(TimeSpan.FromHours(1));
-			while (await timer.WaitForNextTickAsync(stoppingToken))
+			try
 			{
-				try
+				while (await timer.WaitForNextTickAsync(stoppingToken))
 				{
-					await _certManager.RenewAllAsync();
+					try
+					{
+						await _certManager.RenewAllAsync();
+					}
+					catch (Exception ex)
+					{
+						_logger.LogError(ex, "");
+					}
 				}
-				catch (OperationCanceledException)
-				{
-					_logger.LogInformation("Timed Hosted Service is stopping.");
-				}
+			}
+			catch (OperationCanceledException)
+			{
+				_logger.LogInformation("CertRenewJob Service is stopping.");
 			}
 		}
 	}

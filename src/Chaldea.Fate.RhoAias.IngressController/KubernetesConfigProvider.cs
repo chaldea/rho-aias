@@ -22,6 +22,7 @@ internal class KubernetesConfigProvider : IUpdateConfig
 		foreach (var route in routes)
 		{
 			var cluster = clusters.FirstOrDefault(x => x.ClusterId == route.ClusterId);
+			if(cluster == null) continue;
 			var proxy = new Proxy(route, cluster);
 			proxies.Add(proxy);
 		}
