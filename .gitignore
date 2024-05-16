@@ -261,3 +261,4 @@ Acme.BookStore/Logs/*
 
 # Use abp install-libs to restore.
 **/wwwroot/libs/*
+**/dist
