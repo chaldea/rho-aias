@@ -45,18 +45,25 @@ internal class ServerHostedService : BackgroundService
 	{
 		if (_options.Value.EnableMetricsMonitor)
 		{
-			while (!stoppingToken.IsCancellationRequested)
+			using PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
+			try
 			{
-				try
+				while (await timer.WaitForNextTickAsync(stoppingToken))
 				{
-					await Task.Delay(3000, stoppingToken);
-					var metrics = _metrics.GetMetrics();
-					await _userHubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
+					try
+					{
+						var metrics = _metrics.GetMetrics();
+						await _userHubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
+					}
+					catch (Exception ex)
+					{
+						_logger.LogError(ex, "");
+					}
 				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex, $"Error occurred executing MetricsMonitor.");
-				}
+			}
+			catch (OperationCanceledException)
+			{
+				_logger.LogInformation("MetricsMonitor Service is stopping.");
 			}
 		}
 	}

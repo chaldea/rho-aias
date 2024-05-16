@@ -2,7 +2,6 @@
 
 public class RhoAiasIngressControllerOptions
 {
-	public bool Enable { get; set; } = false;
 	public string ControllerClass { get; set; } = "chaldea.cn/ingress-rho-aias";
 	public bool ServerCertificates { get; set; } = false;
 	public string DefaultSslCertificate { get; set; } = "rho-aias/rho-aias-ingress-tls";

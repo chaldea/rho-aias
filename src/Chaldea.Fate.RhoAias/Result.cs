@@ -1,15 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
-using MessagePack;
 
 namespace Chaldea.Fate.RhoAias;
 
-[MessagePackObject]
 public struct Result
 {
-	[Key(0)] public bool IsSuccess { get; set; }
-	[Key(1)] public int Code { get; set; }
-	[Key(2)] public string? Message { get; set; }
+	public bool IsSuccess { get; set; }
+	public int Code { get; set; }
+	public string? Message { get; set; }
 
 	public static Result Success()
     {

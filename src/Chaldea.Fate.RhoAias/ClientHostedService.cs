@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -75,8 +75,11 @@ internal class ClientConnection : IClientConnection
 				config.Transports = HttpTransportType.WebSockets;
 				config.AccessTokenProvider = () => Task.FromResult(_options.Token);
 			})
+			.AddJsonProtocol(x =>
+			{
+				x.PayloadSerializerOptions.TypeInfoResolver = SourceGenerationContext.Default;
+			})
 			.WithAutomaticReconnect(new SignalRRetryPolicy())
-			.AddMessagePackProtocol()
 			.Build();
 		_connection.Reconnecting += Connection_Reconnecting;
 		_connection.Reconnected += Connection_Reconnected;
@@ -92,9 +95,9 @@ internal class ClientConnection : IClientConnection
 			await _connection.StartAsync(cancellationToken);
 			await RegisterAsync(cancellationToken);
 		}
-		catch
+		catch(Exception ex)
 		{
-			_logger.LogError("Failed to connect to the server.");
+			_logger.LogError(ex, "Failed to connect to the server.");
 			Environment.Exit(0);
 		}
 	}
