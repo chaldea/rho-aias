@@ -14,5 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check Building ⚙
+        working-directory: ./docker
         run: |
           docker compose build --build-arg BUILD_VERSION=${VERSION}
