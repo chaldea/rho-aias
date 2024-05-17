@@ -23,8 +23,6 @@ FROM base AS run
 ENV RhoAias__Server__Bridge=8024
 ENV RhoAias__Server__Http=80
 ENV RhoAias__Server__Https=443
-ENV RhoAias__Server__EnableMetricsMonitor=true
-ENV RhoAias__Server__AutoRenewCerts=true
 VOLUME /app/data
 VOLUME /app/certs
 WORKDIR /app

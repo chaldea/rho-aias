@@ -14,6 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check Building ⚙
+        working-directory: ./docker
         run: |
-          docker build -f docker/Dockerfile-Server -t chaldea/rhoaias-server:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
-          docker build -f docker/Dockerfile-Client -t chaldea/rhoaias-client:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
+          docker compose build --build-arg BUILD_VERSION=${VERSION}

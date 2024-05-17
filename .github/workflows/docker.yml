@@ -21,20 +21,19 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Docker Build
+        working-directory: ./docker
         run: |
           echo "Build Version: ${VERSION}"
-          docker build -f docker/Dockerfile-Server -t chaldea/rhoaias-server:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
-          docker build -f docker/Dockerfile-Client -t chaldea/rhoaias-client:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
-          docker build -f docker/Dockerfile-Ingress -t chaldea/rhoaias-ingress:${VERSION} --build-arg="BUILD_VERSION=${VERSION}" .
+          docker compose build --build-arg BUILD_VERSION=${VERSION}
       - name: Docker Push
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin ${{secrets.DOCKER_REPOSITORY}}
+          docker push chaldea/rhoaias-server
+          docker push chaldea/rhoaias-client
+          docker push chaldea/rhoaias-ingress
+          docker tag chaldea/rhoaias-server chaldea/rhoaias-server:${VERSION}
+          docker tag chaldea/rhoaias-client chaldea/rhoaias-client:${VERSION}
+          docker tag chaldea/rhoaias-ingress chaldea/rhoaias-ingress:${VERSION}
           docker push chaldea/rhoaias-server:${VERSION}
           docker push chaldea/rhoaias-client:${VERSION}
           docker push chaldea/rhoaias-ingress:${VERSION}
-          docker tag chaldea/rhoaias-server:${VERSION} chaldea/rhoaias-server:latest
-          docker tag chaldea/rhoaias-client:${VERSION} chaldea/rhoaias-client:latest
-          docker tag chaldea/rhoaias-ingress:${VERSION} chaldea/rhoaias-ingress:latest
-          docker push chaldea/rhoaias-server:latest
-          docker push chaldea/rhoaias-client:latest
-          docker push chaldea/rhoaias-ingress:latest

@@ -15,7 +15,7 @@ internal class JwtBearerTokenManager : ITokenManager
 		_options = options;
 	}
 
-	public Task<string> CreateAsync(Guid userId, string role, DateTime expires)
+	public Task<Token> CreateAsync(Guid userId, string role, int expires)
 	{
 		var claims = new List<Claim>
 		{
@@ -28,13 +28,18 @@ internal class JwtBearerTokenManager : ITokenManager
 		var tokenDescriptor = new SecurityTokenDescriptor
 		{
 			Subject = new ClaimsIdentity(claims),
-			Expires = expires,
+			Expires = DateTime.UtcNow.AddSeconds(expires),
 			Audience = _options.Value.Audience,
 			Issuer = _options.Value.Audience,
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 		};
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		var tokenString = tokenHandler.WriteToken(token);
-		return Task.FromResult(tokenString);
+		return Task.FromResult(new Token
+		{
+			AccessToken = tokenString,
+			ExpiresIn = expires,
+			TokenType = "Bearer"
+		});
 	}
 }
