@@ -17,7 +17,6 @@ services:
       RhoAias__Server__Bridge: 8024
       RhoAias__Server__Http: 80
       RhoAias__Server__Https: 443
-      RhoAias__Server__EnableNotification: true
     ports:
       - 8024:8024
     volumes:
