@@ -20,24 +20,43 @@ internal class DashboardDataSeeder : IDataSeeder
 
 	public async Task SeedAsync()
 	{
-		// create default user
-		var user = new User
-		{
-			Id = Guid.NewGuid(),
-			UserName = _options.Value.UserName
-		};
-		user.HashPassword(_options.Value.Password);
-		await _userManager.CreateAsync(user);
+		await CreateDefaultUserAsync();
+		await CreateDefaultClientAsync();
+	}
 
+	private async Task CreateDefaultUserAsync()
+	{
+		if (_options.Value.CreateDefaultUser)
+		{
+			var user = new User
+			{
+				Id = Guid.NewGuid(),
+				UserName = _options.Value.UserName
+			};
+			user.HashPassword(_options.Value.Password);
+			await _userManager.CreateAsync(user);
+		}
+	}
+
+	private async Task CreateDefaultClientAsync()
+	{
 		if (_options.Value.CreateDefaultClient)
 		{
 			var client = new Client()
 			{
-				Id = Guid.Parse("7e89c9be-4278-4acf-b5fb-a1ec9a67452c"),
+				Id = Guid.Parse("375FC436-4195-4839-B7E7-7FDF03AA7FB1"),
 				Name = "default",
-				Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50IiwibmFtZWlkIjoiN2U4OWM5YmUtNDI3OC00YWNmLWI1ZmItYTFlYzlhNjc0NTJjIiwibmJmIjoxNzEzOTQ2ODE5LCJleHAiOjIwMjk0Nzk2MTksImlhdCI6MTcxMzk0NjgxOSwiaXNzIjoiUmhvQWlhcyIsImF1ZCI6IlJob0FpYXMifQ.uBWI6GSf74JzdKSdisXtxwUkVEjyqP0JnKCJ2NYhGi4"
+				Token = "NsRfN5VBOUi353fA6psQ",
 			};
 			await _clientManager.CreateDefaultClientAsync(client);
+
+			var ingress = new Client()
+			{
+				Id = Guid.Parse("64516AAE-FA74-479C-B4EA-562094BA821F"),
+				Name = "ingress",
+				Token = "rmpRZHT6nEe06lYglLqCHw",
+			};
+			await _clientManager.CreateDefaultClientAsync(ingress);
 		}
 	}
 }

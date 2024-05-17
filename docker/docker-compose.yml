@@ -1,5 +1,3 @@
-version: '3.7'
-
 x-rhoaias-build: &rhoaias-build
   context: ../
   args:
@@ -32,10 +30,26 @@ services:
       <<: *rhoaias-build
     environment:
       RhoAias__Client__ServerUrl: http://rhoaias-server:8024
-      RhoAias__Client__Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY2xpZW50IiwibmFtZWlkIjoiN2U4OWM5YmUtNDI3OC00YWNmLWI1ZmItYTFlYzlhNjc0NTJjIiwibmJmIjoxNzEzOTQ2ODE5LCJleHAiOjIwMjk0Nzk2MTksImlhdCI6MTcxMzk0NjgxOSwiaXNzIjoiUmhvQWlhcyIsImF1ZCI6IlJob0FpYXMifQ.uBWI6GSf74JzdKSdisXtxwUkVEjyqP0JnKCJ2NYhGi4
+      RhoAias__Client__Token: NsRfN5VBOUi353fA6psQ
     depends_on:
       - rhoaias-server
-
+  
+  rhoaias-ingress:
+    container_name: rhoaias-ingress
+    image: chaldea/rhoaias-ingress
+    restart: always
+    build:
+      dockerfile: ./docker/Dockerfile-Ingress
+      <<: *rhoaias-build
+    environment:
+      RhoAias__Client__ServerUrl: http://rhoaias-server:8024
+      RhoAias__Client__Token: rmpRZHT6nEe06lYglLqCHw
+    volumes:
+      - rhoaias_ingress_config:/root/.kube
+    depends_on:
+      - rhoaias-server
+    
 volumes: 
   rhoaias_server_data:
   rhoaias_server_certs:
+  rhoaias_ingress_config:

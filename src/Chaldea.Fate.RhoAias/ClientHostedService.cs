@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -49,36 +50,38 @@ public interface IClientConnection
 
 internal class ClientConnection : IClientConnection
 {
-	private readonly ILogger<ClientHostedService> _logger;
+	private readonly Client _client;
 	private readonly IConfiguration _configuration;
 	private readonly HubConnection _connection;
+	private readonly HttpClient _httpClient;
+	private readonly ILogger<ClientHostedService> _logger;
 	private readonly RhoAiasClientOptions _options;
-	private readonly Client _client;
+	private Token? _token;
 
-	public ClientConnection(ILogger<ClientHostedService> logger, IOptions<RhoAiasClientOptions> options, IConfiguration configuration)
+	public ClientConnection(
+		ILogger<ClientHostedService> logger, 
+		IOptions<RhoAiasClientOptions> options,
+		IConfiguration configuration)
 	{
 		var version = Utilities.GetVersionName();
 		logger.LogInformation($"RhoAias Client Version: {version}");
-		logger.LogInformation($"RhoAias Client Token:");
-		logger.LogInformation($"{options.Value.Token}");
+		logger.LogInformation($"RhoAias Client Key: {options.Value.Token}");
 		_logger = logger;
 		_configuration = configuration;
 		_options = options.Value;
 		_client = new Client
 		{
-			Version = version,
+			Version = version
 		};
+		_httpClient = new HttpClient();
 		_connection = new HubConnectionBuilder()
 			.WithUrl(new Uri($"{_options.ServerUrl}/clienthub"), config =>
 			{
 				config.SkipNegotiation = true;
 				config.Transports = HttpTransportType.WebSockets;
-				config.AccessTokenProvider = () => Task.FromResult(_options.Token);
+				config.AccessTokenProvider = GetTokenAsync;
 			})
-			.AddJsonProtocol(x =>
-			{
-				x.PayloadSerializerOptions.TypeInfoResolver = SourceGenerationContext.Default;
-			})
+			.AddJsonProtocol(x => { x.PayloadSerializerOptions.TypeInfoResolver = SourceGenerationContext.Default; })
 			.WithAutomaticReconnect(new SignalRRetryPolicy())
 			.Build();
 		_connection.Reconnecting += Connection_Reconnecting;
@@ -95,7 +98,7 @@ internal class ClientConnection : IClientConnection
 			await _connection.StartAsync(cancellationToken);
 			await RegisterAsync(cancellationToken);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Failed to connect to the server.");
 			Environment.Exit(0);
@@ -124,9 +127,14 @@ internal class ClientConnection : IClientConnection
 		await RegisterAsync(CancellationToken.None);
 	}
 
-	private Task Connection_Closed(Exception? arg)
+	private Task Connection_Closed(Exception? ex)
 	{
 		_logger.LogError("Connection closed");
+		if (ex != null && ex.GetBaseException().Message.Contains("401"))
+		{
+			// 401 error clean local token
+			_token = null;
+		}
 		return Task.CompletedTask;
 	}
 
@@ -189,5 +197,34 @@ internal class ClientConnection : IClientConnection
 		var dnsEndPoint = new DnsEndPoint(host, port);
 		await socket.ConnectAsync(dnsEndPoint);
 		return socket;
+	}
+
+	private async Task<string?> GetTokenAsync()
+	{
+		if (_token != null)
+		{
+			return _token.AccessToken;
+		}
+		var response = await _httpClient.SendAsync(new HttpRequestMessage
+		{
+			Method = new HttpMethod("TOKEN"),
+			RequestUri = new Uri($"{_options.ServerUrl}/?token_key={_options.Token}", UriKind.RelativeOrAbsolute)
+		});
+
+		if (response.IsSuccessStatusCode)
+		{
+			_token = await response.Content.ReadFromJsonAsync<Token>();
+			if (_token != null)
+			{
+				_logger.LogInformation($"RhoAias Client Token: {_token.AccessToken}");
+				return _token.AccessToken;
+			}
+		}
+		else
+		{
+			var result = await response.Content.ReadFromJsonAsync<Result>();
+			_logger.LogError(result.Message);
+		}
+		return null;
 	}
 }

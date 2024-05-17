@@ -11,6 +11,7 @@ public interface IClientManager
 	Task<List<Client>> GetClientListAsync();
 	Task InitClientMetricsAsync();
 	Task ResetClientStatusAsync();
+	Task<Client?> GetClientAsync(string key);
 }
 
 internal class ClientManager : IClientManager
@@ -66,7 +67,7 @@ internal class ClientManager : IClientManager
 			return;
 		}
 		entity.Id = Guid.NewGuid();
-		entity.Token = await _tokenManager.CreateAsync(entity.Id, Role.Client, DateTime.UtcNow.AddYears(10));
+		entity.GenTokenKey();
 		await _clientRepository.InsertAsync(entity);
 		_metrics.UpDownClientTotal(1);
 	}
@@ -120,5 +121,10 @@ internal class ClientManager : IClientManager
 			client.Status = false;
 		}
 		await _clientRepository.UpdateManyAsync(clients);
+	}
+
+	public async Task<Client?> GetClientAsync(string key)
+	{
+		return await _clientRepository.GetAsync(x => x.Token == key);
 	}
 }

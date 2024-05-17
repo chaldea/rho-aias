@@ -8,12 +8,11 @@ WORKDIR /build/src/Chaldea.Fate.RhoAias.Client
 RUN dotnet publish Chaldea.Fate.RhoAias.Client.csproj -c Release -o /dist \
     /p:AssemblyVersion=$BUILD_VERSION \
     /p:Version=$BUILD_VERSION \
-    /p:IngressEnable=true \
-    /p:AssemblyName=RhoAiasIngress
+    /p:IngressEnable=true
 
 FROM base AS run
 ENV RhoAias__Client__ServerUrl=
 ENV RhoAias__Client__Token=
 WORKDIR /app
 COPY --from=build /dist .
-ENTRYPOINT ["dotnet", "RhoAiasIngress.dll"]
+ENTRYPOINT ["dotnet", "RhoAiasClient.dll"]

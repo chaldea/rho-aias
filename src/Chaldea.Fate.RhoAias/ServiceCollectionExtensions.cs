@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
     {
         app.UseWebSockets();
         app.UseMiddleware<ForwarderMiddleware>();
+        app.UseMiddleware<TokenMiddleware>();
         if (app.Properties.TryGetValue(GlobalEndpointRouteBuilder, out var obj))
         {
             var endpoint = obj as IEndpointRouteBuilder;

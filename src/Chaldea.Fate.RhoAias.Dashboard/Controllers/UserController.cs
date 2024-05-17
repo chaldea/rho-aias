@@ -65,11 +65,11 @@ public class UserController : ControllerBase
 
 		if (user.VerifyPassword(dto.Password))
 		{
-			var token = await _tokenManager.CreateAsync(user.Id, Role.User, DateTime.UtcNow.AddHours(2));
+			var token = await _tokenManager.CreateAsync(user.Id, Role.User, 7200);
 			return new LoginResultDto
 			{
 				Status = "ok",
-				Token = token,
+				Token = token.AccessToken,
 				Type = dto.Type
 			};
 		}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
+using System.Text.RegularExpressions;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -13,6 +14,11 @@ public class Client
     public string? ConnectionId { get; set; }
     public bool Status { get; set; }
     public ICollection<Proxy>? Proxies { get; set; }
+
+    public void GenTokenKey()
+    {
+		Token = Regex.Replace(Convert.ToBase64String(Id.ToByteArray()), "[/+=]", "");
+	}
 
     public Result VersionCheck()
     {
