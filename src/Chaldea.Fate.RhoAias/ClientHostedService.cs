@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
@@ -222,8 +223,12 @@ internal class ClientConnection : IClientConnection
 		}
 		else
 		{
-			var result = await response.Content.ReadFromJsonAsync<Result>();
-			_logger.LogError(result.Message);
+			var resultJson = await response.Content.ReadAsStringAsync();
+			if (!string.IsNullOrEmpty(resultJson))
+			{
+				var result = JsonSerializer.Deserialize<Result>(resultJson);
+				_logger.LogError(result.Message);
+			}
 		}
 		return null;
 	}
