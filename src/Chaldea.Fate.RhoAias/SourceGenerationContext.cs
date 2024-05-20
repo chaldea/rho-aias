@@ -6,6 +6,7 @@ namespace Chaldea.Fate.RhoAias;
 [JsonSerializable(typeof(Proxy))]
 [JsonSerializable(typeof(Result))]
 [JsonSerializable(typeof(List<Proxy>))]
+[JsonSerializable(typeof(Token))]
 internal partial class SourceGenerationContext : JsonSerializerContext
 {
 }
