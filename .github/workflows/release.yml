@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - '*'
-env:
-  VERSION: 1.0.0
 
 jobs:
   release:
@@ -46,15 +44,13 @@ jobs:
           sudo apt update
           sudo apt install -y clang llvm binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu zlib1g-dev:arm64
       - name: Get Version
-        run: |
-          TAG=$(git describe --tags --abbrev=0 --match=v*[0-9.] || echo v${VERSION})
-          if [ $? -eq 0 ]; then
-            VERSION=${TAG:1}
-          fi
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+        id: get_tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
       - name: Dotnet Publish
         run: |
-          dotnet publish src/Chaldea.Fate.RhoAias.Client/Chaldea.Fate.RhoAias.Client.csproj -o dist -r ${{ matrix.rid }} -p:PublishAot=true -p:AssemblyVersion=${VERSION} -p:Version=${VERSION}
+          dotnet publish src/Chaldea.Fate.RhoAias.Client/Chaldea.Fate.RhoAias.Client.csproj -o dist -r ${{ matrix.rid }} -p:PublishAot=true -p:AssemblyVersion=${{ steps.get_tag.outputs.tag }} -p:Version=${{ steps.get_tag.outputs.tag }}
       - name: Upload Binaries
         uses: svenstaro/upload-release-action@v2
         with:
