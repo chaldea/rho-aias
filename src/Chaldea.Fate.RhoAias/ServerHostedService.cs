@@ -35,6 +35,7 @@ internal class ServerHostedService : BackgroundService
 
 	private async Task InitializeAsync(CancellationToken stoppingToken)
 	{
+		_logger.LogInformation($"Server Version: {Utilities.GetVersionName()}");
 		_logger.LogInformation("Initialize metrics collector.");
 		await _clientManager.InitClientMetricsAsync();
 		_logger.LogInformation("Initialize client data.");
