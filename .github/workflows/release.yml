@@ -6,7 +6,33 @@ on:
       - '*'
 
 jobs:
-  release:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Version
+        id: get_tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
+      - name: Docker Build
+        working-directory: ./docker
+        run: |
+          echo "Build Version: ${{ steps.get_tag.outputs.tag }}"
+          docker compose build --build-arg BUILD_VERSION=${{ steps.get_tag.outputs.tag }}
+      - name: Docker Push
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin ${{secrets.DOCKER_REPOSITORY}}
+          docker push chaldea/rhoaias-server
+          docker push chaldea/rhoaias-client
+          docker push chaldea/rhoaias-ingress
+          docker tag chaldea/rhoaias-server chaldea/rhoaias-server:${{ steps.get_tag.outputs.tag }}
+          docker tag chaldea/rhoaias-client chaldea/rhoaias-client:${{ steps.get_tag.outputs.tag }}
+          docker tag chaldea/rhoaias-ingress chaldea/rhoaias-ingress:${{ steps.get_tag.outputs.tag }}
+          docker push chaldea/rhoaias-server:${{ steps.get_tag.outputs.tag }}
+          docker push chaldea/rhoaias-client:${{ steps.get_tag.outputs.tag }}
+          docker push chaldea/rhoaias-ingress:${{ steps.get_tag.outputs.tag }}
+  binary:
     strategy:
       matrix:
         include:

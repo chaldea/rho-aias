@@ -214,7 +214,8 @@ internal class ClientConnection : IClientConnection
 
 		if (response.IsSuccessStatusCode)
 		{
-			_token = await response.Content.ReadFromJsonAsync<Token>();
+			var json = await response.Content.ReadAsStringAsync();
+			_token = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.Token);
 			if (_token != null)
 			{
 				_logger.LogInformation($"RhoAias Client Token: {_token.AccessToken}");
@@ -226,7 +227,7 @@ internal class ClientConnection : IClientConnection
 			var resultJson = await response.Content.ReadAsStringAsync();
 			if (!string.IsNullOrEmpty(resultJson))
 			{
-				var result = JsonSerializer.Deserialize<Result>(resultJson);
+				var result = JsonSerializer.Deserialize(resultJson, SourceGenerationContext.Default.Result);
 				_logger.LogError(result.Message);
 			}
 		}
