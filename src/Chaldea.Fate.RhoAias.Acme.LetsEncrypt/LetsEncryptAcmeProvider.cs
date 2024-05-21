@@ -53,7 +53,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 		var pfxBuilder = certificateChain.ToPfx(privateKey);
 		var pfx = pfxBuilder.Build("my-cert", certPassword);
 		var certPath = Utilities.EnsurePath(AppContext.BaseDirectory, opt.CertRootDirectory);
-		var certFile = $"{cert.TrimDomain()}.pfx";
+		var certFile = cert.GetFileName();
 		var certFullPath = Path.Combine(certPath, certFile);
 		if (File.Exists(certFullPath)) File.Delete(certFullPath);
 		await File.WriteAllBytesAsync(certFullPath, pfx);

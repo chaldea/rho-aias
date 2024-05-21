@@ -57,6 +57,11 @@ public class Cert
 	{
 		return Domain.Replace("*.", "");
 	}
+
+	public string GetFileName()
+	{
+		return $"{TrimDomain()}.pfx";
+	}
 }
 
 public class CertInfo
