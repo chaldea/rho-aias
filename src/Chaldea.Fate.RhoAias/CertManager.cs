@@ -85,13 +85,9 @@ internal class CertManager : ICertManager
 		}
 
 		cert = GetCertAsync(domain).GetAwaiter().GetResult();
-		if (cert == null)
-		{
-			return cert;
-		}
+		if (cert == null) return null;
 
-		_challengeCerts[domain] = cert;
-		return cert;
+		return _challengeCerts[domain] = cert;
 	}
 
 	public async Task RemoveCertAsync(Guid id)
@@ -163,11 +159,25 @@ internal class CertManager : ICertManager
 
 	private async Task<X509Certificate2?> GetCertAsync(string domain)
 	{
+		// precise matching
 		var certItem = await _certRepository.GetAsync(x => x.Domain == domain);
 		if (certItem == null)
 		{
-			// try to get wildcard cert
-			var wildcard = "*" + domain.Substring(domain.IndexOf("."));
+			/*
+			 * try to match wildcard cert
+			 * eg: chaldea.cn -> *.chaldea.cn
+			 *     sub.chaldea.cn -> *.chaldea.cn
+			 */
+			var wildcard = "";
+			var index = domain.IndexOf('.');
+			if (index != domain.LastIndexOf('.'))
+			{
+				wildcard = "*" + domain.Substring(index);
+			}
+			else
+			{
+				wildcard = "*." + domain;
+			}
 			certItem = await _certRepository.GetAsync(
 				x => x.Domain == wildcard && x.CertType == CertType.WildcardDomain);
 			if (certItem == null) return null;
