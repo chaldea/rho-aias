@@ -7,7 +7,7 @@ Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以�
 - 支持 http 反向代理，同时支持 Location 级别的内网转发。
 - 支持客户端无配置启动，可在 Dashboard 中动态下发转发规则配置。
 - 支持 TCP/UDP 端口转发，可以实现 SSH 连接内网，或者暴露内网端口。
-- 客户端支持 k8s-jngress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
+- 客户端支持 k8s-ingress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
 - 支持基于 ACME 的 Https 证书申请，支持证书续期。
 - 支持 Metric 监控，可接入基于 OpenTelemetry 标准的监控工具，如 Prometheus。
 
