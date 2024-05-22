@@ -3,6 +3,7 @@ import {
   deleteProxyRemove,
   getProxyList,
   postProxyUpdate,
+  postProxyUpdateStatus,
   putProxyCreate,
 } from '@/services/dashboard/proxy';
 import { defaultPageContainer } from '@/shared/page';
@@ -20,7 +21,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Button, Flex, Modal, Popconfirm, Space, Typography } from 'antd';
+import { Button, Flex, Modal, Space, Switch } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
 const proxyTypeEnum: any = {
@@ -79,6 +80,18 @@ const Forwards: React.FC = () => {
     {
       title: intl.formatMessage({ id: 'pages.proxies.forward' }),
       render: (text, record, _, action) => forwardAddr(record),
+    },
+    {
+      title: intl.formatMessage({ id: 'pages.proxies.status' }),
+      render: (text, record, _, action) => (
+        <Switch
+          checked={!record.disabled}
+          onChange={async (value: boolean) => {
+            await postProxyUpdateStatus({ id: record.id, disabled: !value });
+            actionRef.current?.reload();
+          }}
+        />
+      ),
     },
     {
       title: intl.formatMessage({ id: 'pages.proxies.client' }),

@@ -17,6 +17,13 @@ public class ProxyDto
 	public string? Destination { get; set; }
 	public Guid? ClientId { get; set; }
 	public ClientDto? Client { get; set; }
+	public bool? Disabled { get; set; }
+}
+
+public class ProxyStatusDto
+{
+	public Guid Id { get; set; }
+	public bool Disabled { get; set; }
 }
 
 [Authorize(Roles = Role.User)]
@@ -64,5 +71,12 @@ public class ProxyController : ControllerBase
 	{
 		var list = await _proxyManager.GetProxyListAsync();
 		return _mapper.Map<List<Proxy>, List<ProxyDto>>(list);
+	}
+
+	[HttpPost]
+	[Route("update-status")]
+	public async Task DisableAsync(ProxyStatusDto dto)
+	{
+		await _proxyManager.UpdateStatusAsync(dto.Id, dto.Disabled);
 	}
 }

@@ -95,6 +95,7 @@ export default {
   'pages.proxies.type.required': 'Forward type is required',
   'pages.proxies.type.placeholder': 'Select forward type',
   'pages.proxies.forward': 'Forward',
+  'pages.proxies.status': 'Status',
   'pages.proxies.client': 'Client',
   'pages.proxies.client.required': 'Client is required',
   'pages.proxies.client.placeholder': 'Select client',

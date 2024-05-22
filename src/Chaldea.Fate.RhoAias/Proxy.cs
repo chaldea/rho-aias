@@ -26,6 +26,7 @@ public class Proxy
 	public string? Destination { get; set; }
 	public string? RouteConfig { get; set; }
     public string? ClusterConfig { get; set; }
+    public bool Disabled { get; set; }
 	[JsonIgnore] public Guid ClientId { get; set; }
 	[JsonIgnore] public Client? Client { get; set; }
 
