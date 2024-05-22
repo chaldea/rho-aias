@@ -1,4 +1,6 @@
-﻿namespace Chaldea.Fate.RhoAias;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Chaldea.Fate.RhoAias;
 
 public interface IProxyManager
 {
@@ -8,6 +10,7 @@ public interface IProxyManager
 	Task<List<Proxy>> GetProxyListAsync();
 	Task<int> CountProxyAsync();
 	Task UpdateProxyListAsync(Guid clientId, List<Proxy> proxies);
+	Task UpdateStatusAsync(Guid id, bool disabled);
 }
 
 internal class ProxyManager : IProxyManager
@@ -30,20 +33,20 @@ internal class ProxyManager : IProxyManager
 		entity.Id = Guid.NewGuid();
 		entity.UpdateLocalIp();
 		await _proxyRepository.InsertAsync(entity);
-		var proxies = await _proxyRepository.GetListAsync(x => x.Id == entity.Id && x.Client.Status, x => x.Client);
-		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
+		// get with client
+		var proxy = await _proxyRepository.GetAsync(x => x.Id == entity.Id, y => y.Client);
+		_forwarderManager.Register(proxy);
 	}
 
 	public async Task UpdateProxyAsync(Proxy entity)
 	{
 		if (await _proxyRepository.AnyAsync(x => x.Name == entity.Name && x.Id != entity.Id)) return;
-		var item = await _proxyRepository.GetAsync(x => x.Id == entity.Id);
+		var item = await _proxyRepository.GetAsync(x => x.Id == entity.Id, y => y.Client);
 		if (item == null) return;
 		item.Update(entity);
 		item.UpdateLocalIp();
 		await _proxyRepository.UpdateAsync(item);
-		var proxies = await _proxyRepository.GetListAsync(x => x.Id == item.Id && x.Client.Status, x => x.Client);
-		if (proxies is { Count: > 0 }) _forwarderManager.Register(proxies);
+		_forwarderManager.Register(item);
 	}
 
 	public async Task RemoveProxyAsync(Guid id)
@@ -71,7 +74,7 @@ internal class ProxyManager : IProxyManager
 	{
 		// serverProxies is from server db.
 		var serverProxies = await _proxyRepository.GetListAsync(x => x.ClientId == clientId, y => y.Client);
-		var allProxies = serverProxies;
+		var register = serverProxies;
 		var client = serverProxies.FirstOrDefault()?.Client;
 		if (proxies != null)
 		{
@@ -98,8 +101,27 @@ internal class ProxyManager : IProxyManager
 
 			await _proxyRepository.UpdateManyAsync(update);
 			await _proxyRepository.InsertManyAsync(insert);
-			allProxies = serverProxies.Concat(insert).ToList();
+			register = serverProxies.Concat(insert).ToList();
 		}
-		if (allProxies is { Count: > 0 }) _forwarderManager.Register(allProxies);
+		if (register is { Count: > 0 }) _forwarderManager.Register(register);
+	}
+
+	public async Task UpdateStatusAsync(Guid id, bool disabled)
+	{
+		var entity = await _proxyRepository.GetAsync(x => x.Id == id, y => y.Client);
+		if (entity == null) return;
+		if (disabled != entity.Disabled)
+		{
+			entity.Disabled = disabled;
+			await _proxyRepository.UpdateAsync(entity);
+			if (disabled)
+			{
+				_forwarderManager.UnRegister(entity);
+			}
+			else
+			{
+				_forwarderManager.Register(entity);
+			}
+		}
 	}
 }

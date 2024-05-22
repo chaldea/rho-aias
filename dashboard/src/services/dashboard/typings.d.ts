@@ -82,9 +82,15 @@ declare namespace API {
     destination?: string;
     clientId?: string;
     client?: ClientDto;
+    disabled?: boolean;
   };
 
-  type ProxyType = 1 | 2 | 3 | 4;
+  type ProxyStatusDto = {
+    id?: string;
+    disabled?: boolean;
+  };
+
+  type ProxyType = 0 | 1 | 2 | 3;
 
   type Result = {
     isSuccess?: boolean;

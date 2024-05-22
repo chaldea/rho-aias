@@ -48,3 +48,18 @@ export async function postProxyUpdate(body: API.ProxyDto, options?: { [key: stri
     ...(options || {}),
   });
 }
+
+/** 此处后端没有提供注释 POST /api/dashboard/proxy/update-status */
+export async function postProxyUpdateStatus(
+  body: API.ProxyStatusDto,
+  options?: { [key: string]: any },
+) {
+  return request<any>('/api/dashboard/proxy/update-status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

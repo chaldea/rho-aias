@@ -92,6 +92,7 @@ export default {
   'pages.proxies.type.required': '类型不能为空',
   'pages.proxies.type.placeholder': '请选择转发类型',
   'pages.proxies.forward': '转发规则',
+  'pages.proxies.status': '状态',
   'pages.proxies.client': '客户端',
   'pages.proxies.client.required': '所属客户端不能为空',
   'pages.proxies.client.placeholder': '请选择客户端，若不存在请先创建',
