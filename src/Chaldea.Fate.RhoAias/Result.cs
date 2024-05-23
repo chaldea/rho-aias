@@ -71,20 +71,20 @@ internal enum ErrorCode
 
 internal static class ErrorCodeExtensions
 {
-	private static readonly Dictionary<ErrorCode, string> Errors = new();
+	private static readonly Dictionary<ErrorCode, string> Errors = [];
 
 	static ErrorCodeExtensions()
 	{
 		var fields = typeof(ErrorCode).GetFields(BindingFlags.Public | BindingFlags.Static);
 		foreach (var field in fields)
 		{
-			var code = (ErrorCode)field.GetValue(null);
-			var attr = field.GetCustomAttribute<DescriptionAttribute>();
-			Errors.TryAdd(code, attr.Description);
+			var code = (ErrorCode)field.GetValue(null)!;
+			var desc = field.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty;
+			Errors.TryAdd(code, desc);
 		}
 	}
 
-	public static (int, string) ToError(this ErrorCode errorCode, params object[] args)
+	public static (int, string) ToError(this ErrorCode errorCode, params object?[] args)
 	{
 		if (Errors.TryGetValue(errorCode, out var msg)) return ((int)errorCode, string.Format(msg, args));
 

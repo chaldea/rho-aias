@@ -16,7 +16,7 @@ internal class UserHub : Hub
 
 	public override Task OnConnectedAsync()
 	{
-		var userId = Context.User.UserId();
+		var userId = Context.User?.UserId();
 		_logger.LogInformation($"User connected: {userId}");
 		return base.OnConnectedAsync();
 	}

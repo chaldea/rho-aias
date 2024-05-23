@@ -19,6 +19,6 @@ internal class DefaultServerCertificateSelector : IServerCertificateSelector
 
 	public X509Certificate2? Select(ConnectionContext context, string? domainName)
 	{
-		return _certManager.GetCert(domainName);
+		return domainName == null ? null : _certManager.GetCert(domainName);
 	}
 }

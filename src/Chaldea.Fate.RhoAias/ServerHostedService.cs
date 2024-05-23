@@ -54,7 +54,7 @@ internal class ServerHostedService : BackgroundService
 					try
 					{
 						var metrics = _metrics.GetMetrics();
-						await _userHubContext.Clients.All.SendCoreAsync("metrics", new[] { metrics });
+						await _userHubContext.Clients.All.SendCoreAsync("metrics", [metrics], stoppingToken);
 					}
 					catch (Exception ex)
 					{

@@ -23,7 +23,7 @@ abstract class ForwarderBase: IForwarder
 {
     protected Proxy _proxy;
     protected readonly ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ForwarderTasks = new();
-    private ILogger<ForwarderBase> _logger;
+    private readonly ILogger<ForwarderBase> _logger;
 
     public Proxy Proxy => _proxy;
 
