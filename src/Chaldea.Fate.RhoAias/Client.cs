@@ -7,7 +7,7 @@ namespace Chaldea.Fate.RhoAias;
 public class Client
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
     public string? Version { get; set; }
     public string? Token { get; set; }
     public string? Endpoint { get; set; }
@@ -34,7 +34,7 @@ public class Client
     {
 		var http = context.Features.Get<IHttpConnectionFeature>();
 		Id = context.User?.UserId() ?? Guid.Empty;
-		Endpoint = $"{http.RemoteIpAddress}:{http.RemotePort}";
+		Endpoint = http == null ? "" : $"{http.RemoteIpAddress}:{http.RemotePort}";
 		ConnectionId = context.ConnectionId;
 		Status = true;
 	}

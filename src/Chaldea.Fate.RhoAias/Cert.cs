@@ -19,13 +19,13 @@ public class Cert
 
 	public CertType CertType { get; set; }
 
-	public string Domain { get; set; }
+	public string Domain { get; set; } = default!;
 
 	public DateTime? Expires { get; set; }
 
-	public string Issuer { get; set; }
+	public string Issuer { get; set; } = default!;
 
-	public string Email { get; set; }
+	public string Email { get; set; } = default!;
 
 	public AcmeStatus Status { get; set; }
 
@@ -66,12 +66,12 @@ public class Cert
 
 public class CertInfo
 {
-	public string File { get; set; }
-	public string Password { get; set; }
-	public string CountryName { get; set; }
-	public string State { get; set; }
-	public string Locality { get; set; }
-	public string Organization { get; set; }
-	public string OrganizationUnit { get; set; }
-	public string CommonName { get; set; }
+	public string File { get; set; } = default!;
+	public string Password { get; set; } = default!;
+	public string CountryName { get; set; } = default!;
+	public string State { get; set; } = default!;
+	public string Locality { get; set; } = default!;
+	public string Organization { get; set; } = default!;
+	public string OrganizationUnit { get; set; } = default!;
+	public string CommonName { get; set; } = default!;
 }

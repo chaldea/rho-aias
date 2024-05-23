@@ -18,7 +18,7 @@ public class Proxy
     public Guid Id { get; set; }
     public string Name { get; set; }
     public ProxyType Type { get; set; }
-    public string LocalIP { get; set; }
+    public string LocalIP { get; set; } = default!;
     public int LocalPort { get; set; }
     public int RemotePort { get; set; }
     public string? Path { get; set; }
@@ -36,14 +36,14 @@ public class Proxy
 
 	public Proxy(RouteConfig route, ClusterConfig cluster)
 	{
-		var item = cluster.Destinations.FirstOrDefault();
+		var item = cluster.Destinations?.FirstOrDefault();
 		Id = Guid.NewGuid();
-		Name = route.ClusterId;
+		Name = route.ClusterId ?? route.RouteId;
 		Type = ProxyType.HTTP;
 		LocalIP = string.Empty;
 		Path = route.Match.Path;
 		Hosts = route.Match.Hosts?.ToArray();
-		Destination = item.Value.Address;
+		Destination = item?.Value.Address;
 		RouteConfig = JsonSerializer.Serialize(route);
 		ClusterConfig = JsonSerializer.Serialize(cluster);
 	}
@@ -69,7 +69,7 @@ public class Proxy
 
     public string GetHosts()
     {
-        return string.Join(",", Hosts);
+	    return Hosts == null ? string.Empty : string.Join(",", Hosts);
     }
 
     public void Update(Proxy proxy)
