@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+
+FROM node:20.12.2 AS node
+WORKDIR /build
+COPY dashboard dashboard
+WORKDIR /build/dashboard
+RUN npm install -g pnpm
+RUN pnpm install
+RUN npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_VERSION
+WORKDIR /build
+COPY src src
+COPY --from=node /build/dashboard/dist ./src/Chaldea.Fate.RhoAias.Dashboard/wwwroot
+RUN echo BUILD_VERSION:$BUILD_VERSION
+RUN dotnet pack -c Release -o /packages \
+    /p:AssemblyVersion=$BUILD_VERSION \
+    /p:Version=$BUILD_VERSION
+WORKDIR /packages
+RUN ls -l
