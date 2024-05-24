@@ -14,8 +14,8 @@ builder.AddRhoAiasServer(cfg =>
 	cfg.AddRhoAiasSqlite();
 	cfg.AddAhoAiasJwtBearerAuthentication();
 	cfg.AddRhoAiasPrometheus();
-	cfg.AddAhoAiasLetsEncrypt();
-	cfg.AddAhoAiasAliyunDns();
+	cfg.AddRhoAiasLetsEncrypt();
+	cfg.AddRhoAiasAliyunDns();
 });
 
 var app = builder.Build();
@@ -31,6 +31,6 @@ app.UseRhoAiasServer(b =>
 	b.UseRhoAiasDashboard();
 	b.UseRhoAiasSqlite();
 	b.UseRhoAiasPrometheus();
-	b.UseAhoAiasLetsEncrypt();
+	b.UseRhoAiasLetsEncrypt();
 });
 app.Run();

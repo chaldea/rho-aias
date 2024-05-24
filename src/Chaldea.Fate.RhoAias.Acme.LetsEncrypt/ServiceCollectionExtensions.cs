@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	public static IRhoAiasConfigurationBuilder AddAhoAiasLetsEncrypt(this IRhoAiasConfigurationBuilder builder)
+	public static IRhoAiasConfigurationBuilder AddRhoAiasLetsEncrypt(this IRhoAiasConfigurationBuilder builder)
 	{
 		builder.Services.AddMemoryCache();
 		builder.Services.AddOptions<RhoAiasLetsEncryptOptions>("RhoAias:Acme:LetsEncrypt");
@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
 		return builder;
 	}
 
-	public static IRhoAiasApplicationBuilder UseAhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
+	public static IRhoAiasApplicationBuilder UseRhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
 	{
 		app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}",
 			async (IMemoryCache cache, HttpContext context, string token) =>
