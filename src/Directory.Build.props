@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-	<LangVersion>latest</LangVersion>
-	<IsPackable>true</IsPackable>
-	<PackageReadmeFile>NuGet.md</PackageReadmeFile>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <Copyright>Chaldea and Contributors</Copyright>
+    <Authors>Chaldea</Authors>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/chaldea/rho-aias</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/chaldea/rho-aias</RepositoryUrl>
+    <PackageReadmeFile>NuGet.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>🚀 A library for building reverse proxy, intranet penetration server.</Description>
+    <PackageTags>yarp,reverse-proxyantd,intranet-penetration,WAF</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-	<None Include="..\NuGet.md" Pack="true" PackagePath="" />
+    <None Include="..\NuGet.md" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>
