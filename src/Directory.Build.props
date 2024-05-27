@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+	<LangVersion>latest</LangVersion>
+	<IsPackable>true</IsPackable>
+	<PackageReadmeFile>NuGet.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+	<None Include="..\NuGet.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>

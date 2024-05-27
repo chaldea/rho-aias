@@ -23,7 +23,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Acme.L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Dns.Aliyun", "src\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj", "{D8FE08E6-3E3A-41C7-8D73-9D3BE14932AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.IngressController", "src\Chaldea.Fate.RhoAias.IngressController\Chaldea.Fate.RhoAias.IngressController.csproj", "{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.IngressController", "src\Chaldea.Fate.RhoAias.IngressController\Chaldea.Fate.RhoAias.IngressController.csproj", "{68BE5BA5-31B9-4ED6-8B1C-7F818AAA9CBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{14DFA212-C1F0-46A1-A747-ABA6AC38D42A}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
