@@ -6,9 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IngressEnable>false</IngressEnable>
-	<AssemblyName>RhoAiasClient</AssemblyName>
-	<AssemblyVersion>1.0.0</AssemblyVersion>
-	<Version>1.0.0</Version>
+    <AssemblyName>RhoAiasClient</AssemblyName>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Version>1.0.0</Version>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
