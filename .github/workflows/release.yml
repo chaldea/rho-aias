@@ -3,10 +3,11 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   docker:
+    name: Create Docker Images
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -52,7 +53,7 @@ jobs:
             rid: win-arm64
             artifact_name: RhoAiasClient.exe
             asset_name: rhoaias-client-win-arm64.exe
-    name: Build On ${{ matrix.os }}
+    name: Create Binary ${{ matrix.asset_name }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -84,3 +85,16 @@ jobs:
           file: dist/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
+  nuget:
+    name: Create Nuget Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Version
+        id: get_tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
+      - name: Dotnet Pack
+        run: |
+          docker build --build-arg BUILD_VERSION=${{ steps.get_tag.outputs.tag }} --build-arg="NUGET_SOURCE=${{secrets.NUGET_SOURCE}}" --build-arg="NUGET_KEY=${{secrets.NUGET_KEY}}" -f docker/Dockerfile-Nuget -t chaldea/rhoaias-nuget .

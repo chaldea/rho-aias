@@ -16,7 +16,7 @@
     <PackageReadmeFile>NuGet.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>🚀 A library for building reverse proxy, intranet penetration server.</Description>
-    <PackageTags>yarp,reverse-proxyantd,intranet-penetration,WAF</PackageTags>
+    <PackageTags>yarp,reverse-proxy,intranet-penetration,WAF</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
