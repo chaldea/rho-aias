@@ -2,43 +2,43 @@
 
 public interface IUserManager
 {
-	Task CreateAsync(User user);
-	Task<User?> GetAsync(Guid id);
-	Task<User?> GetAsync(string name);
-	Task UpdateAsync(User entity);
+    Task CreateAsync(User user);
+    Task<User?> GetAsync(Guid id);
+    Task<User?> GetAsync(string name);
+    Task UpdateAsync(User entity);
 }
 
 internal class UserManager : IUserManager
 {
-	private readonly IRepository<User> _userRepository;
+    private readonly IRepository<User> _userRepository;
 
-	public UserManager(IRepository<User> userRepository)
-	{
-		_userRepository = userRepository;
-	}
+    public UserManager(IRepository<User> userRepository)
+    {
+        _userRepository = userRepository;
+    }
 
-	public async Task CreateAsync(User user)
-	{
-		if (await _userRepository.AnyAsync(x => x.UserName == user.UserName))
-		{
-			return;
-		}
+    public async Task CreateAsync(User user)
+    {
+        if (await _userRepository.AnyAsync(x => x.UserName == user.UserName))
+        {
+            return;
+        }
 
-		await _userRepository.InsertAsync(user);
-	}
+        await _userRepository.InsertAsync(user);
+    }
 
-	public async Task<User?> GetAsync(string name)
-	{
-		return await _userRepository.GetAsync(x => x.UserName == name);
-	}
+    public async Task<User?> GetAsync(string name)
+    {
+        return await _userRepository.GetAsync(x => x.UserName == name);
+    }
 
-	public async Task<User?> GetAsync(Guid id)
-	{
-		return await _userRepository.GetAsync(x => x.Id == id);
-	}
+    public async Task<User?> GetAsync(Guid id)
+    {
+        return await _userRepository.GetAsync(x => x.Id == id);
+    }
 
-	public async Task UpdateAsync(User entity)
-	{
-		await _userRepository.UpdateAsync(entity);
-	}
+    public async Task UpdateAsync(User entity)
+    {
+        await _userRepository.UpdateAsync(entity);
+    }
 }

@@ -6,11 +6,10 @@ namespace Chaldea.Fate.RhoAias;
 
 public enum ProxyType
 {
-	HTTP = 0,
-	[Obsolete("Use http only.")]
-	HTTPS = 1,
-	TCP = 2,
-	UDP = 3,
+    HTTP = 0,
+    [Obsolete("Use http only.")] HTTPS = 1,
+    TCP = 2,
+    UDP = 3,
 }
 
 public class Proxy
@@ -23,33 +22,33 @@ public class Proxy
     public int RemotePort { get; set; }
     public string? Path { get; set; }
     public string[]? Hosts { get; set; }
-	public string? Destination { get; set; }
-	public string? RouteConfig { get; set; }
+    public string? Destination { get; set; }
+    public string? RouteConfig { get; set; }
     public string? ClusterConfig { get; set; }
     public bool Disabled { get; set; }
     public bool Compressed { get; set; }
     [JsonIgnore] public Guid ClientId { get; set; }
-	[JsonIgnore] public Client? Client { get; set; }
+    [JsonIgnore] public Client? Client { get; set; }
 
-	public Proxy()
-	{
-	}
+    public Proxy()
+    {
+    }
 
-	public Proxy(RouteConfig route, ClusterConfig cluster)
-	{
-		var item = cluster.Destinations?.FirstOrDefault();
-		Id = Guid.NewGuid();
-		Name = route.ClusterId ?? route.RouteId;
-		Type = ProxyType.HTTP;
-		LocalIP = string.Empty;
-		Path = route.Match.Path;
-		Hosts = route.Match.Hosts?.ToArray();
-		Destination = item?.Value.Address;
-		RouteConfig = JsonSerializer.Serialize(route);
-		ClusterConfig = JsonSerializer.Serialize(cluster);
-	}
+    public Proxy(RouteConfig route, ClusterConfig cluster)
+    {
+        var item = cluster.Destinations?.FirstOrDefault();
+        Id = Guid.NewGuid();
+        Name = route.ClusterId ?? route.RouteId;
+        Type = ProxyType.HTTP;
+        LocalIP = string.Empty;
+        Path = route.Match.Path;
+        Hosts = route.Match.Hosts?.ToArray();
+        Destination = item?.Value.Address;
+        RouteConfig = JsonSerializer.Serialize(route);
+        ClusterConfig = JsonSerializer.Serialize(cluster);
+    }
 
-	public string GetSchema() => Type switch
+    public string GetSchema() => Type switch
     {
         ProxyType.HTTP => "http",
         ProxyType.HTTPS => "http",
@@ -60,17 +59,17 @@ public class Proxy
 
     public string GetUrl()
     {
-	    if (string.IsNullOrEmpty(Destination))
-	    {
-		    return $"{GetSchema()}://{LocalIP}:{LocalPort}";
-		}
+        if (string.IsNullOrEmpty(Destination))
+        {
+            return $"{GetSchema()}://{LocalIP}:{LocalPort}";
+        }
 
-	    return Destination;
+        return Destination;
     }
 
     public string GetHosts()
     {
-	    return Hosts == null ? string.Empty : string.Join(",", Hosts);
+        return Hosts == null ? string.Empty : string.Join(",", Hosts);
     }
 
     public void Update(Proxy proxy)
@@ -90,11 +89,11 @@ public class Proxy
 
     public void UpdateLocalIp()
     {
-	    if (string.IsNullOrEmpty(LocalIP) && !string.IsNullOrEmpty(Destination))
-	    {
+        if (string.IsNullOrEmpty(LocalIP) && !string.IsNullOrEmpty(Destination))
+        {
             var uri = new Uri(Destination);
             LocalIP = uri.Host;
             LocalPort = uri.Port;
-	    }
+        }
     }
 }

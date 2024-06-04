@@ -10,28 +10,29 @@ builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.AddRhoAiasServer(cfg =>
 {
-	cfg.AddRhoAiasDashboard();
-	cfg.AddRhoAiasSqlite();
-	cfg.AddAhoAiasJwtBearerAuthentication();
-	cfg.AddRhoAiasPrometheus();
-	cfg.AddRhoAiasLetsEncrypt();
-	cfg.AddRhoAiasAliyunDns();
+    cfg.AddRhoAiasDashboard();
+    cfg.AddRhoAiasSqlite();
+    cfg.AddAhoAiasJwtBearerAuthentication();
+    cfg.AddRhoAiasPrometheus();
+    cfg.AddRhoAiasLetsEncrypt();
+    cfg.AddRhoAiasAliyunDns();
     cfg.AddRhoAiasSnappyCompression();
 });
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRhoAiasServer(b =>
 {
-	b.UseRhoAiasDashboard();
-	b.UseRhoAiasSqlite();
-	b.UseRhoAiasPrometheus();
-	b.UseRhoAiasLetsEncrypt();
+    b.UseRhoAiasDashboard();
+    b.UseRhoAiasSqlite();
+    b.UseRhoAiasPrometheus();
+    b.UseRhoAiasLetsEncrypt();
 });
 app.Run();

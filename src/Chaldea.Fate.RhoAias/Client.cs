@@ -17,43 +17,44 @@ public class Client
 
     public void GenTokenKey()
     {
-		Token = Regex.Replace(Convert.ToBase64String(Id.ToByteArray()), "[/+=]", "");
-	}
+        Token = Regex.Replace(Convert.ToBase64String(Id.ToByteArray()), "[/+=]", "");
+    }
 
     public Result VersionCheck()
     {
-	    var version = Utilities.GetVersion();
-	    if (!VersionCheck(version))
-	    {
-		    return Result.Error(ErrorCode.InvalidClientVersion.ToError(version, Version));
-	    }
-		return Result.Success();
-	}
+        var version = Utilities.GetVersion();
+        if (!VersionCheck(version))
+        {
+            return Result.Error(ErrorCode.InvalidClientVersion.ToError(version, Version));
+        }
+
+        return Result.Success();
+    }
 
     public void Update(HubCallerContext context)
     {
-		var http = context.Features.Get<IHttpConnectionFeature>();
-		Id = context.User?.UserId() ?? Guid.Empty;
-		Endpoint = http == null ? "" : $"{http.RemoteIpAddress}:{http.RemotePort}";
-		ConnectionId = context.ConnectionId;
-		Status = true;
-	}
+        var http = context.Features.Get<IHttpConnectionFeature>();
+        Id = context.User?.UserId() ?? Guid.Empty;
+        Endpoint = http == null ? "" : $"{http.RemoteIpAddress}:{http.RemotePort}";
+        ConnectionId = context.ConnectionId;
+        Status = true;
+    }
 
     public void Update(Client register)
     {
-	    Endpoint = register.Endpoint;
-	    ConnectionId = register.ConnectionId;
-	    Status = register.Status;
-	    Version = register.Version;
-	}
+        Endpoint = register.Endpoint;
+        ConnectionId = register.ConnectionId;
+        Status = register.Status;
+        Version = register.Version;
+    }
 
     private bool VersionCheck(Version? serverVersion)
     {
-	    if (serverVersion == null) return false;
-	    if (string.IsNullOrEmpty(Version)) return false;
-	    var clientVersion = new Version(Version);
-	    if (serverVersion.Major != clientVersion.Major) return false;
-	    if (serverVersion.Minor != clientVersion.Minor) return false;
-	    return true;
+        if (serverVersion == null) return false;
+        if (string.IsNullOrEmpty(Version)) return false;
+        var clientVersion = new Version(Version);
+        if (serverVersion.Major != clientVersion.Major) return false;
+        if (serverVersion.Minor != clientVersion.Minor) return false;
+        return true;
     }
 }

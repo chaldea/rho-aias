@@ -2,5 +2,5 @@
 
 public interface IDataSeeder
 {
-	Task SeedAsync();
+    Task SeedAsync();
 }

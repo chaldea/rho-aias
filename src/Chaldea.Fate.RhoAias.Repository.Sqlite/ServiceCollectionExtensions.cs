@@ -9,19 +9,19 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	public static IRhoAiasConfigurationBuilder AddRhoAiasSqlite(this IRhoAiasConfigurationBuilder builder)
-	{
-		var configuration = builder.Configuration;
-		builder.Services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetRhoAiasConnectionString()));
-		builder.Services.Replace(new ServiceDescriptor(typeof(IRepository<>), typeof(SqliteRepository<>), ServiceLifetime.Singleton));
-		builder.Services.AddTransient<IDbMigrator, RhoAiasDbMigrator>();
-		return builder;
-	}
+    public static IRhoAiasConfigurationBuilder AddRhoAiasSqlite(this IRhoAiasConfigurationBuilder builder)
+    {
+        var configuration = builder.Configuration;
+        builder.Services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetRhoAiasConnectionString()));
+        builder.Services.Replace(new ServiceDescriptor(typeof(IRepository<>), typeof(SqliteRepository<>), ServiceLifetime.Singleton));
+        builder.Services.AddTransient<IDbMigrator, RhoAiasDbMigrator>();
+        return builder;
+    }
 
-	public static IRhoAiasApplicationBuilder UseRhoAiasSqlite(this IRhoAiasApplicationBuilder app)
-	{
-		var migrator = app.Services.GetService<IDbMigrator>();
-		migrator?.MigrateAsync().Wait();
-		return app;
-	}
+    public static IRhoAiasApplicationBuilder UseRhoAiasSqlite(this IRhoAiasApplicationBuilder app)
+    {
+        var migrator = app.Services.GetService<IDbMigrator>();
+        migrator?.MigrateAsync().Wait();
+        return app;
+    }
 }

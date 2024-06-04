@@ -19,27 +19,27 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSignalR();
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
-		services.AddSingleton<IForwarderManager, ForwarderManager>();
-		services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
-		services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
+        services.AddSingleton<IForwarderManager, ForwarderManager>();
+        services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
+        services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.UDP);
         services.AddSingleton<ITokenManager, TokenManager>();
-		services.AddSingleton<IClientManager, ClientManager>();
-		services.AddSingleton<IProxyManager, ProxyManager>();
-		services.AddSingleton<ICertManager, CertManager>();
-		services.AddSingleton<IUserManager, UserManager>();
-		services.AddSingleton<IDnsProviderManager, DnsProviderManager>();
-		services.AddSingleton<IMetrics, Metrics>();
-		services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
-		services.AddHostedService<ServerHostedService>();
-		services.AddHostedService<CertRenewJob>();
+        services.AddSingleton<IClientManager, ClientManager>();
+        services.AddSingleton<IProxyManager, ProxyManager>();
+        services.AddSingleton<ICertManager, CertManager>();
+        services.AddSingleton<IUserManager, UserManager>();
+        services.AddSingleton<IDnsProviderManager, DnsProviderManager>();
+        services.AddSingleton<IMetrics, Metrics>();
+        services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
+        services.AddHostedService<ServerHostedService>();
+        services.AddHostedService<CertRenewJob>();
         services.AddSingleton<ICompressor, GZipCompressor>();
-		return services;
+        return services;
     }
 
-	public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
+    public static IApplicationBuilder UseRhoAias(this IApplicationBuilder app)
     {
         app.UseWebSockets();
         app.UseMiddleware<ForwarderMiddleware>();
@@ -49,63 +49,65 @@ public static class ServiceCollectionExtensions
             var endpoint = obj as IEndpointRouteBuilder;
             endpoint?.MapReverseProxy();
             endpoint?.MapHub<ClientHub>("/clienthub");
-			endpoint?.MapHub<UserHub>("/userhub");
+            endpoint?.MapHub<UserHub>("/userhub");
         }
+
         return app;
     }
 
-	public static IWebHostBuilder ConfigureRhoAiasServer(this IWebHostBuilder builder)
-	{
+    public static IWebHostBuilder ConfigureRhoAiasServer(this IWebHostBuilder builder)
+    {
         builder.ConfigureKestrel((context, serverOptions) =>
         {
-	        var options = new RhoAiasServerOptions();
-	        context.Configuration.GetSection("RhoAias:Server").Bind(options);
-	        var certificateSelector = serverOptions.ApplicationServices.GetService<IServerCertificateSelector>();
-			serverOptions.Listen(IPAddress.Any, options.Bridge);
-	        serverOptions.Listen(IPAddress.Any, options.Http);
-	        serverOptions.Listen(IPAddress.Any, options.Https, listenOptions =>
-	        {
-		        listenOptions.UseHttps(httpsOptions =>
-		        {
-			        if (certificateSelector is null)
-			        {
-				        throw new InvalidOperationException("");
-			        }
-			        var fallbackSelector = httpsOptions.ServerCertificateSelector;
-			        httpsOptions.ServerCertificateSelector = (connectionContext, domainName) =>
-			        {
-				        var primaryCert = certificateSelector.Select(connectionContext!, domainName);
-				        return primaryCert ?? fallbackSelector?.Invoke(connectionContext, domainName);
-			        };
-				});
-	        });
-        });
-		return builder;
-	}
+            var options = new RhoAiasServerOptions();
+            context.Configuration.GetSection("RhoAias:Server").Bind(options);
+            var certificateSelector = serverOptions.ApplicationServices.GetService<IServerCertificateSelector>();
+            serverOptions.Listen(IPAddress.Any, options.Bridge);
+            serverOptions.Listen(IPAddress.Any, options.Http);
+            serverOptions.Listen(IPAddress.Any, options.Https, listenOptions =>
+            {
+                listenOptions.UseHttps(httpsOptions =>
+                {
+                    if (certificateSelector is null)
+                    {
+                        throw new InvalidOperationException("");
+                    }
 
-	public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder, Action<IRhoAiasConfigurationBuilder>? config = default)
-	{
-		builder.Services.AddRhoAias(builder.Configuration);
-		builder.WebHost.ConfigureRhoAiasServer();
-		var configBuilder = new RhoAiasConfigurationBuilder(builder.Services, builder.Configuration);
-		config?.Invoke(configBuilder);
-		return builder;
-	}
+                    var fallbackSelector = httpsOptions.ServerCertificateSelector;
+                    httpsOptions.ServerCertificateSelector = (connectionContext, domainName) =>
+                    {
+                        var primaryCert = certificateSelector.Select(connectionContext!, domainName);
+                        return primaryCert ?? fallbackSelector?.Invoke(connectionContext, domainName);
+                    };
+                });
+            });
+        });
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder, Action<IRhoAiasConfigurationBuilder>? config = default)
+    {
+        builder.Services.AddRhoAias(builder.Configuration);
+        builder.WebHost.ConfigureRhoAiasServer();
+        var configBuilder = new RhoAiasConfigurationBuilder(builder.Services, builder.Configuration);
+        config?.Invoke(configBuilder);
+        return builder;
+    }
 
     public static WebApplication UseRhoAiasServer(this WebApplication app, Action<IRhoAiasApplicationBuilder>? builder = default)
     {
         app.UseRhoAias();
         var appBuilder = new RhoAiasApplicationBuilder(app);
         builder?.Invoke(appBuilder);
-		return app;
+        return app;
     }
 
     public static IServiceCollection AddRhoAiasClient(this IServiceCollection services, IConfiguration configuration)
     {
-	    services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
-		services.AddSingleton<IClientConnection, ClientConnection>();
-		services.AddSingleton<ICompressor, GZipCompressor>();
+        services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
+        services.AddSingleton<IClientConnection, ClientConnection>();
+        services.AddSingleton<ICompressor, GZipCompressor>();
         services.AddHostedService<ClientHostedService>();
-	    return services;
+        return services;
     }
 }

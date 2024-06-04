@@ -19,7 +19,7 @@ internal class GZipCompressor : ICompressor
 
     public Stream Decompress(Stream networkStream)
     {
-       return new GZipStream(networkStream, CompressionMode.Decompress);
+        return new GZipStream(networkStream, CompressionMode.Decompress);
     }
 
     public async Task CompressAsync(Stream localStream, Stream serverStream)
