@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Yarp.ReverseProxy.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -24,12 +25,14 @@ abstract class ForwarderBase: IForwarder
     protected Proxy _proxy;
     protected readonly ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ForwarderTasks = new();
     private readonly ILogger<ForwarderBase> _logger;
+    private readonly ICompressor _compressor;
 
     public Proxy Proxy => _proxy;
 
-    protected ForwarderBase(ILoggerFactory loggerFactory)
+    protected ForwarderBase(IServiceProvider service)
     {
-        _logger = loggerFactory.CreateLogger<ForwarderBase>();
+        _logger = service.GetRequiredService<ILogger<ForwarderBase>>();
+        _compressor = service.GetRequiredService<ICompressor>();
     }
 
     public virtual void Register(Proxy proxy)
@@ -54,7 +57,8 @@ abstract class ForwarderBase: IForwarder
         try
         {
             _logger.LogInformation($"Forward Starting: {requestId}");
-            using var reverseConnection = new WebSocketStream(lifetime, transport);
+            var compressor = _proxy.Compressed ? _compressor : null;
+            using var reverseConnection = new WebSocketStream(lifetime, transport, compressor);
             responseAwaiter.Item1.TrySetResult(reverseConnection);
             CancellationTokenSource cts;
             if (responseAwaiter.Item2 != CancellationToken.None)
@@ -91,8 +95,8 @@ internal class WebForwarder : ForwarderBase
         ILogger<ForwarderManager> logger,
         IHubContext<ClientHub> hub,
         IProxyConfigProvider proxyConfigProvider,
-        ILoggerFactory loggerFactory)
-        :base(loggerFactory)
+        IServiceProvider serviceProvider)
+        :base(serviceProvider)
     {
         _logger = logger;
         _hub = hub;
@@ -180,8 +184,9 @@ internal class PortForwarder : ForwarderBase
 
     public PortForwarder(
         ILogger<PortForwarder> logger, 
-        IHubContext<ClientHub> hub, ILoggerFactory loggerFactory)
-        :base(loggerFactory)
+        IHubContext<ClientHub> hub,
+        IServiceProvider serviceProvider)
+        :base(serviceProvider)
     {
         _logger = logger;
         _hub = hub;
@@ -289,10 +294,20 @@ internal sealed class WebSocketStream : Stream
     private readonly Stream wirteStream;
     private readonly IConnectionLifetimeFeature lifetimeFeature;
 
-    public WebSocketStream(IConnectionLifetimeFeature lifetimeFeature, IConnectionTransportFeature transportFeature)
+    public WebSocketStream(IConnectionLifetimeFeature lifetimeFeature, IConnectionTransportFeature transportFeature, ICompressor? compressor)
     {
-        this.readStream = transportFeature.Transport.Input.AsStream();
-        this.wirteStream = transportFeature.Transport.Output.AsStream();
+        var input = transportFeature.Transport.Input.AsStream();
+        var output = transportFeature.Transport.Output.AsStream();
+        if (compressor != null)
+        {
+            this.readStream = compressor.Decompress(input);
+            this.wirteStream = compressor.Compress(output);
+        }
+        else
+        {
+            this.readStream = input;
+            this.wirteStream = output;
+        }
         this.lifetimeFeature = lifetimeFeature;
     }
 
@@ -341,10 +356,7 @@ internal sealed class WebSocketStream : Stream
     {
         return this.readStream.Read(buffer, offset, count);
     }
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-        this.wirteStream.Write(buffer, offset, count);
-    }
+
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         return this.readStream.ReadAsync(buffer, cancellationToken);
@@ -355,19 +367,28 @@ internal sealed class WebSocketStream : Stream
         return this.readStream.ReadAsync(buffer, offset, count, cancellationToken);
     }
 
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        this.wirteStream.Write(buffer, offset, count);
+        this.wirteStream.Flush();
+    }
+
     public override void Write(ReadOnlySpan<byte> buffer)
     {
         this.wirteStream.Write(buffer);
+        this.wirteStream.Flush();
     }
 
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return this.wirteStream.WriteAsync(buffer, offset, count, cancellationToken);
+        await this.wirteStream.WriteAsync(buffer, offset, count, cancellationToken);
+        await this.wirteStream.FlushAsync(cancellationToken);
     }
 
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
         await this.wirteStream.WriteAsync(buffer, cancellationToken);
+        await this.wirteStream.FlushAsync(cancellationToken);
     }
 
     protected override void Dispose(bool disposing)

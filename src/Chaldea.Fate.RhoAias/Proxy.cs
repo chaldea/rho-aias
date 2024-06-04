@@ -27,7 +27,8 @@ public class Proxy
 	public string? RouteConfig { get; set; }
     public string? ClusterConfig { get; set; }
     public bool Disabled { get; set; }
-	[JsonIgnore] public Guid ClientId { get; set; }
+    public bool Compressed { get; set; }
+    [JsonIgnore] public Guid ClientId { get; set; }
 	[JsonIgnore] public Client? Client { get; set; }
 
 	public Proxy()
@@ -84,6 +85,7 @@ public class Proxy
         Destination = proxy.Destination;
         RouteConfig = proxy.RouteConfig;
         ClusterConfig = proxy.ClusterConfig;
+        Compressed = proxy.Compressed;
     }
 
     public void UpdateLocalIp()

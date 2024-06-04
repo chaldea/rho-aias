@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
 		services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
 		services.AddHostedService<ServerHostedService>();
 		services.AddHostedService<CertRenewJob>();
+        services.AddSingleton<ICompressor, GZipCompressor>();
 		return services;
     }
 
@@ -103,7 +104,8 @@ public static class ServiceCollectionExtensions
     {
 	    services.Configure<RhoAiasClientOptions>(configuration.GetSection("RhoAias:Client"));
 		services.AddSingleton<IClientConnection, ClientConnection>();
-		services.AddHostedService<ClientHostedService>();
+		services.AddSingleton<ICompressor, GZipCompressor>();
+        services.AddHostedService<ClientHostedService>();
 	    return services;
     }
 }

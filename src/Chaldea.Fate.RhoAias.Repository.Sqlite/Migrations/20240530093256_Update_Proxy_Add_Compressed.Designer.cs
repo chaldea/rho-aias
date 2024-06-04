@@ -3,6 +3,7 @@ using System;
 using Chaldea.Fate.RhoAias.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chaldea.Fate.RhoAias.Repository.Sqlite.Migrations
 {
     [DbContext(typeof(RhoAiasDbContext))]
-    partial class RhoAiasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240530093256_Update_Proxy_Add_Compressed")]
+    partial class Update_Proxy_Add_Compressed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");

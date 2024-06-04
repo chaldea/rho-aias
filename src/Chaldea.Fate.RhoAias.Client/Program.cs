@@ -24,9 +24,10 @@ builder.UseSerilog()
 	.ConfigureServices((hostContext, services) =>
 	{
 		services.AddRhoAiasClient(hostContext.Configuration);
+        services.AddRhoAiasSnappyCompression();
 #if INGRESS
 		services.AddAhoAiasIngressController(hostContext.Configuration);
 #endif
-	});
+    });
 var host = builder.Build();
 host.Run();

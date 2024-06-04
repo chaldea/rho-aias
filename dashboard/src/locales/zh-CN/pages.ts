@@ -122,6 +122,8 @@ export default {
   'pages.proxies.localPort': '目标端口',
   'pages.proxies.localPort.required': '目标端口不能为空',
   'pages.proxies.localPort.placeholder': '请输入目标端口',
+  'pages.proxies.compressed': '启用压缩',
+  'pages.proxies.compressed.required': '压缩选项不能为空',
   'pages.proxies.deleteTitle': '系统提示',
   'pages.proxies.deleteMessage': '确定要删除该转发条目?',
   'pages.certs.domain': '域名',

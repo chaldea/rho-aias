@@ -125,6 +125,8 @@ export default {
   'pages.proxies.localPort': 'LocalPort',
   'pages.proxies.localPort.required': 'LocalPort is required',
   'pages.proxies.localPort.placeholder': 'Input local port',
+  'pages.proxies.compressed': 'Compress',
+  'pages.proxies.compressed.required': 'Compression is required',
   'pages.proxies.deleteTitle': 'System Prompts',
   'pages.proxies.deleteMessage': 'Are you sure to delete the forward item?',
   'pages.certs.domain': 'Domain',

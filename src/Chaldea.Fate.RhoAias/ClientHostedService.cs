@@ -53,7 +53,8 @@ internal class ClientConnection : IClientConnection
 {
 	private readonly Client _client;
 	private readonly IConfiguration _configuration;
-	private readonly HubConnection _connection;
+    private readonly ICompressor _compressor;
+    private readonly HubConnection _connection;
 	private readonly HttpClient _httpClient;
 	private readonly ILogger<ClientHostedService> _logger;
 	private readonly RhoAiasClientOptions _options;
@@ -62,14 +63,16 @@ internal class ClientConnection : IClientConnection
 	public ClientConnection(
 		ILogger<ClientHostedService> logger, 
 		IOptions<RhoAiasClientOptions> options,
-		IConfiguration configuration)
+		IConfiguration configuration,
+        ICompressor compressor)
 	{
 		var version = Utilities.GetVersionName();
 		logger.LogInformation($"RhoAias Client Version: {version}");
 		logger.LogInformation($"RhoAias Client Key: {options.Value.Token}");
 		_logger = logger;
 		_configuration = configuration;
-		_options = options.Value;
+        _compressor = compressor;
+        _options = options.Value;
 		_client = new Client
 		{
 			Version = version
@@ -167,10 +170,19 @@ internal class ClientConnection : IClientConnection
 			using (var serverStream = await CreateRemote(requestId, cancellationToken))
 			using (var localStream = await CreateLocal(requestId, proxy.LocalIP, proxy.LocalPort, cancellationToken))
 			{
-				var taskX = serverStream.CopyToAsync(localStream, cancellationToken);
-				var taskY = localStream.CopyToAsync(serverStream, cancellationToken);
-				await Task.WhenAny(taskX, taskY);
-			}
+                if (proxy.Compressed)
+                {
+                    var taskX = _compressor.DecompressAsync(serverStream, localStream);
+                    var taskY = _compressor.CompressAsync(localStream, serverStream);
+                    await Task.WhenAny(taskX, taskY);
+                }
+                else
+                {
+                    var taskX = serverStream.CopyToAsync(localStream, cancellationToken);
+                    var taskY = localStream.CopyToAsync(serverStream, cancellationToken);
+                    await Task.WhenAny(taskX, taskY);
+                }
+            }
 		});
 	}
 

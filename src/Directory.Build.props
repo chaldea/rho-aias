@@ -9,7 +9,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/chaldea/rho-aias</PackageProjectUrl>
     <RepositoryUrl>https://github.com/chaldea/rho-aias</RepositoryUrl>
