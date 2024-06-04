@@ -9,29 +9,29 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	public static IRhoAiasConfigurationBuilder AddRhoAiasLetsEncrypt(this IRhoAiasConfigurationBuilder builder)
-	{
-		builder.Services.AddMemoryCache();
-		builder.Services.AddOptions<RhoAiasLetsEncryptOptions>("RhoAias:Acme:LetsEncrypt");
-		builder.Services.AddKeyedSingleton<IAcmeProvider, LetsEncryptAcmeProvider>("LetsEncrypt");
-		return builder;
-	}
+    public static IRhoAiasConfigurationBuilder AddRhoAiasLetsEncrypt(this IRhoAiasConfigurationBuilder builder)
+    {
+        builder.Services.AddMemoryCache();
+        builder.Services.AddOptions<RhoAiasLetsEncryptOptions>("RhoAias:Acme:LetsEncrypt");
+        builder.Services.AddKeyedSingleton<IAcmeProvider, LetsEncryptAcmeProvider>("LetsEncrypt");
+        return builder;
+    }
 
-	public static IRhoAiasApplicationBuilder UseRhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
-	{
-		app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}",
-			async (IMemoryCache cache, HttpContext context, string token) =>
-			{
-				app.Logger.LogInformation($"acme-challenge: {token}");
-				if (cache.TryGetValue(token, out var value))
-				{
-					context.Response.ContentType = "text/plain";
-					await context.Response.WriteAsync(value.ToString());
-					return;
-				}
+    public static IRhoAiasApplicationBuilder UseRhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
+    {
+        app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}",
+            async (IMemoryCache cache, HttpContext context, string token) =>
+            {
+                app.Logger.LogInformation($"acme-challenge: {token}");
+                if (cache.TryGetValue(token, out var value))
+                {
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync(value.ToString());
+                    return;
+                }
 
-				context.Response.StatusCode = 404;
-			}).ExcludeFromDescription(); // ignore for swagger
-		return app;
-	}
+                context.Response.StatusCode = 404;
+            }).ExcludeFromDescription(); // ignore for swagger
+        return app;
+    }
 }

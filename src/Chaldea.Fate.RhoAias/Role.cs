@@ -2,6 +2,6 @@
 
 public class Role
 {
-	public const string Client = "client";
-	public const string User = "user";
+    public const string Client = "client";
+    public const string User = "user";
 }

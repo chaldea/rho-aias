@@ -20,7 +20,7 @@ internal interface IForwarder
     Task ForwardAsync(string requestId, IConnectionLifetimeFeature lifetime, IConnectionTransportFeature transport);
 }
 
-abstract class ForwarderBase: IForwarder
+abstract class ForwarderBase : IForwarder
 {
     protected Proxy _proxy;
     protected readonly ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ForwarderTasks = new();
@@ -96,7 +96,7 @@ internal class WebForwarder : ForwarderBase
         IHubContext<ClientHub> hub,
         IProxyConfigProvider proxyConfigProvider,
         IServiceProvider serviceProvider)
-        :base(serviceProvider)
+        : base(serviceProvider)
     {
         _logger = logger;
         _hub = hub;
@@ -114,28 +114,29 @@ internal class WebForwarder : ForwarderBase
         clusters.RemoveAll(x => x.ClusterId == proxy.Name);
         if (proxy is { RouteConfig: not null, ClusterConfig: not null })
         {
-	        var route = JsonSerializer.Deserialize<RouteConfig>(proxy.RouteConfig);
-	        var cluster = JsonSerializer.Deserialize<ClusterConfig>(proxy.ClusterConfig);
-            if(route != null) routes.Add(route);
-            if(cluster != null) clusters.Add(cluster);
+            var route = JsonSerializer.Deserialize<RouteConfig>(proxy.RouteConfig);
+            var cluster = JsonSerializer.Deserialize<ClusterConfig>(proxy.ClusterConfig);
+            if (route != null) routes.Add(route);
+            if (cluster != null) clusters.Add(cluster);
         }
         else
         {
-	        routes.Add(new RouteConfig
-	        {
-		        ClusterId = proxy.Name,
-		        RouteId = proxy.Name,
-		        Match = new RouteMatch { Path = proxy.Path, Hosts = proxy.Hosts }
-	        });
-	        clusters.Add(new ClusterConfig
-	        {
-		        ClusterId = proxy.Name,
-		        Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
-		        {
-			        { "destination", new DestinationConfig() {Address = $"{proxy.GetUrl()}"} }
-		        }
-	        });
-		}
+            routes.Add(new RouteConfig
+            {
+                ClusterId = proxy.Name,
+                RouteId = proxy.Name,
+                Match = new RouteMatch { Path = proxy.Path, Hosts = proxy.Hosts }
+            });
+            clusters.Add(new ClusterConfig
+            {
+                ClusterId = proxy.Name,
+                Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "destination", new DestinationConfig() { Address = $"{proxy.GetUrl()}" } }
+                }
+            });
+        }
+
         (_proxyConfigProvider as InMemoryConfigProvider).Update(routes, clusters);
     }
 
@@ -183,10 +184,10 @@ internal class PortForwarder : ForwarderBase
     private readonly IHubContext<ClientHub> _hub;
 
     public PortForwarder(
-        ILogger<PortForwarder> logger, 
+        ILogger<PortForwarder> logger,
         IHubContext<ClientHub> hub,
         IServiceProvider serviceProvider)
-        :base(serviceProvider)
+        : base(serviceProvider)
     {
         _logger = logger;
         _hub = hub;
@@ -221,6 +222,7 @@ internal class PortForwarder : ForwarderBase
         {
             acceptEventArg.AcceptSocket = null;
         }
+
         var willRaiseEvent = _listenSocket.AcceptAsync(acceptEventArg);
         if (!willRaiseEvent)
         {
@@ -308,6 +310,7 @@ internal sealed class WebSocketStream : Stream
             this.readStream = input;
             this.wirteStream = output;
         }
+
         this.lifetimeFeature = lifetimeFeature;
     }
 
@@ -413,7 +416,11 @@ internal sealed class ResponseStream : Stream
 
     public override long Length => throw new NotImplementedException();
 
-    public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public override long Position
+    {
+        get => throw new NotImplementedException();
+        set => throw new NotImplementedException();
+    }
 
     readonly MemoryStream m_Stream;
 
@@ -434,7 +441,9 @@ internal sealed class ResponseStream : Stream
         if (!complete)
         {
             return 0;
-        };
+        }
+
+        ;
 
         var len = m_Stream.Read(buffer, offset, count);
         return len;

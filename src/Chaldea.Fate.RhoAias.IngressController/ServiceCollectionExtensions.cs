@@ -10,28 +10,28 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	public static IRhoAiasConfigurationBuilder AddAhoAiasIngressController(this IRhoAiasConfigurationBuilder builder)
-	{
-		builder.Services.AddAhoAiasIngressController(builder.Configuration);
-		return builder;
-	}
+    public static IRhoAiasConfigurationBuilder AddAhoAiasIngressController(this IRhoAiasConfigurationBuilder builder)
+    {
+        builder.Services.AddAhoAiasIngressController(builder.Configuration);
+        return builder;
+    }
 
-	public static IServiceCollection AddAhoAiasIngressController(this IServiceCollection services, IConfiguration configuration)
-	{
-		var options = new RhoAiasIngressControllerOptions();
-		configuration.GetSection("RhoAias:IngressController").Bind(options);
-		services.AddKubernetesControllerRuntime(configuration);
-		services.Replace(new ServiceDescriptor(typeof(IIngressResourceStatusUpdater), typeof(IngressResourceStatusUpdater), ServiceLifetime.Singleton));
-		services.AddSingleton<IUpdateConfig, KubernetesConfigProvider>();
-		services.Configure<YarpOptions>(yarp =>
-		{
-			// reset YarpOptions
-			yarp.ControllerClass = options.ControllerClass;
-			yarp.ServerCertificates = options.ServerCertificates;
-			yarp.DefaultSslCertificate = options.DefaultSslCertificate;
-			yarp.ControllerServiceName = options.ControllerServiceName;
-			yarp.ControllerServiceNamespace = options.ControllerServiceNamespace;
-		});
-		return services;
-	}
+    public static IServiceCollection AddAhoAiasIngressController(this IServiceCollection services, IConfiguration configuration)
+    {
+        var options = new RhoAiasIngressControllerOptions();
+        configuration.GetSection("RhoAias:IngressController").Bind(options);
+        services.AddKubernetesControllerRuntime(configuration);
+        services.Replace(new ServiceDescriptor(typeof(IIngressResourceStatusUpdater), typeof(IngressResourceStatusUpdater), ServiceLifetime.Singleton));
+        services.AddSingleton<IUpdateConfig, KubernetesConfigProvider>();
+        services.Configure<YarpOptions>(yarp =>
+        {
+            // reset YarpOptions
+            yarp.ControllerClass = options.ControllerClass;
+            yarp.ServerCertificates = options.ServerCertificates;
+            yarp.DefaultSslCertificate = options.DefaultSslCertificate;
+            yarp.ControllerServiceName = options.ControllerServiceName;
+            yarp.ControllerServiceNamespace = options.ControllerServiceNamespace;
+        });
+        return services;
+    }
 }

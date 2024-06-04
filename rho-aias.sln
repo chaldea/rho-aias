@@ -27,10 +27,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Ingres
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{14DFA212-C1F0-46A1-A747-ABA6AC38D42A}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chaldea.Fate.RhoAias.Compression.Snappy", "src\Chaldea.Fate.RhoAias.Compression.Snappy\Chaldea.Fate.RhoAias.Compression.Snappy.csproj", "{006817C8-25B0-48B2-931C-52FC2744F80A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chaldea.Fate.RhoAias.Compression.Snappy", "src\Chaldea.Fate.RhoAias.Compression.Snappy\Chaldea.Fate.RhoAias.Compression.Snappy.csproj", "{006817C8-25B0-48B2-931C-52FC2744F80A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
