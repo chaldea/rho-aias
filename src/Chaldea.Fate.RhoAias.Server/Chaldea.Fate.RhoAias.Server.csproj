@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Acme.LetsEncrypt\Chaldea.Fate.RhoAias.Acme.LetsEncrypt.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Authentication.JwtBearer\Chaldea.Fate.RhoAias.Authentication.JwtBearer.csproj" />
+    <ProjectReference Include="..\Chaldea.Fate.RhoAias.Compression.Snappy\Chaldea.Fate.RhoAias.Compression.Snappy.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Dashboard\Chaldea.Fate.RhoAias.Dashboard.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Dns.Aliyun\Chaldea.Fate.RhoAias.Dns.Aliyun.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias.Metrics.Prometheus\Chaldea.Fate.RhoAias.Metrics.Prometheus.csproj" />

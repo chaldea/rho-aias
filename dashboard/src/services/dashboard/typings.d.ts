@@ -83,6 +83,7 @@ declare namespace API {
     clientId?: string;
     client?: ClientDto;
     disabled?: boolean;
+    compressed?: boolean;
   };
 
   type ProxyStatusDto = {

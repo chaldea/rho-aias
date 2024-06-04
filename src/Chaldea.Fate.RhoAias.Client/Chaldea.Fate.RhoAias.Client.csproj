@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Chaldea.Fate.RhoAias.Compression.Snappy\Chaldea.Fate.RhoAias.Compression.Snappy.csproj" />
     <ProjectReference Include="..\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj" />
   </ItemGroup>
 

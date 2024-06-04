@@ -16,6 +16,7 @@ import {
   ProColumns,
   ProFormMoney,
   ProFormSelect,
+  ProFormSwitch,
   ProFormText,
   ProFormTextArea,
   ProTable,
@@ -109,6 +110,7 @@ const Forwards: React.FC = () => {
             if (edit.hosts) {
               edit.hosts = edit.hosts.join('\n') as any;
             }
+            setProxyType(edit.type || 0);
             setEditItem(edit);
             setOpen(true);
           }}
@@ -134,6 +136,13 @@ const Forwards: React.FC = () => {
       ],
     },
   ];
+  const isCN = intl.locale == 'zh-CN';
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: isCN ? 4 : 5 },
+    },
+  };
 
   const getClients = async () => {
     const result = await getClientList();
@@ -179,6 +188,8 @@ const Forwards: React.FC = () => {
         title={intl.formatMessage({ id: 'pages.proxies.createTitle' })}
         width={500}
         open={open}
+        layout="horizontal"
+        {...formItemLayout}
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
@@ -188,6 +199,7 @@ const Forwards: React.FC = () => {
           setOpen(visible);
           if (!visible) {
             setEditItem(undefined);
+            setProxyType(0);
           }
         }}
         onValuesChange={(changed) => {
@@ -339,6 +351,16 @@ const Forwards: React.FC = () => {
             />
           </>
         )}
+        <ProFormSwitch
+          name="compressed"
+          label={intl.formatMessage({ id: 'pages.proxies.compressed' })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({ id: 'pages.proxies.compressed.required' }),
+            },
+          ]}
+        />
       </ModalForm>
       {contextHolder}
     </PageContainer>

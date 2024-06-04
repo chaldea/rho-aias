@@ -18,6 +18,7 @@ public class ProxyDto
 	public Guid? ClientId { get; set; }
 	public ClientDto? Client { get; set; }
 	public bool? Disabled { get; set; }
+    public bool? Compressed { get; set; }
 }
 
 public class ProxyStatusDto

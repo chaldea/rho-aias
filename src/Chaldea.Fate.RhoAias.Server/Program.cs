@@ -16,6 +16,7 @@ builder.AddRhoAiasServer(cfg =>
 	cfg.AddRhoAiasPrometheus();
 	cfg.AddRhoAiasLetsEncrypt();
 	cfg.AddRhoAiasAliyunDns();
+    cfg.AddRhoAiasSnappyCompression();
 });
 
 var app = builder.Build();
