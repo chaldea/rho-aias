@@ -173,9 +173,13 @@ internal class ClientConnection : IClientConnection
             {
                 if (proxy.Compressed)
                 {
-                    var taskX = _compressor.DecompressAsync(serverStream, localStream);
-                    var taskY = _compressor.CompressAsync(localStream, serverStream);
-                    await Task.WhenAny(taskX, taskY);
+                    using (var uncompressed = _compressor.Decompress(serverStream))
+                    using (var compressed = _compressor.Compress(serverStream))
+                    {
+                        var taskX = uncompressed.CopyToAsync(localStream, cancellationToken);
+                        var taskY = localStream.CopyToAsync(compressed, true, cancellationToken);
+                        await Task.WhenAny(taskX, taskY);
+                    }
                 }
                 else
                 {
