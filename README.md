@@ -10,6 +10,7 @@ Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以�
 - 客户端支持 k8s-ingress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
 - 支持基于 ACME 的 Https 证书申请，支持证书续期。
 - 支持 Metric 监控，可接入基于 OpenTelemetry 标准的监控工具，如 Prometheus。
+- 支持数据流压缩(压缩算法支持 gzip, snappy等)
 
 ## 使用场景
 

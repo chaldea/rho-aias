@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -19,19 +18,5 @@ internal class TokenManager : ITokenManager
             ExpiresIn = expires,
             TokenType = "Base"
         });
-    }
-}
-
-public static class Extensions
-{
-    public static Guid UserId(this ClaimsPrincipal user)
-    {
-        var sub = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-        if (sub != null)
-        {
-            return Guid.Parse(sub.Value);
-        }
-
-        return Guid.Empty;
     }
 }

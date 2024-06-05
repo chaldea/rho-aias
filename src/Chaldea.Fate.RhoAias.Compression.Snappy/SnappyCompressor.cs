@@ -14,16 +14,4 @@ internal class SnappyCompressor : ICompressor
     {
         return new SnappyStream(networkStream, CompressionMode.Decompress);
     }
-
-    public async Task CompressAsync(Stream localStream, Stream serverStream)
-    {
-        await using var compressor = new SnappyStream(localStream, CompressionMode.Compress);
-        await localStream.CopyToAsync(compressor);
-    }
-
-    public async Task DecompressAsync(Stream serverStream, Stream localStream)
-    {
-        await using var compressor = new SnappyStream(serverStream, CompressionMode.Decompress);
-        await compressor.CopyToAsync(localStream);
-    }
 }
