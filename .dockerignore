@@ -35,3 +35,10 @@
 # data
 **/data/*.db
 **/dist
+
+# others
+docker
+docs
+examples
+kubernetes
+packages
