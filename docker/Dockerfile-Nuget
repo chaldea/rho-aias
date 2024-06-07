@@ -10,6 +10,7 @@ RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_VERSION
+ARG VERSION_SUFFIX
 ARG NUGET_SOURCE
 ARG NUGET_KEY
 WORKDIR /build
@@ -18,8 +19,8 @@ COPY rho-aias.sln rho-aias.sln
 COPY --from=node /build/dashboard/dist ./src/Chaldea.Fate.RhoAias.Dashboard/wwwroot
 RUN echo BUILD_VERSION:$BUILD_VERSION
 RUN dotnet pack -c Release -o /packages \
-    /p:AssemblyVersion=$BUILD_VERSION \
-    /p:Version=$BUILD_VERSION
+    /p:VersionPrefix=$BUILD_VERSION \
+    /p:VersionSuffix=$VERSION_SUFFIX
 WORKDIR /packages
 RUN ls -l
 RUN dotnet nuget push "*.nupkg" -k $NUGET_KEY -s $NUGET_SOURCE
