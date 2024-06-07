@@ -48,7 +48,7 @@ internal class DashboardDataSeeder : IDataSeeder
                 Name = "default",
                 Token = "NsRfN5VBOUi353fA6psQ",
             };
-            await _clientManager.CreateDefaultClientAsync(client);
+            await _clientManager.CreateClientAsync(client);
 
             var ingress = new Client()
             {
@@ -56,7 +56,7 @@ internal class DashboardDataSeeder : IDataSeeder
                 Name = "ingress",
                 Token = "rmpRZHT6nEe06lYglLqCHw",
             };
-            await _clientManager.CreateDefaultClientAsync(ingress);
+            await _clientManager.CreateClientAsync(ingress);
         }
     }
 }

@@ -7,13 +7,13 @@ namespace Chaldea.Fate.RhoAias.Dashboard;
 public class ClientCreateDto
 {
     public Guid? Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
 }
 
 public class ClientDto
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
     public string? Version { get; set; }
     public string? Token { get; set; }
     public string? Endpoint { get; set; }
@@ -47,8 +47,11 @@ public class ClientController : ControllerBase
     [Route("update")]
     public async Task UpdateAsync(ClientCreateDto dto)
     {
-        var entity = _mapper.Map<ClientCreateDto, Client>(dto);
-        await _clientManager.UpdateClientAsync(entity);
+        if (!dto.Id.HasValue) return;
+        var entity = await _clientManager.GetClientAsync(dto.Id.Value);
+        if (entity == null) return;
+        var newEntity = _mapper.Map(dto, entity);
+        await _clientManager.UpdateClientAsync(newEntity);
     }
 
     [HttpDelete]
