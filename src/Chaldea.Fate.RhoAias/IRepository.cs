@@ -11,6 +11,7 @@ public interface IRepository<TEntity> where TEntity : class
     Task<TEntity> UpdateAsync(TEntity entity);
     Task UpdateManyAsync(IEnumerable<TEntity> entities);
     Task DeleteAsync(TEntity entity);
+    Task DeleteAsync(Expression<Func<TEntity, bool>> predicate);
     Task DeleteManyAsync(IEnumerable<TEntity> entities);
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includes);
     Task<List<TEntity>> GetListAsync(params Expression<Func<TEntity, object>>[] includes);
@@ -59,6 +60,12 @@ internal class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity 
     {
         _db.Remove(entity);
         return Task.CompletedTask;
+    }
+
+    public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        var entities = await GetListAsync(predicate);
+        await DeleteManyAsync(entities);
     }
 
     public Task DeleteManyAsync(IEnumerable<TEntity> entities)

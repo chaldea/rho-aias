@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Chaldea.Fate.RhoAias;
+﻿namespace Chaldea.Fate.RhoAias;
 
 public interface IProxyManager
 {
@@ -30,9 +28,7 @@ internal class ProxyManager : IProxyManager
         {
             return;
         }
-
-        entity.Id = Guid.NewGuid();
-        entity.UpdateLocalIp();
+        entity.EnsureLocalIp();
         await _proxyRepository.InsertAsync(entity);
         // get with client
         var proxy = await _proxyRepository.GetAsync(x => x.Id == entity.Id, y => y.Client);
@@ -44,20 +40,19 @@ internal class ProxyManager : IProxyManager
         if (await _proxyRepository.AnyAsync(x => x.Name == entity.Name && x.Id != entity.Id)) return;
         var item = await _proxyRepository.GetAsync(x => x.Id == entity.Id, y => y.Client);
         if (item == null) return;
+        // try to remove old config
+        _forwarderManager.UnRegister(item);
         item.Update(entity);
-        item.UpdateLocalIp();
+        item.EnsureLocalIp();
         await _proxyRepository.UpdateAsync(item);
+        // add new config
         _forwarderManager.Register(item);
     }
 
     public async Task RemoveProxyAsync(Guid id)
     {
-        var proxies = await _proxyRepository.GetListAsync(x => x.Id == id);
-        if (proxies is { Count: > 0 })
-        {
-            _forwarderManager.UnRegister(proxies);
-            await _proxyRepository.DeleteManyAsync(proxies);
-        }
+        _forwarderManager.UnRegister(id);
+        await _proxyRepository.DeleteAsync(x => x.Id == id);
     }
 
     public async Task<List<Proxy>> GetProxyListAsync()
@@ -81,7 +76,7 @@ internal class ProxyManager : IProxyManager
         {
             var update = new List<Proxy>();
             var insert = new List<Proxy>();
-            // proxies is from client config.(eg: appsettings, or k8s-ingress)
+            // proxies is from client config.(eg: appsettings.json, or k8s-ingress)
             foreach (var proxy in proxies)
             {
                 proxy.ClientId = clientId;
@@ -89,13 +84,14 @@ internal class ProxyManager : IProxyManager
                 var exists = serverProxies.FirstOrDefault(x => x.Name == proxy.Name);
                 if (exists != null)
                 {
+                    _forwarderManager.UnRegister(exists); // try to remove old config
                     exists.Update(proxy);
-                    exists.UpdateLocalIp();
+                    exists.EnsureLocalIp();
                     update.Add(exists); // update from client
                 }
                 else
                 {
-                    proxy.UpdateLocalIp();
+                    proxy.EnsureLocalIp();
                     insert.Add(proxy); // add new from client
                 }
             }

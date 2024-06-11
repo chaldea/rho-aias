@@ -18,18 +18,15 @@ internal class ClientManager : IClientManager
 {
     private readonly IRepository<Client> _clientRepository;
     private readonly IForwarderManager _forwarderManager;
-    private readonly ITokenManager _tokenManager;
     private readonly IMetrics _metrics;
 
     public ClientManager(
         IRepository<Client> clientRepository,
         IForwarderManager forwarderManager,
-        ITokenManager tokenManager,
         IMetrics metrics)
     {
         _clientRepository = clientRepository;
         _forwarderManager = forwarderManager;
-        _tokenManager = tokenManager;
         _metrics = metrics;
     }
 
@@ -66,7 +63,7 @@ internal class ClientManager : IClientManager
         {
             return;
         }
-        entity.EnsureIdToken();
+        entity.EnsureToken();
         await _clientRepository.InsertAsync(entity);
         _metrics.UpDownClientTotal(1);
     }

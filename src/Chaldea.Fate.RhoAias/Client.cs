@@ -15,9 +15,13 @@ public class Client
     public bool Status { get; set; }
     public ICollection<Proxy>? Proxies { get; set; }
 
-    public void EnsureIdToken()
+    public Client()
     {
-        if (Id == Guid.Empty) Id = Guid.NewGuid();
+        Id = Guid.NewGuid();
+    }
+
+    public void EnsureToken()
+    {
         if (string.IsNullOrEmpty(Token)) Token = Regex.Replace(Convert.ToBase64String(Id.ToByteArray()), "[/+=]", "");
     }
 
