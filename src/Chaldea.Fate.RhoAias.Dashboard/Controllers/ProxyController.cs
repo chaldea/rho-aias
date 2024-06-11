@@ -7,7 +7,7 @@ namespace Chaldea.Fate.RhoAias.Dashboard;
 public class ProxyDto
 {
     public Guid? Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
     public ProxyType Type { get; set; }
     public string? LocalIP { get; set; }
     public int? LocalPort { get; set; }

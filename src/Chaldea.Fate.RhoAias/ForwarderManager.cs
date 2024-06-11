@@ -10,6 +10,7 @@ internal interface IForwarderManager
     void Register(List<Proxy> proxies);
     void UnRegister(List<Proxy> proxies);
     void UnRegister(Proxy? proxy);
+    void UnRegister(Guid id);
     Task ForwardAsync(string requestId, IConnectionLifetimeFeature lifetime, IConnectionTransportFeature transport);
     ValueTask<Stream> CreateAndWaitAsync(string proxyName, CancellationToken cancellation);
 }
@@ -56,7 +57,12 @@ internal class ForwarderManager : IForwarderManager
     public void UnRegister(Proxy? proxy)
     {
         if (proxy == null) return;
-        if (_forwarders.TryRemove(proxy.Id, out var forwarder))
+        UnRegister(proxy.Id);
+    }
+
+    public void UnRegister(Guid id)
+    {
+        if (_forwarders.TryRemove(id, out var forwarder))
         {
             forwarder.UnRegister();
         }

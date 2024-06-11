@@ -64,9 +64,8 @@ namespace Chaldea.Fate.RhoAias.Repository.Sqlite
         public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
             await using var context = _contextFactory.CreateDbContext();
-            var list = await context.Set<TEntity>().Where(predicate).ToArrayAsync();
-            context.Set<TEntity>().RemoveRange(list);
-            await context.SaveChangesAsync();
+            // NOTE: ExecuteDelete does not need a SaveChanges
+            await context.Set<TEntity>().Where(predicate).ExecuteDeleteAsync();
         }
 
         public async Task DeleteManyAsync(IEnumerable<TEntity> entities)

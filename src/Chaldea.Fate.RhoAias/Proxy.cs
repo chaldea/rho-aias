@@ -32,6 +32,7 @@ public class Proxy
 
     public Proxy()
     {
+        Id = Guid.NewGuid();
     }
 
     public Proxy(RouteConfig route, ClusterConfig cluster)
@@ -87,7 +88,7 @@ public class Proxy
         Compressed = proxy.Compressed;
     }
 
-    public void UpdateLocalIp()
+    public void EnsureLocalIp()
     {
         if (string.IsNullOrEmpty(LocalIP) && !string.IsNullOrEmpty(Destination))
         {

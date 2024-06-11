@@ -5,8 +5,8 @@ public interface IClientManager
     Task<Result> RegisterClientAsync(Client register);
     Task UnRegisterClientAsync(string connectionId);
     Task CreateClientAsync(Client entity);
+    Task<Client?> GetClientAsync(Guid id);
     Task UpdateClientAsync(Client entity);
-    Task CreateDefaultClientAsync(Client entity);
     Task RemoveClientAsync(Guid id);
     Task<List<Client>> GetClientListAsync();
     Task InitClientMetricsAsync();
@@ -18,18 +18,15 @@ internal class ClientManager : IClientManager
 {
     private readonly IRepository<Client> _clientRepository;
     private readonly IForwarderManager _forwarderManager;
-    private readonly ITokenManager _tokenManager;
     private readonly IMetrics _metrics;
 
     public ClientManager(
         IRepository<Client> clientRepository,
         IForwarderManager forwarderManager,
-        ITokenManager tokenManager,
         IMetrics metrics)
     {
         _clientRepository = clientRepository;
         _forwarderManager = forwarderManager;
-        _tokenManager = tokenManager;
         _metrics = metrics;
     }
 
@@ -66,31 +63,18 @@ internal class ClientManager : IClientManager
         {
             return;
         }
-
-        entity.Id = Guid.NewGuid();
-        entity.GenTokenKey();
+        entity.EnsureToken();
         await _clientRepository.InsertAsync(entity);
         _metrics.UpDownClientTotal(1);
     }
 
     public async Task UpdateClientAsync(Client entity)
     {
-        if (await _clientRepository.AnyAsync(x => x.Name == entity.Name && x.Id != entity.Id)) return;
-        var item = await _clientRepository.GetAsync(x => x.Id == entity.Id);
-        if (item == null) return;
-        if (item.Name == entity.Name) return;
-        item.Name = entity.Name;
-        await _clientRepository.UpdateAsync(item);
-    }
-
-    public async Task CreateDefaultClientAsync(Client entity)
-    {
-        if (await _clientRepository.AnyAsync(x => x.Name == entity.Name))
+        if (await _clientRepository.AnyAsync(x => x.Name == entity.Name && x.Id != entity.Id))
         {
             return;
         }
-
-        await _clientRepository.InsertAsync(entity);
+        await _clientRepository.UpdateAsync(entity);
     }
 
     public async Task RemoveClientAsync(Guid id)
@@ -125,8 +109,13 @@ internal class ClientManager : IClientManager
         await _clientRepository.UpdateManyAsync(clients);
     }
 
-    public async Task<Client?> GetClientAsync(string key)
+    public async Task<Client?> GetClientAsync(string token)
     {
-        return await _clientRepository.GetAsync(x => x.Token == key);
+        return await _clientRepository.GetAsync(x => x.Token == token);
+    }
+
+    public async Task<Client?> GetClientAsync(Guid id)
+    {
+        return await _clientRepository.GetAsync(x => x.Id == id);
     }
 }
