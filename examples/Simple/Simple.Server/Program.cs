@@ -1,4 +1,4 @@
-using Custom.Server;
+using Simple.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +10,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddRhoAias(builder.Configuration);
 builder.Services.AddAhoAiasJwtBearerAuthentication(builder.Configuration);
-builder.Services.AddHostedService<CustomService>();
+builder.Services.AddHostedService<InitService>();
 
 var app = builder.Build();
 

@@ -1,4 +1,4 @@
-namespace Custom.Server
+namespace Simple.Server
 {
     public class WeatherForecast
     {

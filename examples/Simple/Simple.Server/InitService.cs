@@ -1,13 +1,13 @@
 ﻿using Chaldea.Fate.RhoAias;
 
-namespace Custom.Server;
+namespace Simple.Server;
 
-public class CustomService : IHostedService
+public class InitService : IHostedService
 {
     private readonly IClientManager _clientManager;
     private readonly IProxyManager _proxyManager;
 
-    public CustomService(IProxyManager proxyManager, IClientManager clientManager)
+    public InitService(IProxyManager proxyManager, IClientManager clientManager)
     {
         _proxyManager = proxyManager;
         _clientManager = clientManager;

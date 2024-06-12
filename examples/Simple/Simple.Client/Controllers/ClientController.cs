@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Custom.Client.Controllers
+namespace Simple.Client.Controllers
 {
     [ApiController]
     public class ClientController : ControllerBase

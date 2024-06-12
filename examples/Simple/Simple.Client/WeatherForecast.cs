@@ -1,4 +1,4 @@
-namespace Custom.Client
+namespace Simple.Client
 {
     public class WeatherForecast
     {
