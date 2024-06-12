@@ -12,11 +12,16 @@ public static class ServiceCollectionExtensions
 {
     public static IRhoAiasConfigurationBuilder AddAhoAiasJwtBearerAuthentication(this IRhoAiasConfigurationBuilder builder)
     {
-        var services = builder.Services;
+        builder.Services.AddAhoAiasJwtBearerAuthentication(builder.Configuration);
+        return builder;
+    }
+
+    public static IServiceCollection AddAhoAiasJwtBearerAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
         var configKey = "RhoAias:Authentication:Jwt";
         var options = new RhoAiasJwtOptions();
         services.AddOptions<RhoAiasJwtOptions>(configKey);
-        builder.Configuration.GetSection(configKey).Bind(options);
+        configuration.GetSection(configKey).Bind(options);
         services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -52,6 +57,6 @@ public static class ServiceCollectionExtensions
                 };
             });
         services.Replace(new ServiceDescriptor(typeof(ITokenManager), typeof(JwtBearerTokenManager), ServiceLifetime.Singleton));
-        return builder;
+        return services;
     }
 }
