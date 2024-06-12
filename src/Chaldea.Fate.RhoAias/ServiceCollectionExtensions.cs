@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IForwarderHttpClientFactory, WebForwarderHttpClientFactory>();
         services.AddSingleton<IForwarderManager, ForwarderManager>();
         services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
+        services.AddSingleton<InMemoryDbContext>();
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
         services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
         services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
