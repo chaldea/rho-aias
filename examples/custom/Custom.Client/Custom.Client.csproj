@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Chaldea.Fate.RhoAias.Authentication.JwtBearer\Chaldea.Fate.RhoAias.Authentication.JwtBearer.csproj" />
     <ProjectReference Include="..\..\..\src\Chaldea.Fate.RhoAias\Chaldea.Fate.RhoAias.csproj" />
   </ItemGroup>
 
