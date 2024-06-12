@@ -1,6 +1,7 @@
 ﻿using Chaldea.Fate.RhoAias;
 using Chaldea.Fate.RhoAias.Repository;
 using Chaldea.Fate.RhoAias.Repository.Sqlite;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,16 +12,27 @@ public static class ServiceCollectionExtensions
 {
     public static IRhoAiasConfigurationBuilder AddRhoAiasSqlite(this IRhoAiasConfigurationBuilder builder)
     {
-        var configuration = builder.Configuration;
-        builder.Services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetRhoAiasConnectionString()));
-        builder.Services.Replace(new ServiceDescriptor(typeof(IRepository<>), typeof(SqliteRepository<>), ServiceLifetime.Singleton));
-        builder.Services.AddTransient<IDbMigrator, RhoAiasDbMigrator>();
+        builder.Services.AddRhoAiasSqlite(builder.Configuration);
         return builder;
     }
 
     public static IRhoAiasApplicationBuilder UseRhoAiasSqlite(this IRhoAiasApplicationBuilder app)
     {
-        var migrator = app.Services.GetService<IDbMigrator>();
+        app.ApplicationBuilder.UseRhoAiasSqlite();
+        return app;
+    }
+
+    public static IServiceCollection AddRhoAiasSqlite(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContextFactory<RhoAiasDbContext>(options => options.UseSqlite(configuration.GetRhoAiasConnectionString()));
+        services.Replace(new ServiceDescriptor(typeof(IRepository<>), typeof(SqliteRepository<>), ServiceLifetime.Singleton));
+        services.AddTransient<IDbMigrator, RhoAiasDbMigrator>();
+        return services;
+    }
+
+    public static IApplicationBuilder UseRhoAiasSqlite(this IApplicationBuilder app)
+    {
+        var migrator = app.ApplicationServices.GetService<IDbMigrator>();
         migrator?.MigrateAsync().Wait();
         return app;
     }

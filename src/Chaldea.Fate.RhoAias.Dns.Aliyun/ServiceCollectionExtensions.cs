@@ -7,7 +7,13 @@ public static class ServiceCollectionExtensions
 {
     public static IRhoAiasConfigurationBuilder AddRhoAiasAliyunDns(this IRhoAiasConfigurationBuilder builder)
     {
-        builder.Services.AddKeyedSingleton<IDnsProvider, AliyunDnsProvider>("Aliyun");
+        builder.Services.AddRhoAiasAliyunDns();
         return builder;
+    }
+
+    public static IServiceCollection AddRhoAiasAliyunDns(this IServiceCollection services)
+    {
+        services.AddKeyedSingleton<IDnsProvider, AliyunDnsProvider>("Aliyun");
+        return services;
     }
 }
