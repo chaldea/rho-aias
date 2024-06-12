@@ -2,8 +2,8 @@
 using Chaldea.Fate.RhoAias.Acme.LetsEncrypt;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -11,18 +11,29 @@ public static class ServiceCollectionExtensions
 {
     public static IRhoAiasConfigurationBuilder AddRhoAiasLetsEncrypt(this IRhoAiasConfigurationBuilder builder)
     {
-        builder.Services.AddMemoryCache();
-        builder.Services.AddOptions<RhoAiasLetsEncryptOptions>("RhoAias:Acme:LetsEncrypt");
-        builder.Services.AddKeyedSingleton<IAcmeProvider, LetsEncryptAcmeProvider>("LetsEncrypt");
+        builder.Services.AddRhoAiasLetsEncrypt();
         return builder;
     }
 
     public static IRhoAiasApplicationBuilder UseRhoAiasLetsEncrypt(this IRhoAiasApplicationBuilder app)
     {
-        app.EndpointRouteBuilder.MapGet("/.well-known/acme-challenge/{token}",
+        app.EndpointRouteBuilder.MapRhoAiasLetsEncrypt();
+        return app;
+    }
+
+    public static IServiceCollection AddRhoAiasLetsEncrypt(this IServiceCollection services)
+    {
+        services.AddMemoryCache();
+        services.AddOptions<RhoAiasLetsEncryptOptions>("RhoAias:Acme:LetsEncrypt");
+        services.AddKeyedSingleton<IAcmeProvider, LetsEncryptAcmeProvider>("LetsEncrypt");
+        return services;
+    }
+
+    public static IEndpointRouteBuilder MapRhoAiasLetsEncrypt(this IEndpointRouteBuilder routeBuilder)
+    {
+        routeBuilder.MapGet("/.well-known/acme-challenge/{token}",
             async (IMemoryCache cache, HttpContext context, string token) =>
             {
-                app.Logger.LogInformation($"acme-challenge: {token}");
                 if (cache.TryGetValue(token, out var value))
                 {
                     context.Response.ContentType = "text/plain";
@@ -32,6 +43,6 @@ public static class ServiceCollectionExtensions
 
                 context.Response.StatusCode = 404;
             }).ExcludeFromDescription(); // ignore for swagger
-        return app;
+        return routeBuilder;
     }
 }
