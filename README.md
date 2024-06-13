@@ -10,7 +10,7 @@ Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以�
 - 客户端支持 k8s-ingress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
 - 支持基于 ACME 的 Https 证书申请，支持证书续期。
 - 支持 Metric 监控，可接入基于 OpenTelemetry 标准的监控工具，如 Prometheus。
-- 支持数据流压缩(压缩算法支持 gzip, snappy等)
+- 支持数据流压缩(压缩算法支持 gzip, snappy 等)
 
 ## 使用场景
 
@@ -75,7 +75,9 @@ docker compose up -d
 服务端启动后，打开 Dashboard 页面，[http://{公网 IP}:8024]()。输入用户名和密码，进入 Dashboard。默认服务器会生成一个测试用的客户端，你也可以在客户端列表中手动创建。
 ![client-token](docs/client-token.png)
 
-### 启动客户端(Docker 模式)
+### 启动客户端
+
+#### 方法一(Docker 模式)
 
 在内网机器上，创建如下启动配置：
 
@@ -105,7 +107,7 @@ Docker 启动参数说明
 | RhoAias\_\_Client\_\_ServerUrl | 服务端地址      |
 | RhoAias\_\_Client\_\_Token     | 客户端 TokenKey |
 
-### 启动客户端(二进制文件)
+#### 方法二(二进制程序模式)
 
 你可以在[Release](https://github.com/chaldea/rho-aias/releases)页面下载对应架构的客户端程序的二进制文件。
 
@@ -120,7 +122,7 @@ rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
 | -s, --server | 服务端地址      |
 | -t, --token  | 客户端 TokenKey |
 
-### 启动客户端(k8s-ingress)
+#### 方法三(k8s-ingress 模式)
 
 你可以直接使用 kubernetes 目录下提供的[ingress-controller.yaml](./kubernetes/ingress-controller.yaml)部署文件。或者使用 helm 安装。helm-chart 位于`./kubernetes/ingress-rho-aias` 目录下。
 
@@ -138,26 +140,33 @@ rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
 
 其中颁发机构 LetsEncrypt 支持单域名(a.sample.com)和泛域名(\*.sample.com)证书。其中泛域名证书需要通过 DNS 服务商验证。因此需要提供 DNS 服务商配置。
 
+**NOTE:** 一般情况下泛域名证书申请方式也可以申请普通的单域名证书。如果有DNS服务商接口，推荐优先使用泛域名申请方式。
+
+![forwards](docs/cert-create.png)
+
 ## 嵌入应用
 
-Rho-Aias 既可以作为独立应用部署，同时可以直接嵌入当前应用中。
-
-### 通过 nuget 包安装
+Rho-Aias 可以直接使用 nuget 包添加到当前项目中。
 
 ```sh
 dotnet add package Chaldea.Fate.RhoAias
 ```
 
-| Nuget 包                                      | 版本号 | 说明                                                            |
-| --------------------------------------------- | ------ | --------------------------------------------------------------- |
-| Chaldea.Fate.RhoAias                          | 1.1.0  | 核心包，如果只需要穿透功能，只安装该包即可                      |
-| Chaldea.Fate.RhoAias.Authentication.JwtBearer | 1.1.0  | jwt 认证包，客户端连接授权认证，如果已有自己 idserver，可以省去 |
-| Chaldea.Fate.RhoAias.Repository.Sqlite        | 1.1.0  | 仓储实现，默认数据存在内存，持久化需要实现 IRepository 接口     |
-| Chaldea.Fate.RhoAias.Metrics.Prometheus       | 1.1.0  | Metric 提供器，对外提供 Metric 数据接口                         |
-| Chaldea.Fate.RhoAias.Dashboard                | 1.1.0  | Dashboard 管理程序                                              |
-| Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | 1.1.0  | ACME 证书提供器                                                 |
-
 具体开发可以参考[开发文档]()
+
+### Nuget 包列表
+
+| Nuget 包                                      | 版本号                                                                                                                                                                | 说明                                                    |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | 核心包，支持代理和穿透功能                              |
+| Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME 证书提供器                                         |
+| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | Jwt 认证包，客户端连接授权认证(默认客户端是 Basic 认证) |
+| Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | 数据流压缩 Snappy 实现(默认压缩使用 gzip)               |
+| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashboard 管理程序                                      |
+| Chaldea.Fate.RhoAias.Dns.Aliyun               | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dns.Aliyun.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dns.Aliyun)                             | 阿里云 DNS 提供器实现                                   |
+| Chaldea.Fate.RhoAias.IngressController        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.IngressController.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.IngressController)               | k8s-ingress 实现                                        |
+| Chaldea.Fate.RhoAias.Metrics.Prometheus       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Metrics.Prometheus.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Metrics.Prometheus)             | Metric 提供器，对外提供 Metric 数据接口                 |
+| Chaldea.Fate.RhoAias.Repository.Sqlite        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Repository.Sqlite.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Repository.Sqlite)               | 仓储 Sqlite 实现(默认数据存储使用 InMemoryDb )          |
 
 ## 贡献
 
