@@ -9,7 +9,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddRhoAias(builder.Configuration);
-builder.Services.AddAhoAiasJwtBearerAuthentication(builder.Configuration);
 builder.Services.AddHostedService<InitService>();
 
 var app = builder.Build();
