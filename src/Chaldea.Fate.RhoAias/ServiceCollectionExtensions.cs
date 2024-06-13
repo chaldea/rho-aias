@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System.Net;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Microsoft.AspNetCore.Routing;
@@ -37,6 +38,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<ServerHostedService>();
         services.AddHostedService<CertRenewJob>();
         services.AddSingleton<ICompressor, GZipCompressor>();
+        services.AddAuthentication("Basic")
+            .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
         return services;
     }
 
