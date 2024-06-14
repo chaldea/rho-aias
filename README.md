@@ -126,8 +126,6 @@ rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
 
 你可以直接使用 kubernetes 目录下提供的[ingress-controller.yaml](./kubernetes/ingress-controller.yaml)部署文件。或者使用 helm 安装。helm-chart 位于`./kubernetes/ingress-rho-aias` 目录下。
 
-**注意：默认 ingress 是直接安装在 k8s 集群里的，如果要安装在集群外部，请确保该机器能够访问 k8s 集群，并配置`~/.kube/config`文件。**
-
 ### 创建转发规则
 
 在 Dashboard 的转发列表中，创建 http 转发，即可将指定的请求转发至内网指定的服务上。
@@ -152,7 +150,7 @@ Rho-Aias 可以直接使用 nuget 包添加到当前项目中。
 dotnet add package Chaldea.Fate.RhoAias
 ```
 
-具体开发可以参考[开发文档]()
+具体开发可以参考[开发文档](./docs/develop.md)
 
 ### Nuget 包列表
 
