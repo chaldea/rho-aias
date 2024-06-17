@@ -32,7 +32,6 @@ public class Proxy
 
     public Proxy()
     {
-        Id = Guid.NewGuid();
     }
 
     public Proxy(RouteConfig route, ClusterConfig cluster)
@@ -95,6 +94,14 @@ public class Proxy
             var uri = new Uri(Destination);
             LocalIP = uri.Host;
             LocalPort = uri.Port;
+        }
+    }
+
+    public void EnsureId()
+    {
+        if (Id == Guid.Empty)
+        {
+            Id = Guid.NewGuid();
         }
     }
 }
