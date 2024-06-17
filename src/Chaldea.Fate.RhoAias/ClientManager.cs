@@ -63,7 +63,7 @@ internal class ClientManager : IClientManager
         {
             return;
         }
-        entity.EnsureToken();
+        entity.EnsureIdToken();
         await _clientRepository.InsertAsync(entity);
         _metrics.UpDownClientTotal(1);
     }

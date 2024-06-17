@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using System.Text.RegularExpressions;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -15,23 +15,16 @@ public class Client
     public bool Status { get; set; }
     public ICollection<Proxy>? Proxies { get; set; }
 
-    public Client()
+    public void EnsureIdToken()
     {
-        Id = Guid.NewGuid();
-    }
-
-    public void EnsureToken()
-    {
+        if (Id == Guid.Empty) Id = Guid.NewGuid();
         if (string.IsNullOrEmpty(Token)) Token = Regex.Replace(Convert.ToBase64String(Id.ToByteArray()), "[/+=]", "");
     }
 
     public Result VersionCheck()
     {
         var version = Utilities.GetVersion();
-        if (!VersionCheck(version))
-        {
-            return Result.Error(ErrorCode.InvalidClientVersion.ToError(version, Version));
-        }
+        if (!VersionCheck(version)) return Result.Error(ErrorCode.InvalidClientVersion.ToError(version, Version));
 
         return Result.Success();
     }

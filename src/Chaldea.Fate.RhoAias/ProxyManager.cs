@@ -28,6 +28,7 @@ internal class ProxyManager : IProxyManager
         {
             return;
         }
+        entity.EnsureId();
         entity.EnsureLocalIp();
         await _proxyRepository.InsertAsync(entity);
         // get with client
@@ -91,6 +92,7 @@ internal class ProxyManager : IProxyManager
                 }
                 else
                 {
+                    proxy.EnsureId();
                     proxy.EnsureLocalIp();
                     insert.Add(proxy); // add new from client
                 }
