@@ -1,36 +1,61 @@
-# Rho-Aias
+# RhoAias
 
-Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以作为独立应用直接部署，同时也可以作为依赖库嵌入到当前 dotnet 程序中。
+RhoAias(/ˈroʊ/ - /ˈaɪ.əs/) is a library for reverse proxy and intranet traversal, that can be deployed directly as a standalone application or embedded as a dependency library in your dotnet application.
 
-## Rho-Aias 特性
+English | [简体中文](README-zh_CN.md)
 
-- 支持 http 反向代理，同时支持 Location 级别的内网转发。
-- 支持客户端无配置启动，可在 Dashboard 中动态下发转发规则配置。
-- 支持 TCP/UDP 端口转发，可以实现 SSH 连接内网，或者暴露内网端口。
-- 客户端支持 k8s-ingress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
-- 支持基于 ACME 的 Https 证书申请，支持证书续期。
-- 支持 Metric 监控，可接入基于 OpenTelemetry 标准的监控工具，如 Prometheus。
-- 支持数据流压缩(压缩算法支持 gzip, snappy 等)
+## Features
 
-## 使用场景
+- Support `HTTP` reverse proxy, which can forward requests based on the location level.
+- The client can be started without configuration, and the configuration can be delivered from the server dashboard
+- Support `TCP`/`UDP` port forwarding, which can be SSH connected to the private network
+- Support k8s-ingress. The client can be deployed as a k8s-ingress so that ingress traffic can be forwarded to the intranet k8s cluster.
+- Support ACME-based HTTPS certificate and certificate renewal
+- Support `Metrics` monitoring, which can be connected to OpenTelemetry-based monitoring tools, such as `Prometheus`
+- Support data stream compression (compression algorithm supports gzip, snappy, etc.)
+- Support `WAF`(web application firewall), which can defend against script and bot attacks
 
-### Http 请求转发
+## Usage Scenario
 
-将所有公网的 http 请求依据 path 路径转发至内网对应的服务上。
+RhoAias can be used in many scenarios, and the following is a set of use case diagrams to quickly understand the use cases of RhoAias.
 
-![http](docs/web-server.svg)
+#### 1.HTTP request forwarding
 
-### K8S-Ingress 转发
+Forward all HTTP requests from the public network to the intranet by the paths.
 
-将所有公网请求转发至内网的指定的 k8s 集群。
+![](docs/imgs/http-forwarding.svg)
 
-![k8s-ingress](docs/k8s-ingress.svg)
+#### 2.Multiple ENV forwarding
 
-## 开始使用
+RhoAias can forward requests to different `ENV` servers by the paths.
 
-### 服务端 Docker 部署
+![](docs/imgs/multiple-env.svg)
 
-需要准备一个有公网 IP 的机器，确保该机器已经安装 Docker 环境。
+#### 3.Load Balancing
+
+RhoAias supports load balancing across clients.
+
+![](docs/imgs/load-balancing.svg)
+
+**NOTE: Load balancing for a single client doesn't make sense.**
+
+#### 4.K8S-Ingress
+
+RhoAias client can be deployed as a k8s-ingress.
+
+![](docs/imgs/k8s-ingress.svg)
+
+#### 5.Port forwarding
+
+RhoAias can expose internal network ports to the public.
+
+![](docs/imgs/port-forwarding.svg)
+
+## Get Started
+
+### Server Deployment
+
+You need to prepare a machine with a public IP address and make sure that the machine has the Docker environment installed.
 
 ```yml
 services:
@@ -40,46 +65,53 @@ services:
     restart: always
     network_mode: host
     environment:
-      RhoAias__Server__Bridge: 8024 # 客户端连接端口
-      RhoAias__Server__Http: 80 # http请求转发端口
-      RhoAias__Server__Https: 443 # https请求转发端口
+      RhoAias__Server__Bridge: 8024 # Client connection port
+      RhoAias__Server__Http: 80 # HTTP request forwarding port
+      RhoAias__Server__Https: 443 # HTTPS request forwarding port
     volumes:
-      - rhoaias_server_data:/app/data # 数据存储目录
-      - rhoaias_server_certs:/app/certs # https证书存储目录
+      - rhoaias_server_data:/app/data # Data store directory
+      - rhoaias_server_certs:/app/certs # HTTPS cert store directory
 
 volumes:
   rhoaias_server_data:
   rhoaias_server_certs:
 ```
 
-复制以上配置到 docker-compose.yml 文件中。执行指令：
+Due to port forwarding requires listening on any port, so you need to enable the host network mode like `network_mode: host`.
+
+Save that configuration to `docker-compose.yml`,then exec
 
 ```sh
 docker compose up -d
 ```
 
-服务器环境参数配置表
+Determine that the ports on the docker container are reachable, If the port is unreachable, check your firewall configuration.
 
-| 环境变量                                    | 默认值   | 说明                                    |
-| ------------------------------------------- | -------- | --------------------------------------- |
-| RhoAias\_\_Server\_\_Bridge                 | 8024     | 客户端连接端口，以及 Dashboard 访问端口 |
-| RhoAias\_\_Server\_\_Http                   | 80       | Http 请求端口                           |
-| RhoAias\_\_Server\_\_Https                  | 443      | Https 请求端口                          |
-| RhoAias\_\_Dashboard\_\_UserName            | admin    | Dashboard 默认用户名                    |
-| RhoAias\_\_Dashboard\_\_Password            | 123456Aa | Dashboard 默认用户密码                  |
-| RhoAias\_\_Dashboard\_\_CreateDefaultUser   | true     | 是否创建默认用户                        |
-| RhoAias\_\_Dashboard\_\_CreateDefaultClient | true     | 是否生成默认客户端                      |
+**Server Environment Variables**
 
-### 生成客户端 Token
+| Variable Name                               | Default Value | Description                                                |
+| ------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| RhoAias\_\_Server\_\_Bridge                 | 8024          | The client connection port, and the Dashboard access port. |
+| RhoAias\_\_Server\_\_Http                   | 80            | HTTP request port.                                         |
+| RhoAias\_\_Server\_\_Https                  | 443           | HTTPS request port.                                        |
+| RhoAias\_\_Dashboard\_\_UserName            | admin         | Dashboard default username.                                |
+| RhoAias\_\_Dashboard\_\_Password            | 123456Aa      | Dashboard default password.                                |
+| RhoAias\_\_Dashboard\_\_CreateDefaultUser   | true          | Whether to create a default user.                          |
+| RhoAias\_\_Dashboard\_\_CreateDefaultClient | true          | Whether to generate a default client key.                  |
 
-服务端启动后，打开 Dashboard 页面，[http://{公网 IP}:8024]()。输入用户名和密码，进入 Dashboard。默认服务器会生成一个测试用的客户端，你也可以在客户端列表中手动创建。
-![client-token](docs/client-token.png)
+### Generate Client Token Key
 
-### 启动客户端
+After the server starts, enter the Dashboard(http://{public-ip}:8024) with the default username and password. The dashboard will auto generate a default client key, which you can also manually create in the client list page.
 
-#### 方法一(Docker 模式)
+![](docs/imgs/client-list.png)
 
-在内网机器上，创建如下启动配置：
+### Client Deployment
+
+RhoAias provides a variety of client deployment methods, such as docker, service, k8s-ingress etc.
+
+#### 1.Docker Mode
+
+Create a docker configuration file `docker-compose.yml` on your intranet machine.
 
 ```yml
 services:
@@ -88,85 +120,109 @@ services:
     image: chaldea/rhoaias-client
     restart: always
     environment:
-      # 公网IP或域名，确保8024端口可以正常对外访问
-      RhoAias__Client__ServerUrl: http://{公网IP}:8024
-      # 创建客户端时生成的Token
+      # your public server url address
+      RhoAias__Client__ServerUrl: http://{server-ip}:8024
+      # The token key that you created on the Dashboard
       RhoAias__Client__Token: PCv11vMiZkigHfnzcMLTFg
 ```
 
-执行以下指令后刷新 Dashboard 客户端列表，状态显示在线表示客户端连接成功。
+Then execute the command and ensure the client's status on the server dashboard page is online.
 
 ```sh
 docker compose up -d
 ```
 
-Docker 启动参数说明
+**Client Environment Variables**
 
-| 环境变量                       | 说明            |
-| ------------------------------ | --------------- |
-| RhoAias\_\_Client\_\_ServerUrl | 服务端地址      |
-| RhoAias\_\_Client\_\_Token     | 客户端 TokenKey |
+| Variable Name                  | Description         |
+| ------------------------------ | ------------------- |
+| RhoAias\_\_Client\_\_ServerUrl | Server url address. |
+| RhoAias\_\_Client\_\_Token     | Client `TokenKey`   |
 
-#### 方法二(二进制程序模式)
+#### 2.Console/Service Mode
 
-你可以在[Release](https://github.com/chaldea/rho-aias/releases)页面下载对应架构的客户端程序的二进制文件。
+You can download the client binary program on the [Release](https://github.com/chaldea/rho-aias/releases) page.
+
+Runs as console:
 
 ```sh
-rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
+rhoaias-client -s http://{server-ip}:8024 -t PCv11vMiZkigHfnzcMLTFg
 ```
 
-使用以上指令可以直接启动客户端。
+| Startup Parameters | Description         |
+| ------------------ | ------------------- |
+| -s, --server       | Server url address. |
+| -t, --token        | Client `TokenKey`   |
 
-| 启动参数     | 说明            |
-| ------------ | --------------- |
-| -s, --server | 服务端地址      |
-| -t, --token  | 客户端 TokenKey |
+If you want to run the client as a system service:
 
-#### 方法三(k8s-ingress 模式)
+- On the windows, you can use [nssm](https://nssm.cc/usage)
+- On the linux, you can use systemd
 
-你可以直接使用 kubernetes 目录下提供的[ingress-controller.yaml](./kubernetes/ingress-controller.yaml)部署文件。或者使用 helm 安装。helm-chart 位于`./kubernetes/ingress-rho-aias` 目录下。
+#### 3.K8S-Ingress Mode
 
-### 创建转发规则
+In your K8s cluster, create a namespace:
 
-在 Dashboard 的转发列表中，创建 http 转发，即可将指定的请求转发至内网指定的服务上。
+```bash
+kubectl create namespace rho-aias
+```
 
-![forwards](docs/forward.png)
+Apply the deployment configuration file.
 
-### Https 证书申请
+```bash
+kubectl apply -f https://github.com/chaldea/rho-aias/blob/main/kubernetes/ingress-controller.yaml -n rho-aias
+```
 
-对于建站，通常都需要 Https 证书来保证网站安全。Rho-Aias 支持 ACME 免费 https 证书。只需要在证书管理页面申请即可。
+Check if the Deployment was created.
 
-其中颁发机构 LetsEncrypt 支持单域名(a.sample.com)和泛域名(\*.sample.com)证书。其中泛域名证书需要通过 DNS 服务商验证。因此需要提供 DNS 服务商配置。
+```bash
+kubectl get deployments
+```
 
-**NOTE:** 一般情况下泛域名证书申请方式也可以申请普通的单域名证书。如果有DNS服务商接口，推荐优先使用泛域名申请方式。
+RhoAias can be installed via the helm tool, and the chart is located in the `./kubernetes/ingress-rho-aias` directory.
 
-![forwards](docs/cert-create.png)
+### Generate forwarding rule
 
-## 嵌入应用
+In the forwarding list of the Dashboard, you can create different types of forwarding rules for a specified client, and all requests that meet the rules will be forwarded to the intranet where the client is located.
 
-Rho-Aias 可以直接使用 nuget 包添加到当前项目中。
+![](docs/imgs/proxy-list.png)
+
+### Generate HTTPS certificate
+
+Normally, a website requires an HTTPS certificate to keep the site secure. RhoAias has a built-in https certificate manager, you can apply for a free https certificate based on the `ACME` protocol. The certificate will be automatically renewed upon expiration.
+
+`Let'sEncrypt` supports both `single-domain`(eg: a.sample.com) and `wildcard domain`(eg: \*.sample.com) certificates. A wildcard domain certificate must be supported by DNS provider. When you apply for a wildcard domain certificate, you need to provide the configuration of the DNS provider.
+
+![](docs/imgs//cert-list.png)
+
+**NOTE: Wildcard domain certificate include single-domain certificate, and if you have a DNS provider API, we recommend that you use wildcard domain certificate.**
+
+## Development
+
+RhoAias can be added directly to the current project as a nuget package.
 
 ```sh
 dotnet add package Chaldea.Fate.RhoAias
 ```
 
-具体开发可以参考[开发文档](./docs/develop.md)
+For details, please refer to the [development documentation](docs/development.md).
 
-### Nuget 包列表
+### Nuget packages
 
-| Nuget 包                                      | 版本号                                                                                                                                                                | 说明                                                    |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | 核心包，支持代理和穿透功能                              |
-| Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME 证书提供器                                         |
-| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | Jwt 认证包，客户端连接授权认证(默认客户端是 Basic 认证) |
-| Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | 数据流压缩 Snappy 实现(默认压缩使用 gzip)               |
-| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashboard 管理程序                                      |
-| Chaldea.Fate.RhoAias.Dns.Aliyun               | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dns.Aliyun.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dns.Aliyun)                             | 阿里云 DNS 提供器实现                                   |
-| Chaldea.Fate.RhoAias.IngressController        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.IngressController.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.IngressController)               | k8s-ingress 实现                                        |
-| Chaldea.Fate.RhoAias.Metrics.Prometheus       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Metrics.Prometheus.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Metrics.Prometheus)             | Metric 提供器，对外提供 Metric 数据接口                 |
-| Chaldea.Fate.RhoAias.Repository.Sqlite        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Repository.Sqlite.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Repository.Sqlite)               | 仓储 Sqlite 实现(默认数据存储使用 InMemoryDb )          |
+| Package Name                                  | Build Version                                                                                                                                                         | Description                                            |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | Core package for reverse proxy and intranet traversal. |
+| Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME provider package for HTTPS certificate.           |
+| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | JWT certificate package for client connections         |
+| Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | Snappy compression algorithm package for data stream.  |
+| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashbod api and static web assets package.             |
+| Chaldea.Fate.RhoAias.Dns.Aliyun               | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dns.Aliyun.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dns.Aliyun)                             | DNS service provider for Aliyun.                       |
+| Chaldea.Fate.RhoAias.IngressController        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.IngressController.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.IngressController)               | k8s-ingress controller package.                        |
+| Chaldea.Fate.RhoAias.Metrics.Prometheus       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Metrics.Prometheus.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Metrics.Prometheus)             | Metric API package for prometheus.                     |
+| Chaldea.Fate.RhoAias.Repository.Sqlite        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Repository.Sqlite.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Repository.Sqlite)               | Repository package for sqlite.                         |
 
-## 贡献
+## Contributing
 
-- 使用遇到问题可以通过 issues 反馈
-- 项目处于开发阶段，还有很多待完善的地方，如果可以贡献代码，请提交 PR
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/chaldea/rho-aias/pulls)
+
+If you would like to contribute, feel free to create a [Pull Request](https://github.com/chaldea/rho-aias/pulls), or give us [Bug Report](https://github.com/chaldea/rho-aias/issues/new).
