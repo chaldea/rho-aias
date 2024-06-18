@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "src/**"
+      - "dashboard/**"
 
 env:
   VERSION: 1.0.0
