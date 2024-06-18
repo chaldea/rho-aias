@@ -2,6 +2,8 @@
 
 RhoAias(/ˈroʊ/ - /ˈaɪ.əs/) is a library for reverse proxy and intranet traversal, that can be deployed directly as a standalone application or embedded as a dependency library in your dotnet application.
 
+English | [简体中文](README-zh_CN.md)
+
 ## Features
 
 - Support `HTTP` reverse proxy, which can forward requests based on the location level.
@@ -31,7 +33,7 @@ RhoAias can forward requests to different `ENV` servers by the paths.
 
 #### 3.Load Balancing
 
-RhoAias supports load balancing across DCs or regions.
+RhoAias supports load balancing across clients.
 
 ![](docs/imgs/load-balancing.svg)
 
@@ -105,7 +107,7 @@ After the server starts, enter the Dashboard(http://{public-ip}:8024) with the d
 
 ### Client Deployment
 
-RhoAias provides a variety of client deployment methods, such as docker, binary, k8s-ingress etc.
+RhoAias provides a variety of client deployment methods, such as docker, service, k8s-ingress etc.
 
 #### 1.Docker Mode
 
@@ -137,7 +139,7 @@ docker compose up -d
 | RhoAias\_\_Client\_\_ServerUrl | Server url address. |
 | RhoAias\_\_Client\_\_Token     | Client `TokenKey`   |
 
-#### 2.Binary Service Mode(Optional)
+#### 2.Console/Service Mode
 
 You can download the client binary program on the [Release](https://github.com/chaldea/rho-aias/releases) page.
 
@@ -152,17 +154,75 @@ rhoaias-client -s http://{server-ip}:8024 -t PCv11vMiZkigHfnzcMLTFg
 | -s, --server       | Server url address. |
 | -t, --token        | Client `TokenKey`   |
 
+If you want to run the client as a system service:
 
-If you need to run the client as a system service:
+- On the windows, you can use [nssm](https://nssm.cc/usage)
+- On the linux, you can use systemd
 
-* On the windows, you can use [nssm](https://nssm.cc/usage)
-* On the linux, you can use systemd
-
-#### 3.K8S-Ingress Mode(Optional)
+#### 3.K8S-Ingress Mode
 
 In your K8s cluster, create a namespace:
-```bash
 
+```bash
+kubectl create namespace rho-aias
 ```
 
+Apply the deployment configuration file.
 
+```bash
+kubectl apply -f https://github.com/chaldea/rho-aias/blob/main/kubernetes/ingress-controller.yaml -n rho-aias
+```
+
+Check if the Deployment was created.
+
+```bash
+kubectl get deployments
+```
+
+RhoAias can be installed via the helm tool, and the chart is located in the `./kubernetes/ingress-rho-aias` directory.
+
+### Generate forwarding rule
+
+In the forwarding list of the Dashboard, you can create different types of forwarding rules for a specified client, and all requests that meet the rules will be forwarded to the intranet where the client is located.
+
+![](docs/imgs/proxy-list.png)
+
+### Generate HTTPS certificate
+
+Normally, a website requires an HTTPS certificate to keep the site secure. RhoAias has a built-in https certificate manager, you can apply for a free https certificate based on the `ACME` protocol. The certificate will be automatically renewed upon expiration.
+
+`Let'sEncrypt` supports both `single-domain`(eg: a.sample.com) and `wildcard domain`(eg: \*.sample.com) certificates. A wildcard domain certificate must be supported by DNS provider. When you apply for a wildcard domain certificate, you need to provide the configuration of the DNS provider.
+
+![](docs/imgs//cert-list.png)
+
+**NOTE: Wildcard domain certificate include single-domain certificate, and if you have a DNS provider API, we recommend that you use wildcard domain certificate.**
+
+## Development
+
+RhoAias can be added directly to the current project as a nuget package.
+
+```sh
+dotnet add package Chaldea.Fate.RhoAias
+```
+
+For details, please refer to the [development documentation](docs/development.md).
+
+### Nuget packages
+
+| Package Name                                  | Build Version                                                                                                                                                         | Description                                            |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | Core package for reverse proxy and intranet traversal. |
+| Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME provider package for HTTPS certificate.           |
+| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | JWT certificate package for client connections         |
+| Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | Snappy compression algorithm package for data stream.  |
+| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashbod api and static web assets package.             |
+| Chaldea.Fate.RhoAias.Dns.Aliyun               | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dns.Aliyun.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dns.Aliyun)                             | DNS service provider for Aliyun.                       |
+| Chaldea.Fate.RhoAias.IngressController        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.IngressController.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.IngressController)               | k8s-ingress controller package.                        |
+| Chaldea.Fate.RhoAias.Metrics.Prometheus       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Metrics.Prometheus.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Metrics.Prometheus)             | Metric API package for prometheus.                     |
+| Chaldea.Fate.RhoAias.Repository.Sqlite        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Repository.Sqlite.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Repository.Sqlite)               | Repository package for sqlite.                         |
+
+## Contributing
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/chaldea/rho-aias/pulls)
+
+If you would like to contribute, feel free to create a [Pull Request](https://github.com/chaldea/rho-aias/pulls), or give us [Bug Report](https://github.com/chaldea/rho-aias/issues/new).

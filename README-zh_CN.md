@@ -1,11 +1,13 @@
-# Rho-Aias
+# RhoAias
 
-Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以作为独立应用直接部署，同时也可以作为依赖库嵌入到当前 dotnet 程序中。
+Rho-Aias(/ˈroʊ/ - /ˈaɪ.əs/) 是一个用于反向代理和内网穿透的工具库，它既可以作为独立应用直接部署，同时也可以作为依赖库嵌入到当前 dotnet 程序中。
 
-## Rho-Aias 特性
+[English](README.md) | 简体中文
 
-- 支持 http 反向代理，同时支持 Location 级别的内网转发。
-- 支持客户端无配置启动，可在 Dashboard 中动态下发转发规则配置。
+## RhoAias 特性
+
+- 支持 http 反向代理，可以基于 location 级别转发 http 请求。
+- 支持客户端无配置启动，可在 Dashboard 中动态下发转发配置。
 - 支持 TCP/UDP 端口转发，可以实现 SSH 连接内网，或者暴露内网端口。
 - 客户端支持 k8s-ingress，客户端监听 ingress 配置，并将入口流量转发到内网 k8s 集群。
 - 支持基于 ACME 的 Https 证书申请，支持证书续期。
@@ -14,17 +16,39 @@ Rho-Aias 是一个用于反向代理和内网穿透的工具库，它既可以�
 
 ## 使用场景
 
-### Http 请求转发
+RhoAias 可以用在很多场景下，下面用一组用例来让你快速了解 RhoAias 的使用场景。
+
+#### 1.Http 请求转发
 
 将所有公网的 http 请求依据 path 路径转发至内网对应的服务上。
 
-![http](docs/web-server.svg)
+![](docs/imgs/http-forwarding.svg)
 
-### K8S-Ingress 转发
+#### 2.多环境转发
 
-将所有公网请求转发至内网的指定的 k8s 集群。
+RhoAias 可以依据 path 将请求转发至不同的环境中。
 
-![k8s-ingress](docs/k8s-ingress.svg)
+![](docs/imgs/multiple-env.svg)
+
+#### 3.负载均衡
+
+RhoAias 支持跨多个客户端的负载均衡。
+
+![](docs/imgs/load-balancing.svg)
+
+**注意：单个客户端做负载均衡是没有意义的。**
+
+#### 4.K8S-Ingress 转发
+
+RhoAias 可以作为 Ingress Controller 部署，将所有公网请求转发至内网的指定的 k8s 集群。
+
+![](docs/imgs/k8s-ingress.svg)
+
+#### 5.端口转发
+
+RhoAias 可以将内网端口暴露到公网上。
+
+![](docs/imgs/port-forwarding.svg)
 
 ## 开始使用
 
@@ -52,13 +76,17 @@ volumes:
   rhoaias_server_certs:
 ```
 
-复制以上配置到 docker-compose.yml 文件中。执行指令：
+由于端口转发需要随时监听端口，所以需要将网络设置成 host 模式，如：`network_mode: host`
+
+保存以上配置到 docker-compose.yml 文件中。执行指令：
 
 ```sh
 docker compose up -d
 ```
 
-服务器环境参数配置表
+容器启动后需要确认上述端口是否可以访问，如果无法访问请检查防火墙配置。
+
+**服务器环境变量**
 
 | 环境变量                                    | 默认值   | 说明                                    |
 | ------------------------------------------- | -------- | --------------------------------------- |
@@ -72,14 +100,17 @@ docker compose up -d
 
 ### 生成客户端 Token
 
-服务端启动后，打开 Dashboard 页面，[http://{公网 IP}:8024]()。输入用户名和密码，进入 Dashboard。默认服务器会生成一个测试用的客户端，你也可以在客户端列表中手动创建。
-![client-token](docs/client-token.png)
+服务端启动后，打开 Dashboard(http://{public-ip}:8024) 页面。输入用户名和密码，进入 Dashboard。默认服务器会生成一个测试用的客户端，你也可以在客户端列表中手动创建。
 
-### 启动客户端
+![](docs/imgs/client-list.png)
 
-#### 方法一(Docker 模式)
+### 部署客户端
 
-在内网机器上，创建如下启动配置：
+RhoAias 提供了多种方式部署客户端，如 docker， 控制台程序， k8s-ingress 等。
+
+#### 1.Docker 模式
+
+在内网机器上，创建如下 docker 配置：
 
 ```yml
 services:
@@ -88,61 +119,84 @@ services:
     image: chaldea/rhoaias-client
     restart: always
     environment:
-      # 公网IP或域名，确保8024端口可以正常对外访问
-      RhoAias__Client__ServerUrl: http://{公网IP}:8024
+      # 服务端url地址
+      RhoAias__Client__ServerUrl: http://{server-ip}:8024
       # 创建客户端时生成的Token
       RhoAias__Client__Token: PCv11vMiZkigHfnzcMLTFg
 ```
 
-执行以下指令后刷新 Dashboard 客户端列表，状态显示在线表示客户端连接成功。
+执行以下指令后在服务端 Dashboard 中确保客户端状态显示为在线。
 
 ```sh
 docker compose up -d
 ```
 
-Docker 启动参数说明
+**客户端环境变量**
 
 | 环境变量                       | 说明            |
 | ------------------------------ | --------------- |
 | RhoAias\_\_Client\_\_ServerUrl | 服务端地址      |
 | RhoAias\_\_Client\_\_Token     | 客户端 TokenKey |
 
-#### 方法二(二进制程序模式)
+#### 2.控制台或系统服务模式
 
 你可以在[Release](https://github.com/chaldea/rho-aias/releases)页面下载对应架构的客户端程序的二进制文件。
+
+作为控制台程序启动：
 
 ```sh
 rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
 ```
-
-使用以上指令可以直接启动客户端。
 
 | 启动参数     | 说明            |
 | ------------ | --------------- |
 | -s, --server | 服务端地址      |
 | -t, --token  | 客户端 TokenKey |
 
-#### 方法三(k8s-ingress 模式)
+如果你需要它作为系统服务启动：
 
-你可以直接使用 kubernetes 目录下提供的[ingress-controller.yaml](./kubernetes/ingress-controller.yaml)部署文件。或者使用 helm 安装。helm-chart 位于`./kubernetes/ingress-rho-aias` 目录下。
+- 在 Windows 平台, 你可以使用[nssm](https://nssm.cc/usage)
+- 在 Linux 平台，你可以使用 systemd
+
+#### 3.k8s-ingress 模式
+
+在 k8s 集群的管理节点上，执行以下指令创建 namespace
+
+```bash
+kubectl create namespace rho-aias
+```
+
+应用 Deployment 配置文件
+
+```bash
+kubectl apply -f https://github.com/chaldea/rho-aias/blob/main/kubernetes/ingress-controller.yaml -n rho-aias
+```
+
+检查 Deployment 应用状态
+
+```bash
+kubectl get deployments
+```
+
+RhoAias 支持使用 helm 工具安装。helm-chart 位于`./kubernetes/ingress-rho-aias` 目录下。
 
 ### 创建转发规则
 
-在 Dashboard 的转发列表中，创建 http 转发，即可将指定的请求转发至内网指定的服务上。
+在 Dashboard 的转发列表页面，你可以为指定的客户端创建不同类型的转发规则，所有符合规则的请求将会转发至客户端所在的内网。
 
-![forwards](docs/forward.png)
+![](docs/imgs/proxy-list.png)
 
 ### Https 证书申请
 
-对于建站，通常都需要 Https 证书来保证网站安全。Rho-Aias 支持 ACME 免费 https 证书。只需要在证书管理页面申请即可。
+通常我们会使用 HTTPS 正式来确保网站的安全，RhoAias 内置支持证书管理器，你可在 Dashboard 的证书管理页面申请免费的 HTTPS 证书。证书也支持自动续期。
 
-其中颁发机构 LetsEncrypt 支持单域名(a.sample.com)和泛域名(\*.sample.com)证书。其中泛域名证书需要通过 DNS 服务商验证。因此需要提供 DNS 服务商配置。
+`Let'sEncrypt` 支持单域名(如: a.sample.com)和泛域名(如: \*.sample.com)两种类型证书。泛域名证书需要 DNS 服务商提供接口支持。如果要使用泛域名，你需要在 Dashboard 的 DNS 提供商页面配置。
 
-**NOTE:** 一般情况下泛域名证书申请方式也可以申请普通的单域名证书。如果有DNS服务商接口，推荐优先使用泛域名申请方式。
+![](docs/imgs//cert-list.png)
 
-![forwards](docs/cert-create.png)
+**NOTE: 泛域名证书是包含单域名证书，因为如果你有 DNS 服务商接口，推荐使用泛域名模式。**
 
-## 嵌入应用
+## 应用集成
 
 Rho-Aias 可以直接使用 nuget 包添加到当前项目中。
 
@@ -150,13 +204,13 @@ Rho-Aias 可以直接使用 nuget 包添加到当前项目中。
 dotnet add package Chaldea.Fate.RhoAias
 ```
 
-具体开发可以参考[开发文档](./docs/develop.md)
+具体开发可以参考[开发文档](docs/development.md)
 
 ### Nuget 包列表
 
 | Nuget 包                                      | 版本号                                                                                                                                                                | 说明                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | 核心包，支持代理和穿透功能                              |
+| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | 核心包，支持反向代理和内网穿透                          |
 | Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME 证书提供器                                         |
 | Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | Jwt 认证包，客户端连接授权认证(默认客户端是 Basic 认证) |
 | Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | 数据流压缩 Snappy 实现(默认压缩使用 gzip)               |
@@ -168,5 +222,6 @@ dotnet add package Chaldea.Fate.RhoAias
 
 ## 贡献
 
-- 使用遇到问题可以通过 issues 反馈
-- 项目处于开发阶段，还有很多待完善的地方，如果可以贡献代码，请提交 PR
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/chaldea/rho-aias/pulls)
+
+如果你想要贡献，随时欢迎你提交 [Pull Request](https://github.com/chaldea/rho-aias/pulls), 或者返回 Bug [Bug Report](https://github.com/chaldea/rho-aias/issues/new)。
