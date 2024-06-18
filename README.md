@@ -1,6 +1,6 @@
 # RhoAias
 
-RhoAias(/ˈroʊ/ - /ˈaɪ.əs/) is a library for reverse proxy and intranet traversal, that can be deployed directly as a standalone application or embedded as a dependency library in your dotnet application.
+RhoAias(/ˈroʊ/ - /ˈaɪ.əs/) is a library for reverse proxy and intranet penetration, that can be deployed directly as a standalone application or embedded as a dependency library in your dotnet application.
 
 English | [简体中文](README-zh_CN.md)
 
@@ -213,9 +213,9 @@ For details, please refer to the [development documentation](docs/development.md
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | Core package for reverse proxy and intranet traversal. |
 | Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME provider package for HTTPS certificate.           |
-| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | JWT certificate package for client connections         |
+| Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | JWT authentication package for client connections         |
 | Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | Snappy compression algorithm package for data stream.  |
-| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashbod api and static web assets package.             |
+| Chaldea.Fate.RhoAias.Dashboard                | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dashboard.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dashboard)                               | Dashboard api and static web assets package.             |
 | Chaldea.Fate.RhoAias.Dns.Aliyun               | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Dns.Aliyun.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Dns.Aliyun)                             | DNS service provider for Aliyun.                       |
 | Chaldea.Fate.RhoAias.IngressController        | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.IngressController.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.IngressController)               | k8s-ingress controller package.                        |
 | Chaldea.Fate.RhoAias.Metrics.Prometheus       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Metrics.Prometheus.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Metrics.Prometheus)             | Metric API package for prometheus.                     |
