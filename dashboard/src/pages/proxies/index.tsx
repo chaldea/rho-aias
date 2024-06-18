@@ -194,7 +194,7 @@ const Forwards: React.FC = () => {
           maskClosable: false,
           destroyOnClose: true,
         }}
-        initialValues={editItem || { path: '/{**catch-all}' }}
+        initialValues={editItem || { path: '/{**catch-all}', compressed: false }}
         onOpenChange={(visible) => {
           setOpen(visible);
           if (!visible) {
