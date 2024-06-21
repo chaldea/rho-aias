@@ -1,6 +1,6 @@
 # RhoAias
 
-Rho-Aias(/ˈroʊ/ - /ˈaɪ.əs/) 是一个用于反向代理和内网穿透的工具库，它既可以作为独立应用直接部署，同时也可以作为依赖库嵌入到当前 dotnet 程序中。
+RhoAias(/ˈroʊ/ - /ˈaɪ.əs/) 是一个用于反向代理和内网穿透的工具库，它既可以作为独立应用直接部署，同时也可以作为依赖库嵌入到当前 dotnet 程序中。
 
 [English](README.md) | 简体中文
 
@@ -60,7 +60,7 @@ RhoAias 可以将内网端口暴露到公网上。
 services:
   rhoaias-server:
     container_name: rhoaias-server
-    image: chaldea/rhoaias-server
+    image: registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-server
     restart: always
     network_mode: host
     environment:
@@ -116,7 +116,7 @@ RhoAias 提供了多种方式部署客户端，如 docker， 控制台程序， 
 services:
   rhoaias-client:
     container_name: rhoaias-client
-    image: chaldea/rhoaias-client
+    image: registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-client
     restart: always
     environment:
       # 服务端url地址
@@ -145,7 +145,7 @@ docker compose up -d
 作为控制台程序启动：
 
 ```sh
-rhoaias-client -s http://{公网IP}:8024 -t PCv11vMiZkigHfnzcMLTFg
+rhoaias-client -s http://{server-ip}:8024 -t PCv11vMiZkigHfnzcMLTFg
 ```
 
 | 启动参数     | 说明            |
