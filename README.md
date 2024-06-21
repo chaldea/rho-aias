@@ -9,10 +9,10 @@ English | [简体中文](README-zh_CN.md)
 - Support `HTTP` reverse proxy, which can forward requests based on the location level.
 - The client can be started without configuration, and the configuration can be delivered from the server dashboard
 - Support `TCP`/`UDP` port forwarding, which can be SSH connected to the private network
-- Support k8s-ingress. The client can be deployed as a k8s-ingress so that ingress traffic can be forwarded to the intranet k8s cluster.
-- Support ACME-based HTTPS certificate and certificate renewal
+- Support `k8s-ingress`. The client can be deployed as a k8s-ingress so that ingress traffic can be forwarded to the intranet k8s cluster.
+- Support ACME-based `HTTPS` certificate and certificate renewal
 - Support `Metrics` monitoring, which can be connected to OpenTelemetry-based monitoring tools, such as `Prometheus`
-- Support data stream compression (compression algorithm supports gzip, snappy, etc.)
+- Support data stream `compression` (compression algorithm supports gzip, snappy, etc.)
 - Support `WAF`(web application firewall), which can defend against script and bot attacks
 
 ## Usage Scenario

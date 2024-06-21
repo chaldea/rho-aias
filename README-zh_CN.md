@@ -224,4 +224,4 @@ dotnet add package Chaldea.Fate.RhoAias
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/chaldea/rho-aias/pulls)
 
-如果你想要贡献，随时欢迎你提交 [Pull Request](https://github.com/chaldea/rho-aias/pulls), 或者返回 Bug [Bug Report](https://github.com/chaldea/rho-aias/issues/new)。
+如果你想要贡献，随时欢迎你提交 [Pull Request](https://github.com/chaldea/rho-aias/pulls), 或者反馈 Bug [Bug Report](https://github.com/chaldea/rho-aias/issues/new)。
