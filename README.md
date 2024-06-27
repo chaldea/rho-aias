@@ -9,10 +9,10 @@ English | [简体中文](README-zh_CN.md)
 - Support `HTTP` reverse proxy, which can forward requests based on the location level.
 - The client can be started without configuration, and the configuration can be delivered from the server dashboard
 - Support `TCP`/`UDP` port forwarding, which can be SSH connected to the private network
-- Support k8s-ingress. The client can be deployed as a k8s-ingress so that ingress traffic can be forwarded to the intranet k8s cluster.
-- Support ACME-based HTTPS certificate and certificate renewal
+- Support `k8s-ingress`. The client can be deployed as a k8s-ingress so that ingress traffic can be forwarded to the intranet k8s cluster.
+- Support ACME-based `HTTPS` certificate and certificate renewal
 - Support `Metrics` monitoring, which can be connected to OpenTelemetry-based monitoring tools, such as `Prometheus`
-- Support data stream compression (compression algorithm supports gzip, snappy, etc.)
+- Support data stream `compression` (compression algorithm supports gzip, snappy, etc.)
 - Support `WAF`(web application firewall), which can defend against script and bot attacks
 
 ## Usage Scenario
@@ -211,7 +211,7 @@ For details, please refer to the [development documentation](docs/development.md
 
 | Package Name                                  | Build Version                                                                                                                                                         | Description                                            |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | Core package for reverse proxy and intranet traversal. |
+| Chaldea.Fate.RhoAias                          | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias)                                                   | Core package for reverse proxy and intranet penetration. |
 | Chaldea.Fate.RhoAias.Acme.LetsEncrypt         | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Acme.LetsEncrypt.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Acme.LetsEncrypt)                 | ACME provider package for HTTPS certificate.           |
 | Chaldea.Fate.RhoAias.Authentication.JwtBearer | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Authentication.JwtBearer.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Authentication.JwtBearer) | JWT authentication package for client connections         |
 | Chaldea.Fate.RhoAias.Compression.Snappy       | [![](https://img.shields.io/nuget/v/Chaldea.Fate.RhoAias.Compression.Snappy.svg)](https://www.nuget.org/packages/Chaldea.Fate.RhoAias.Compression.Snappy)             | Snappy compression algorithm package for data stream.  |
