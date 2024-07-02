@@ -169,7 +169,7 @@ internal class ClientConnection : IClientConnection
             _logger.LogInformation($"CreateForwarder: {proxy.LocalIP}:{proxy.LocalPort}");
             var cancellationToken = CancellationToken.None;
             using (var serverStream = await CreateRemote(requestId, cancellationToken))
-            using (var localStream = await CreateLocal(requestId, proxy.LocalIP, proxy.LocalPort, cancellationToken))
+            using (var localStream = await CreateLocal(proxy.Type, proxy.LocalIP, proxy.LocalPort, cancellationToken))
             {
                 if (proxy.Compressed)
                 {
@@ -191,10 +191,20 @@ internal class ClientConnection : IClientConnection
         });
     }
 
-    private async Task<Stream> CreateLocal(string requestId, string localIp, int port, CancellationToken cancellationToken)
+    private async Task<Stream> CreateLocal(ProxyType type, string localIp, int port, CancellationToken cancellationToken)
     {
-        var socket = await ConnectAsync(localIp, port);
-        return new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
+        if (type == ProxyType.UDP)
+        {
+            _logger.LogInformation($"Create socket: {localIp}:{port}");
+            var client = new UdpClient();
+            client.Connect(localIp, port);
+            return client.GetStream();
+        }
+        else
+        {
+            var socket = await ConnectAsync(localIp, port);
+            return new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
+        }
     }
 
     private async Task<Stream> CreateRemote(string requestId, CancellationToken cancellationToken)

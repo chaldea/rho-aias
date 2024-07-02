@@ -23,10 +23,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IForwarderManager, ForwarderManager>();
         services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         services.AddSingleton<InMemoryDbContext>();
-        services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTP);
-        services.AddKeyedTransient<IForwarder, WebForwarder>(ProxyType.HTTPS);
-        services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.TCP);
-        services.AddKeyedTransient<IForwarder, PortForwarder>(ProxyType.UDP);
+        services.AddKeyedTransient<IForwarder, HttpForwarder>(ProxyType.HTTP);
+        services.AddKeyedTransient<IForwarder, HttpForwarder>(ProxyType.HTTPS);
+        services.AddKeyedTransient<IForwarder, TcpForwarder>(ProxyType.TCP);
+        services.AddKeyedTransient<IForwarder, UdpForwarder>(ProxyType.UDP);
         services.AddSingleton<ITokenManager, TokenManager>();
         services.AddSingleton<IClientManager, ClientManager>();
         services.AddSingleton<IProxyManager, ProxyManager>();
