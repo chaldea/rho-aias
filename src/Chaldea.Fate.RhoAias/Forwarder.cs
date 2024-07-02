@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Connections.Features;
-using System.Text;
 using System.Net.Sockets;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Yarp.ReverseProxy.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Buffers;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -85,13 +85,13 @@ abstract class ForwarderBase : IForwarder
     }
 }
 
-internal class WebForwarder : ForwarderBase
+internal class HttpForwarder : ForwarderBase
 {
     private readonly ILogger<ForwarderManager> _logger;
     private readonly IHubContext<ClientHub> _hub;
     private readonly IProxyConfigProvider _proxyConfigProvider;
 
-    public WebForwarder(
+    public HttpForwarder(
         ILogger<ForwarderManager> logger,
         IHubContext<ClientHub> hub,
         IProxyConfigProvider proxyConfigProvider,
@@ -106,7 +106,7 @@ internal class WebForwarder : ForwarderBase
     public override void Register(Proxy proxy)
     {
         base.Register(proxy);
-        _logger.LogInformation($"Register web forwarder {proxy.GetHosts()} => {proxy.GetUrl()}");
+        _logger.LogInformation($"Register http forwarder {proxy.GetHosts()} => {proxy.GetUrl()}");
         var config = _proxyConfigProvider.GetConfig();
         var routes = config.Routes.ToList();
         var clusters = config.Clusters.ToList();
@@ -142,7 +142,7 @@ internal class WebForwarder : ForwarderBase
 
     public override void UnRegister()
     {
-        _logger.LogInformation($"UnRegister web forwarder {_proxy.GetHosts()} => {_proxy.GetUrl()}");
+        _logger.LogInformation($"UnRegister http forwarder {_proxy.GetHosts()} => {_proxy.GetUrl()}");
         var config = _proxyConfigProvider.GetConfig();
         var routes = config.Routes.ToList();
         var clusters = config.Clusters.ToList();
@@ -167,24 +167,17 @@ internal class WebForwarder : ForwarderBase
         return await tcs.Task.WaitAsync(cancellation);
     }
 
-    private async ValueTask<Stream> OfflinePage(string host, SocketsHttpConnectionContext context)
-    {
-        var bytes = Encoding.UTF8.GetBytes(
-            $"HTTP/1.1 200 OK\r\nContent-Type:text/html; charset=utf-8\r\n\r\nPage Offline\r\n");
-
-        return await Task.FromResult(new ResponseStream(bytes));
-    }
 }
 
-internal class PortForwarder : ForwarderBase
+internal class TcpForwarder : ForwarderBase
 {
     private Socket _listenSocket;
     private bool _shutdown = false;
-    private readonly ILogger<PortForwarder> _logger;
+    private readonly ILogger<TcpForwarder> _logger;
     private readonly IHubContext<ClientHub> _hub;
 
-    public PortForwarder(
-        ILogger<PortForwarder> logger,
+    public TcpForwarder(
+        ILogger<TcpForwarder> logger,
         IHubContext<ClientHub> hub,
         IServiceProvider serviceProvider)
         : base(serviceProvider)
@@ -200,14 +193,14 @@ internal class PortForwarder : ForwarderBase
         _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         _listenSocket.Bind(localEndPoint);
         _shutdown = false;
-        _logger.LogInformation($"Register port forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
+        _logger.LogInformation($"Register tcp forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
         _listenSocket.Listen();
         Accept(null);
     }
 
     public override void UnRegister()
     {
-        _logger.LogInformation($"UnRegister port forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
+        _logger.LogInformation($"UnRegister tcp forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
         Stop();
     }
 
@@ -285,6 +278,62 @@ internal class PortForwarder : ForwarderBase
             using (var stream2 = new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 })
             {
                 await Task.WhenAny(stream1.CopyToAsync(stream2), stream2.CopyToAsync(stream1));
+            }
+        });
+    }
+}
+
+internal class UdpForwarder : ForwarderBase
+{
+    private readonly ILogger<TcpForwarder> _logger;
+    private readonly IHubContext<ClientHub> _hub;
+    private UdpClient _listenSocket;
+    private bool _shutdown = false;
+
+    public UdpForwarder(
+        ILogger<TcpForwarder> logger,
+        IHubContext<ClientHub> hub,
+        IServiceProvider service) : base(service)
+    {
+        _logger = logger;
+        _hub = hub;
+    }
+
+    public override void Register(Proxy proxy)
+    {
+        base.Register(proxy);
+        var localEndPoint = new IPEndPoint(IPAddress.Any, proxy.RemotePort);
+        _listenSocket = new UdpClient(localEndPoint);
+        _shutdown = false;
+        _logger.LogInformation($"Register udp forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
+        Receive(CancellationToken.None);
+    }
+
+    public override void UnRegister()
+    {
+        _logger.LogInformation($"UnRegister udp forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
+        if (_shutdown)
+            return;
+        _listenSocket.Close();
+        _shutdown = true;
+    }
+
+    private void Receive(CancellationToken cancellation)
+    {
+        Task.Run(async() =>
+        {
+            var requestId = Guid.NewGuid().ToString().Replace("-", "");
+            await Task.Yield();
+            var tcs = new TaskCompletionSource<Stream>();
+            ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
+            await _hub.Clients
+                .Client(_proxy.Client.ConnectionId)
+                .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
+
+            using (var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellation))
+            using (var stream2 = _listenSocket.GetStream())
+            {
+                await Task.WhenAny(stream1.CopyToRemoteAsync(stream2, cancellation), stream2.CopyToAsync(stream1, cancellation));
             }
         });
     }
@@ -406,78 +455,198 @@ internal sealed class WebSocketStream : Stream
     }
 }
 
-internal sealed class ResponseStream : Stream
+internal class UdpStream : Stream
 {
+    private readonly UdpClient _client;
+    private IPEndPoint? _remoteEndPoint;
+
+    public UdpStream(UdpClient client)
+    {
+        _client = client;
+    }
+
+    public override void Flush()
+    {
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        var recv = _client.Receive(ref _remoteEndPoint);
+        recv.CopyTo(buffer, recv.Length);
+        return recv.Length;
+    }
+
+    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        var recv = await _client.ReceiveAsync(cancellationToken);
+        _remoteEndPoint = recv.RemoteEndPoint;
+        recv.Buffer.CopyTo(buffer, recv.Buffer.Length);
+        return recv.Buffer.Length;
+    }
+
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+    {
+        var recv = await _client.ReceiveAsync(cancellationToken);
+        _remoteEndPoint = recv.RemoteEndPoint;
+        recv.Buffer.CopyTo(buffer);
+        return recv.Buffer.Length;
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotSupportedException();
+    }
+
+    public override void SetLength(long value)
+    {
+        throw new NotSupportedException();
+    }
+
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        _client.Send(buffer, count);
+    }
+
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        return _client.SendAsync(buffer, count);
+    }
+
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+    {
+        await _client.SendAsync(buffer, cancellationToken);
+    }
+
+    public async ValueTask WriteRemoteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+    {
+        if (_remoteEndPoint != null)
+        {
+            await _client.SendAsync(buffer, _remoteEndPoint, cancellationToken);
+        }
+        else
+        {
+            await _client.SendAsync(buffer, cancellationToken);
+        }
+    }
+
     public override bool CanRead => true;
 
     public override bool CanSeek => false;
 
     public override bool CanWrite => true;
 
-    public override long Length => throw new NotImplementedException();
+    public override long Length => throw new NotSupportedException();
 
     public override long Position
     {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+}
+
+internal static class StreamExtensions
+{
+    public static UdpStream GetStream(this UdpClient client)
+    {
+        return new UdpStream(client);
     }
 
-    readonly MemoryStream m_Stream;
-
-    public ResponseStream(byte[] bytes)
+    public static async Task CopyToAsync(this Stream source, Stream destination, bool flush, CancellationToken cancellationToken)
     {
-        m_Stream = new MemoryStream(bytes);
-    }
-
-    public override void Flush()
-    {
-        throw new NotImplementedException();
-    }
-
-    bool complete;
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        if (!complete)
+        const int DefaultCopyBufferSize = 81920;
+        var bufferSize = DefaultCopyBufferSize;
+        if (source.CanSeek)
         {
-            return 0;
+            var length = source.Length;
+            var position = source.Position;
+            if (length <= position)
+            {
+                bufferSize = 1;
+            }
+            else
+            {
+                var remaining = length - position;
+                if (remaining > 0)
+                {
+                    bufferSize = (int)Math.Min(bufferSize, remaining);
+                }
+            }
         }
 
-        ;
-
-        var len = m_Stream.Read(buffer, offset, count);
-        return len;
-    }
-
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetLength(long value)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-        Console.Write(Encoding.UTF8.GetString(buffer, offset, count));
-        complete = true;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (!disposing)
+        ArgumentNullException.ThrowIfNull(destination);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
+        if (!destination.CanWrite)
         {
-            return;
+            if (destination.CanRead)
+            {
+                throw new Exception();
+            }
+
+            throw new Exception();
         }
 
-        m_Stream.Dispose();
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        try
+        {
+            int bytesRead;
+            while ((bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+                if (flush) await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
-    public override ValueTask DisposeAsync()
+    public static async Task CopyToRemoteAsync(this Stream source, UdpStream destination, CancellationToken cancellationToken)
     {
-        Dispose(true);
-        return ValueTask.CompletedTask;
+        const int DefaultCopyBufferSize = 81920;
+        var bufferSize = DefaultCopyBufferSize;
+        if (source.CanSeek)
+        {
+            var length = source.Length;
+            var position = source.Position;
+            if (length <= position)
+            {
+                bufferSize = 1;
+            }
+            else
+            {
+                var remaining = length - position;
+                if (remaining > 0)
+                {
+                    bufferSize = (int)Math.Min(bufferSize, remaining);
+                }
+            }
+        }
+
+        ArgumentNullException.ThrowIfNull(destination);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
+        if (!destination.CanWrite)
+        {
+            if (destination.CanRead)
+            {
+                throw new Exception();
+            }
+
+            throw new Exception();
+        }
+
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        try
+        {
+            int bytesRead;
+            while ((bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteRemoteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 }
