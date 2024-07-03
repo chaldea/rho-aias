@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using Snappier;
@@ -7,6 +8,7 @@ namespace SocketTester;
 
 internal class TcpTester : ISocketTester
 {
+    private readonly Stopwatch _stopwatch = new();
     private long _packIndex = 1;
     public bool Compressed { get; set; } = false;
     public int Frequency { get; set; } = 2000;
@@ -74,6 +76,7 @@ internal class TcpTester : ISocketTester
         }
         var data = Util.GenerateRandomBytes(PackSize);
         Console.WriteLine($"Send -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{data.Length} CheckSum: {Util.CheckSum(data)}");
+        _stopwatch.Restart();
         await stream.WriteAsync(data);
         await stream.FlushAsync();
     }
@@ -82,10 +85,10 @@ internal class TcpTester : ISocketTester
     {
         var buffer = new byte[2048];
         var readBytes = await stream.ReadAsync(buffer, 0, buffer.Length);
-
+        _stopwatch.Stop();
         if (readBytes > 0)
         {
-            Console.WriteLine($"Recv -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{readBytes} CheckSum: {Util.CheckSum(buffer[..readBytes])}");
+            Console.WriteLine($"Recv -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{readBytes} CheckSum: {Util.CheckSum(buffer[..readBytes])} Delay: {_stopwatch.ElapsedMilliseconds}ms");
             _packIndex++;
         }
         return readBytes;
