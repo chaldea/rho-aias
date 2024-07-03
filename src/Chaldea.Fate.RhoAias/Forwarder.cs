@@ -331,9 +331,9 @@ internal class UdpForwarder : ForwarderBase
                 .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
 
             using (var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellation))
-            using (var stream2 = _listenSocket.GetStream())
+            using (var stream2 = _listenSocket.GetStream(true))
             {
-                await Task.WhenAny(stream1.CopyToRemoteAsync(stream2, cancellation), stream2.CopyToAsync(stream1, cancellation));
+                await Task.WhenAny(stream1.CopyToAsync(stream2, cancellation), stream2.CopyToAsync(stream1, cancellation));
             }
         });
     }
@@ -458,11 +458,13 @@ internal sealed class WebSocketStream : Stream
 internal class UdpStream : Stream
 {
     private readonly UdpClient _client;
+    private readonly bool _remoteWrite;
     private IPEndPoint? _remoteEndPoint;
 
-    public UdpStream(UdpClient client)
+    public UdpStream(UdpClient client, bool remoteWrite)
     {
         _client = client;
+        _remoteWrite = remoteWrite;
     }
 
     public override void Flush()
@@ -472,7 +474,7 @@ internal class UdpStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
     {
         var recv = _client.Receive(ref _remoteEndPoint);
-        recv.CopyTo(buffer, recv.Length);
+        recv.CopyTo(buffer, 0);
         return recv.Length;
     }
 
@@ -480,7 +482,7 @@ internal class UdpStream : Stream
     {
         var recv = await _client.ReceiveAsync(cancellationToken);
         _remoteEndPoint = recv.RemoteEndPoint;
-        recv.Buffer.CopyTo(buffer, recv.Buffer.Length);
+        recv.Buffer.CopyTo(buffer, 0);
         return recv.Buffer.Length;
     }
 
@@ -504,22 +506,31 @@ internal class UdpStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        _client.Send(buffer, count);
+        if (CanRemoteWrite)
+        {
+            _client.Send(buffer, count, _remoteEndPoint);
+        }
+        else
+        {
+            _client.Send(buffer, count);
+        }
     }
 
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return _client.SendAsync(buffer, count);
+        if (CanRemoteWrite)
+        {
+            await _client.SendAsync(buffer, count, _remoteEndPoint);
+        }
+        else
+        {
+            await _client.SendAsync(buffer, count);
+        }
     }
 
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
     {
-        await _client.SendAsync(buffer, cancellationToken);
-    }
-
-    public async ValueTask WriteRemoteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
-    {
-        if (_remoteEndPoint != null)
+        if (CanRemoteWrite)
         {
             await _client.SendAsync(buffer, _remoteEndPoint, cancellationToken);
         }
@@ -528,6 +539,8 @@ internal class UdpStream : Stream
             await _client.SendAsync(buffer, cancellationToken);
         }
     }
+
+    public bool CanRemoteWrite => _remoteWrite && _remoteEndPoint != null;
 
     public override bool CanRead => true;
 
@@ -546,9 +559,9 @@ internal class UdpStream : Stream
 
 internal static class StreamExtensions
 {
-    public static UdpStream GetStream(this UdpClient client)
+    public static UdpStream GetStream(this UdpClient client, bool remoteWrite = false)
     {
-        return new UdpStream(client);
+        return new UdpStream(client, remoteWrite);
     }
 
     public static async Task CopyToAsync(this Stream source, Stream destination, bool flush, CancellationToken cancellationToken)
@@ -593,55 +606,6 @@ internal static class StreamExtensions
             {
                 await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
                 if (flush) await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-        }
-    }
-
-    public static async Task CopyToRemoteAsync(this Stream source, UdpStream destination, CancellationToken cancellationToken)
-    {
-        const int DefaultCopyBufferSize = 81920;
-        var bufferSize = DefaultCopyBufferSize;
-        if (source.CanSeek)
-        {
-            var length = source.Length;
-            var position = source.Position;
-            if (length <= position)
-            {
-                bufferSize = 1;
-            }
-            else
-            {
-                var remaining = length - position;
-                if (remaining > 0)
-                {
-                    bufferSize = (int)Math.Min(bufferSize, remaining);
-                }
-            }
-        }
-
-        ArgumentNullException.ThrowIfNull(destination);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
-        if (!destination.CanWrite)
-        {
-            if (destination.CanRead)
-            {
-                throw new Exception();
-            }
-
-            throw new Exception();
-        }
-
-        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-        try
-        {
-            int bytesRead;
-            while ((bytesRead = await source.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                await destination.WriteRemoteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
             }
         }
         finally
