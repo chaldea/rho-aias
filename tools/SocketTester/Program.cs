@@ -18,6 +18,12 @@ var serverPortOption = new Option<int>(
     getDefaultValue: () => 9999);
 serverPortOption.AddAlias("-sp");
 
+var serverIpOption = new Option<string>(
+    name: "--server-ip",
+    description: "Server ip address.",
+    getDefaultValue: () => "127.0.0.1");
+serverIpOption.AddAlias("-si");
+
 var clientPortOption = new Option<int>(
     name: "--client-port",
     description: "Client connection port.",
@@ -50,13 +56,14 @@ packSizeOption.AddAlias("-ps");
 
 rootCommand.Add(typeOption);
 rootCommand.Add(serverPortOption);
+rootCommand.Add(serverIpOption);
 rootCommand.Add(clientPortOption);
 rootCommand.Add(compressedOption);
 rootCommand.Add(frequencyOption);
 rootCommand.Add(totalPacksOption);
 rootCommand.Add(packSizeOption);
 
-rootCommand.SetHandler(async (tester, serverPort, clientPort, compressed, frequency, totalPacks, packSize) =>
+rootCommand.SetHandler(async (tester, serverPort, serverIp, clientPort, compressed, frequency, totalPacks, packSize) =>
     {
         tester.Compressed = compressed;
         tester.Frequency = frequency;
@@ -65,11 +72,12 @@ rootCommand.SetHandler(async (tester, serverPort, clientPort, compressed, freque
 
         var task1 = tester.RunServerAsync(serverPort);
         await Task.Delay(2000);
-        var task2 = tester.RunClientAsync(clientPort);
+        var task2 = tester.RunClientAsync(clientPort, serverIp);
         await Task.WhenAll(task1, task2);
     },
     new SocketTesterBinder(typeOption),
     serverPortOption,
+    serverIpOption,
     clientPortOption,
     compressedOption,
     frequencyOption,
