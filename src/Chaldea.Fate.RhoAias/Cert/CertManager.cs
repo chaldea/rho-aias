@@ -15,12 +15,6 @@ public interface ICertManager
     Task RenewAllAsync();
 }
 
-public interface IAcmeProvider
-{
-    Task<CertInfo> CreateCertAsync(Cert cert);
-    Task<byte[]> ReadCertFileAsync(string fileName);
-}
-
 internal class CertManager : ICertManager
 {
     private readonly ILogger<CertManager> _logger;
