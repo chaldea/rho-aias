@@ -29,6 +29,7 @@ internal class SocketTesterBinder : BinderBase<ISocketTester>
         {
             "tcp" => new TcpTester(),
             "udp" => new UdpTester(),
+            "kcp" => new KcpTester(),
             _ => new TcpTester()
         };
     }
