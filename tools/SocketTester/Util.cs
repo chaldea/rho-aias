@@ -1,5 +1,4 @@
 ﻿using System.IO.Hashing;
-using Snappier;
 
 namespace SocketTester;
 
