@@ -97,7 +97,7 @@ namespace SocketTester
 
         private async Task<int> RecvAsync(Stream stream)
         {
-            var buffer = new byte[1024];
+            var buffer = new byte[81920];
             var readBytes = await stream.ReadAsync(buffer, 0, buffer.Length);
             _stopwatch.Stop();
             if (readBytes > 0)

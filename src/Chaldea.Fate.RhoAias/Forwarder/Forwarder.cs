@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Chaldea.Fate.RhoAias;
 
@@ -20,6 +21,7 @@ abstract class ForwarderBase : IForwarder
     protected readonly ConcurrentDictionary<string, (TaskCompletionSource<Stream>, CancellationToken)> ForwarderTasks = new();
     private readonly ILogger<ForwarderBase> _logger;
     private readonly ICompressor _compressor;
+    private readonly IHubContext<ClientHub> _hub;
 
     public Proxy Proxy => _proxy;
 
@@ -27,6 +29,7 @@ abstract class ForwarderBase : IForwarder
     {
         _logger = service.GetRequiredService<ILogger<ForwarderBase>>();
         _compressor = service.GetRequiredService<ICompressor>();
+        _hub = service.GetRequiredService<IHubContext<ClientHub>>();
     }
 
     public virtual void Register(Proxy proxy)
@@ -36,9 +39,20 @@ abstract class ForwarderBase : IForwarder
 
     public abstract void UnRegister();
 
-    public virtual ValueTask<Stream> CreateAsync(CancellationToken cancellation)
+    public virtual async ValueTask<Stream> CreateAsync(CancellationToken cancellation)
     {
-        return new ValueTask<Stream>(Stream.Null);
+        var requestId = Guid.NewGuid().ToString().Replace("-", "");
+        TaskCompletionSource<Stream> tcs = new();
+        cancellation.Register(() =>
+        {
+            _logger.LogInformation($"Web Forward TimeOut:{requestId}");
+            tcs.TrySetCanceled();
+        });
+        ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
+        await _hub.Clients
+            .Client(_proxy.Client.ConnectionId)
+            .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
+        return await tcs.Task.WaitAsync(cancellation);
     }
 
     public virtual async Task ForwardAsync(string requestId, IConnectionLifetimeFeature lifetime, IConnectionTransportFeature transport)

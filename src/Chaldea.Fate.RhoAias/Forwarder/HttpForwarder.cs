@@ -70,21 +70,4 @@ internal class HttpForwarder : ForwarderBase
         clusters.RemoveAll(x => x.ClusterId == _proxy.Name);
         (_proxyConfigProvider as InMemoryConfigProvider).Update(routes, clusters);
     }
-
-    public override async ValueTask<Stream> CreateAsync(CancellationToken cancellation)
-    {
-        var requestId = Guid.NewGuid().ToString().Replace("-", "");
-        TaskCompletionSource<Stream> tcs = new();
-        cancellation.Register(() =>
-        {
-            _logger.LogInformation($"Web Forward TimeOut:{requestId}");
-            tcs.TrySetCanceled();
-        });
-        ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
-        await _hub.Clients
-            .Client(_proxy.Client.ConnectionId)
-            .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
-        return await tcs.Task.WaitAsync(cancellation);
-    }
-
 }

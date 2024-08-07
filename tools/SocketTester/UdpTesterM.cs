@@ -18,42 +18,72 @@ namespace SocketTester
                 var client = new UdpClient(new IPEndPoint(IPAddress.Any, port));
                 while (true)
                 {
-                    await RecvAsync(client);
+                    var recv = await RecvAsync(client);
+                    if (recv.Buffer.Length <=20)
+                    {
+                        await SendMultiPackages(client, recv.RemoteEndPoint);
+                    }
                 }
             });
         }
 
         public Task RunClientAsync(int port = 8888, string ip = "127.0.0.1")
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 var client = new UdpClient();
                 client.Connect(IPAddress.Parse(ip), port);
 
-                for (var i = 0; i < 10; i++)
+                // recv from server
+                Task.Run(async () =>
                 {
-                    Task.Run(async () =>
+                    while (true)
                     {
-                        for (var i = 0; i < 10; i++)
-                        {
-                            await SendAsync(client);
-                            await Task.Delay(100);
-                        }
-                    });
-                }
+                        await RecvAsync(client);
+                    }
+                });
+                await SendMultiPackages(client);
+                // send EOF
+                Console.WriteLine("EOF");
+                await SendAsync(client, 10);
             });
         }
 
-        private async Task SendAsync(UdpClient client)
+        private async Task SendMultiPackages(UdpClient client, IPEndPoint? endPoint = null)
         {
-            var random = new Random();
-            var packSize = random.Next(10, 10000);
-            var data = Util.GenerateRandomBytes(packSize);
-            var checkSum = BitConverter.GetBytes(Util.CheckSum(data));
-            await client.SendAsync(Combine(data, checkSum));
+            var list = new List<Task>();
+            for (var i = 0; i < 10; i++)
+            {
+                var task = Task.Run(async () =>
+                {
+                    for (var i = 0; i < 10; i++)
+                    {
+                        await SendAsync(client, 0, endPoint);
+                        await Task.Delay(100);
+                    }
+                });
+                list.Add(task);
+            }
+            await Task.WhenAll(list);
         }
 
-        private async Task<int> RecvAsync(UdpClient client)
+        private async Task SendAsync(UdpClient client, int len, IPEndPoint? endPoint = null)
+        {
+            var random = new Random();
+            if (len == 0) len = random.Next(100, 10000);
+            var data = Util.GenerateRandomBytes(len);
+            var checkSum = BitConverter.GetBytes(Util.CheckSum(data));
+            if (endPoint != null)
+            {
+                await client.SendAsync(Combine(data, checkSum), endPoint);
+            }
+            else
+            {
+                await client.SendAsync(Combine(data, checkSum));
+            }
+        }
+
+        private async Task<UdpReceiveResult> RecvAsync(UdpClient client)
         {
             var recv = await client.ReceiveAsync();
             _packageIndex++;
@@ -64,7 +94,7 @@ namespace SocketTester
                 var sum = Util.CheckSum(data);
                 Console.WriteLine($"Recv Package {_packageIndex} Length: {data.Length}, Source: {checkSum}, Dest: {sum}");
             }
-            return recv.Buffer.Length;
+            return recv;
         }
 
         private byte[] Combine(params byte[][] arrays)
