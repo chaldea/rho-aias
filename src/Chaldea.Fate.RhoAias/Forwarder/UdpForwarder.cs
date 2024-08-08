@@ -12,6 +12,7 @@ internal class UdpForwarder : ForwarderBase
     private UdpClient _listenSocket;
     private bool _shutdown = false;
     private readonly ConcurrentDictionary<IPEndPoint, Channel<byte[]>> _clients = new();
+    private CancellationTokenSource _tcs;
 
     public UdpForwarder(
         ILogger<TcpForwarder> logger,
@@ -27,7 +28,8 @@ internal class UdpForwarder : ForwarderBase
         _listenSocket = new UdpClient(localEndPoint);
         _shutdown = false;
         _logger.LogInformation($"Register udp forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
-        Receive(CancellationToken.None);
+        _tcs = new CancellationTokenSource();
+        Receive(_tcs.Token);
     }
 
     public override void UnRegister()
@@ -35,7 +37,9 @@ internal class UdpForwarder : ForwarderBase
         _logger.LogInformation($"UnRegister udp forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
         if (_shutdown)
             return;
+        _tcs.Cancel(false);
         _listenSocket.Close();
+        _clients.Clear();
         _shutdown = true;
     }
 
@@ -45,20 +49,14 @@ internal class UdpForwarder : ForwarderBase
         {
             while (true)
             {
-                try
+                if (cancellation.IsCancellationRequested) break;
+                var recv = await _listenSocket.ReceiveAsync(cancellation);
+                if (!_clients.TryGetValue(recv.RemoteEndPoint, out var channel))
                 {
-                    if (cancellation.IsCancellationRequested) break;
-                    var recv = await _listenSocket.ReceiveAsync(cancellation);
-                    if (!_clients.TryGetValue(recv.RemoteEndPoint, out var channel))
-                    {
-                        _clients[recv.RemoteEndPoint] = channel = Channel.CreateUnbounded<byte[]>();
-                        Dispatch(recv.RemoteEndPoint, channel, cancellation);
-                    }
-                    await channel.Writer.WriteAsync(recv.Buffer, cancellation);
+                    _clients[recv.RemoteEndPoint] = channel = Channel.CreateUnbounded<byte[]>();
+                    Dispatch(recv.RemoteEndPoint, channel, cancellation);
                 }
-                catch
-                {
-                }
+                await channel.Writer.WriteAsync(recv.Buffer, cancellation);
             }
         });
     }

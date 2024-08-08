@@ -70,7 +70,7 @@ namespace SocketTester
         private async Task SendAsync(UdpClient client, int len, IPEndPoint? endPoint = null)
         {
             var random = new Random();
-            if (len == 0) len = random.Next(100, 10000);
+            if (len == 0) len = random.Next(100, 8192);
             var data = Util.GenerateRandomBytes(len);
             var checkSum = BitConverter.GetBytes(Util.CheckSum(data));
             if (endPoint != null)

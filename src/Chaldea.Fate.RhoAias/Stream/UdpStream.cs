@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Channels;
 
 namespace Chaldea.Fate.RhoAias;
@@ -30,28 +32,19 @@ internal sealed class UdpStream : Stream
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
     {
-        try
+        byte[] data;
+        if (_channel != null)
         {
-            byte[] data;
-            if (_channel != null)
-            {
-                data = await _channel.Reader.ReadAsync(cancellationToken);
-            }
-            else
-            {
-                var recv = await _client.ReceiveAsync(cancellationToken);
-                data = recv.Buffer;
-            }
-            var lenBytes = BitConverter.GetBytes(data.Length);
-            lenBytes.CopyTo(buffer);
-            data.CopyTo(buffer, 4);
-            return data.Length + 4;
+            data = await _channel.Reader.ReadAsync(cancellationToken);
         }
-        catch (Exception e)
+        else
         {
-            Console.WriteLine(e);
-            return 0;
+            var recv = await _client.ReceiveAsync(cancellationToken);
+            data = recv.Buffer;
         }
+        BitConverter.GetBytes(data.Length).CopyTo(buffer);
+        data.CopyTo(buffer, 4);
+        return data.Length + 4;
     }
 
     public override void Write(byte[] buffer, int offset, int count)
@@ -67,13 +60,10 @@ internal sealed class UdpStream : Stream
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
     {
         ReadOnlyMemory<byte> data;
-        if (_leftBytes is { Length: > 0 })
+        if (_leftBytes.Length > 0)
         {
-            var mem = new Memory<byte>(new byte[_leftBytes.Length + buffer.Length]);
-            _leftBytes.CopyTo(mem, 0);
-            buffer.CopyTo(mem, _leftBytes.Length);
-            data = mem;
-            _leftBytes = Array.Empty<byte>();
+            data = _leftBytes.Combine(buffer);
+            _leftBytes = [];
         }
         else
         {
@@ -81,7 +71,7 @@ internal sealed class UdpStream : Stream
         }
         if (data.Length > 4)
         {
-            var len = BitConverter.ToInt32(data[0..4].Span);
+            var len = BitConverter.ToInt32(data[..4].Span);
             if (len <= data.Length - 4)
             {
                 var offset = len + 4;
@@ -108,7 +98,7 @@ internal sealed class UdpStream : Stream
         }
         else
         {
-            Console.WriteLine("ERROR: data length error.");
+            _leftBytes = data.ToArray();
         }
     }
 

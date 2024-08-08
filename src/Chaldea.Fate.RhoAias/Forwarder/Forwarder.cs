@@ -45,7 +45,7 @@ abstract class ForwarderBase : IForwarder
         TaskCompletionSource<Stream> tcs = new();
         cancellation.Register(() =>
         {
-            _logger.LogInformation($"Web Forward TimeOut:{requestId}");
+            _logger.LogInformation($"Forward Stopped: {requestId}");
             tcs.TrySetCanceled();
         });
         ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
