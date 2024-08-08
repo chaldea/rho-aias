@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SocketTester": {
+      "commandName": "Project",
+      "commandLineArgs": "-t udp -sp 9999 -cp 8888"
+    }
+  }
+}

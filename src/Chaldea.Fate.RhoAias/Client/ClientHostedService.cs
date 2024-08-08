@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -54,6 +53,7 @@ internal class ClientConnection : IClientConnection
     private readonly Client _client;
     private readonly IConfiguration _configuration;
     private readonly ICompressor _compressor;
+    private readonly IServiceProvider _serviceProvider;
     private readonly HubConnection _connection;
     private readonly HttpClient _httpClient;
     private readonly ILogger<ClientHostedService> _logger;
@@ -64,14 +64,17 @@ internal class ClientConnection : IClientConnection
         ILogger<ClientHostedService> logger,
         IOptions<RhoAiasClientOptions> options,
         IConfiguration configuration,
-        ICompressor compressor)
+        ICompressor compressor,
+        IServiceProvider serviceProvider)
     {
         var version = Utilities.GetVersionName();
+        logger.LogInformation($"RhoAias Server Url: {options.Value.ServerUrl}");
         logger.LogInformation($"RhoAias Client Version: {version}");
         logger.LogInformation($"RhoAias Client Key: {options.Value.Token}");
         _logger = logger;
         _configuration = configuration;
         _compressor = compressor;
+        _serviceProvider = serviceProvider;
         _options = options.Value;
         _client = new Client
         {
@@ -168,8 +171,9 @@ internal class ClientConnection : IClientConnection
         {
             _logger.LogInformation($"CreateForwarder: {proxy.LocalIP}:{proxy.LocalPort}");
             var cancellationToken = CancellationToken.None;
-            using (var serverStream = await CreateRemote(requestId, cancellationToken))
-            using (var localStream = await CreateLocal(proxy.Type, proxy.LocalIP, proxy.LocalPort, cancellationToken))
+            var dispatcher = _serviceProvider.GetRequiredKeyedService<IClientDispatcher>(proxy.Type);
+            using (var serverStream = await dispatcher.CreateRemoteAsync(_options.ServerUrl, requestId, cancellationToken))
+            using (var localStream = await dispatcher.CreateLocalAsync(proxy.LocalIP, proxy.LocalPort, cancellationToken))
             {
                 if (proxy.Compressed)
                 {
@@ -189,42 +193,6 @@ internal class ClientConnection : IClientConnection
                 }
             }
         });
-    }
-
-    private async Task<Stream> CreateLocal(ProxyType type, string localIp, int port, CancellationToken cancellationToken)
-    {
-        if (type == ProxyType.UDP)
-        {
-            _logger.LogInformation($"Create socket: {localIp}:{port}");
-            var client = new UdpClient();
-            client.Connect(localIp, port);
-            return client.GetStream();
-        }
-        else
-        {
-            var socket = await ConnectAsync(localIp, port);
-            return new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
-        }
-    }
-
-    private async Task<Stream> CreateRemote(string requestId, CancellationToken cancellationToken)
-    {
-        var uri = new Uri($"{_options.ServerUrl}");
-        var socket = await ConnectAsync(uri.Host, uri.Port);
-        var serverStream = new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 };
-        var reverse = $"PROXY /{requestId} HTTP/1.1\r\nHost: {uri.Host}:{uri.Port}\r\n\r\n";
-        var requestMsg = Encoding.UTF8.GetBytes(reverse);
-        await serverStream.WriteAsync(requestMsg, cancellationToken);
-        return serverStream;
-    }
-
-    private async Task<Socket> ConnectAsync(string host, int port)
-    {
-        _logger.LogInformation($"Create socket: {host}:{port}");
-        var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        var dnsEndPoint = new DnsEndPoint(host, port);
-        await socket.ConnectAsync(dnsEndPoint);
-        return socket;
     }
 
     private async Task<string?> GetTokenAsync()

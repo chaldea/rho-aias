@@ -112,6 +112,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IClientConnection, ClientConnection>();
         services.AddSingleton<ICompressor, GZipCompressor>();
         services.AddHostedService<ClientHostedService>();
+        services.AddKeyedSingleton<IClientDispatcher, TcpDispatcher>(ProxyType.HTTP);
+        services.AddKeyedSingleton<IClientDispatcher, TcpDispatcher>(ProxyType.HTTPS);
+        services.AddKeyedSingleton<IClientDispatcher, TcpDispatcher>(ProxyType.TCP);
+        services.AddKeyedSingleton<IClientDispatcher, UdpDispatcher>(ProxyType.UDP);
         return services;
     }
 }

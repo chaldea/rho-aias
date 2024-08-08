@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Net.Sockets;
 using System.Net;
-using Snappier;
-using System.IO.Compression;
+using System.Net.Sockets.Kcp.Simple;
 
 namespace SocketTester
 {
-    internal class UdpTester : ISocketTester
+    internal class KcpTester : ISocketTester
     {
         private readonly Stopwatch _stopwatch = new();
         private long _packIndex = 1;
@@ -19,26 +17,32 @@ namespace SocketTester
         {
             return Task.Run(async () =>
             {
-                var client = new UdpClient(new IPEndPoint(IPAddress.Any, port));
-                var stream = client.GetStream(true);
-                await using var sendStream = GetStream(stream, Compressed, CompressionMode.Compress);
-                await using var recvStream = GetStream(stream, Compressed, CompressionMode.Decompress);
+                var kcpClient = new SimpleKcpClient(port);
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        kcpClient.kcp.Update(DateTimeOffset.UtcNow);
+                        await Task.Delay(10);
+                    }
+                });
+
                 while (TotalPacks == 0 || _packIndex < TotalPacks)
                 {
                     try
                     {
-                        var readBytes = await RecvAsync(recvStream);
+                        var readBytes = await RecvAsync(kcpClient);
                         if (readBytes > 0)
                         {
                             await Task.Delay(Frequency);
-                            await SendAsync(sendStream);
+                            await SendAsync(kcpClient);
                         }
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
                     }
-                    
+
                 }
             });
         }
@@ -49,19 +53,24 @@ namespace SocketTester
             {
                 try
                 {
-                    var client = new UdpClient();
-                    client.Connect(IPAddress.Parse(ip), port);
-                    var stream = client.GetStream();
-                    await using var sendStream = GetStream(stream, Compressed, CompressionMode.Compress);
-                    await using var recvStream = GetStream(stream, Compressed, CompressionMode.Decompress);
-                    await SendAsync(sendStream);
+                    var end = new IPEndPoint(IPAddress.Parse(ip), port);
+                    var kcpClient = new SimpleKcpClient(port + 1, end);
+                    Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            kcpClient.kcp.Update(DateTimeOffset.UtcNow);
+                            await Task.Delay(10);
+                        }
+                    });
+                    await SendAsync(kcpClient);
                     while (TotalPacks == 0 || _packIndex < TotalPacks)
                     {
-                        var readBytes = await RecvAsync(recvStream);
+                        var readBytes = await RecvAsync(kcpClient);
                         if (readBytes > 0)
                         {
                             await Task.Delay(Frequency);
-                            await SendAsync(sendStream);
+                            await SendAsync(kcpClient);
                         }
                     }
                 }
@@ -72,37 +81,27 @@ namespace SocketTester
             });
         }
 
-        private Stream GetStream(UdpStream stream, bool compressed, CompressionMode mode)
-        {
-            if (compressed)
-            {
-                return new SnappyStream(stream, mode);
-            }
-
-            return stream;
-        }
-
-        private async Task SendAsync(Stream stream)
+        private async Task SendAsync(SimpleKcpClient client)
         {
             if (TotalPacks != 0 && _packIndex > TotalPacks)
             {
                 return;
             }
+
             var data = Util.GenerateRandomBytes(PackSize);
             Console.WriteLine($"Send -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{data.Length} CheckSum: {Util.CheckSum(data)}");
             _stopwatch.Restart();
-            await stream.WriteAsync(data);
-            await stream.FlushAsync();
+            client.SendAsync(data, data.Length);
         }
 
-        private async Task<int> RecvAsync(Stream stream)
+        private async Task<int> RecvAsync(SimpleKcpClient client)
         {
-            var buffer = new byte[81920];
-            var readBytes = await stream.ReadAsync(buffer, 0, buffer.Length);
+            var buffer = await client.ReceiveAsync();
+            var readBytes = buffer.Length;
             _stopwatch.Stop();
             if (readBytes > 0)
             {
-                Console.WriteLine($"Recv -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{readBytes} CheckSum: {Util.CheckSum(buffer[..readBytes])} Delay: {_stopwatch.ElapsedMilliseconds}ms");
+                Console.WriteLine($"Recv -> PackIndex: {_packIndex} PackSize: {PackSize} Length:{readBytes} CheckSum: {Util.CheckSum(buffer)} Delay: {_stopwatch.ElapsedMilliseconds}ms");
                 _packIndex++;
             }
             return readBytes;

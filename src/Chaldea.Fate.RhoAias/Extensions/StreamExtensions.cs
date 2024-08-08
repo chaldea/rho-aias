@@ -1,13 +1,15 @@
 ﻿using System.Buffers;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading.Channels;
 
 namespace Chaldea.Fate.RhoAias;
 
 internal static class StreamExtensions
 {
-    public static UdpStream GetStream(this UdpClient client, bool remoteWrite = false)
+    public static UdpStream GetStream(this UdpClient client, IPEndPoint? remoteEndPoint = null, Channel<byte[]>? channel = null)
     {
-        return new UdpStream(client, remoteWrite);
+        return new UdpStream(client, remoteEndPoint, channel);
     }
 
     public static async Task CopyToAsync(this Stream source, Stream destination, bool flush, CancellationToken cancellationToken)

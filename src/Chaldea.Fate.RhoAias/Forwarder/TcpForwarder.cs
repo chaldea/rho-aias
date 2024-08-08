@@ -103,14 +103,8 @@ internal class TcpForwarder : ForwarderBase
     {
         Task.Run(async () =>
         {
-            var requestId = Guid.NewGuid().ToString().Replace("-", "");
-            await Task.Yield();
-            var tcs = new TaskCompletionSource<Stream>();
-            ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
-            await _hub.Clients
-                .Client(_proxy.Client.ConnectionId)
-                .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
-            using (var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)))
+            
+            using (var stream1 = await CreateAsync(cancellation))
             using (var stream2 = new NetworkStream(socket, true) { ReadTimeout = 1000 * 60 * 10 })
             {
                 await Task.WhenAny(stream1.CopyToAsync(stream2), stream2.CopyToAsync(stream1));

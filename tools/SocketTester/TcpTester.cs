@@ -83,7 +83,7 @@ internal class TcpTester : ISocketTester
 
     private async Task<int> RecvAsync(Stream stream)
     {
-        var buffer = new byte[2048];
+        var buffer = new byte[81920];
         var readBytes = await stream.ReadAsync(buffer, 0, buffer.Length);
         _stopwatch.Stop();
         if (readBytes > 0)

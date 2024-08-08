@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.SignalR;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 
 namespace Chaldea.Fate.RhoAias;
@@ -8,17 +9,16 @@ namespace Chaldea.Fate.RhoAias;
 internal class UdpForwarder : ForwarderBase
 {
     private readonly ILogger<TcpForwarder> _logger;
-    private readonly IHubContext<ClientHub> _hub;
     private UdpClient _listenSocket;
     private bool _shutdown = false;
+    private readonly ConcurrentDictionary<IPEndPoint, Channel<byte[]>> _clients = new();
+    private CancellationTokenSource _tcs;
 
     public UdpForwarder(
         ILogger<TcpForwarder> logger,
-        IHubContext<ClientHub> hub,
         IServiceProvider service) : base(service)
     {
         _logger = logger;
-        _hub = hub;
     }
 
     public override void Register(Proxy proxy)
@@ -28,7 +28,8 @@ internal class UdpForwarder : ForwarderBase
         _listenSocket = new UdpClient(localEndPoint);
         _shutdown = false;
         _logger.LogInformation($"Register udp forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
-        Receive(CancellationToken.None);
+        _tcs = new CancellationTokenSource();
+        Receive(_tcs.Token);
     }
 
     public override void UnRegister()
@@ -36,26 +37,40 @@ internal class UdpForwarder : ForwarderBase
         _logger.LogInformation($"UnRegister udp forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
         if (_shutdown)
             return;
+        _tcs.Cancel(false);
         _listenSocket.Close();
+        _clients.Clear();
         _shutdown = true;
     }
 
     private void Receive(CancellationToken cancellation)
     {
-        Task.Run(async() =>
+        Task.Run(async () =>
         {
-            var requestId = Guid.NewGuid().ToString().Replace("-", "");
-            await Task.Yield();
-            var tcs = new TaskCompletionSource<Stream>();
-            ForwarderTasks.TryAdd(requestId, (tcs, cancellation));
-            await _hub.Clients
-                .Client(_proxy.Client.ConnectionId)
-                .SendAsync("CreateForwarder", requestId, _proxy, cancellationToken: cancellation);
-
-            using (var stream1 = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellation))
-            using (var stream2 = _listenSocket.GetStream(true))
+            while (true)
             {
-                await Task.WhenAny(stream1.CopyToAsync(stream2, cancellation), stream2.CopyToAsync(stream1, cancellation));
+                if (cancellation.IsCancellationRequested) break;
+                var recv = await _listenSocket.ReceiveAsync(cancellation);
+                if (!_clients.TryGetValue(recv.RemoteEndPoint, out var channel))
+                {
+                    _clients[recv.RemoteEndPoint] = channel = Channel.CreateUnbounded<byte[]>();
+                    Dispatch(recv.RemoteEndPoint, channel, cancellation);
+                }
+                await channel.Writer.WriteAsync(recv.Buffer, cancellation);
+            }
+        });
+    }
+
+    private void Dispatch(IPEndPoint remoteEndPoint, Channel<byte[]> channel, CancellationToken cancellation)
+    {
+        Task.Run(async () =>
+        {
+            using (var stream1 = await CreateAsync(cancellation))
+            using (var stream2 = _listenSocket.GetStream(remoteEndPoint, channel))
+            {
+                var taskX = stream1.CopyToAsync(stream2, cancellation);
+                var taskY = stream2.CopyToAsync(stream1, cancellation);
+                await Task.WhenAny(taskX, taskY);
             }
         });
     }
