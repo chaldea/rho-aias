@@ -12,7 +12,7 @@ internal class UdpForwarder : ForwarderBase
     private UdpClient _listenSocket;
     private bool _shutdown = false;
     private readonly ConcurrentDictionary<IPEndPoint, Channel<byte[]>> _clients = new();
-    private CancellationTokenSource _tcs;
+    private CancellationTokenSource _cts;
 
     public UdpForwarder(
         ILogger<TcpForwarder> logger,
@@ -28,8 +28,8 @@ internal class UdpForwarder : ForwarderBase
         _listenSocket = new UdpClient(localEndPoint);
         _shutdown = false;
         _logger.LogInformation($"Register udp forwarder {IPAddress.Any}:{proxy.RemotePort} => {proxy.LocalIP}:{proxy.LocalPort}");
-        _tcs = new CancellationTokenSource();
-        Receive(_tcs.Token);
+        _cts = new CancellationTokenSource();
+        Receive(_cts.Token);
     }
 
     public override void UnRegister()
@@ -37,7 +37,7 @@ internal class UdpForwarder : ForwarderBase
         _logger.LogInformation($"UnRegister udp forwarder {IPAddress.Any}:{_proxy.RemotePort} => {_proxy.LocalIP}:{_proxy.LocalPort}");
         if (_shutdown)
             return;
-        _tcs.Cancel(false);
+        _cts.Cancel(false);
         _listenSocket.Close();
         _clients.Clear();
         _shutdown = true;
