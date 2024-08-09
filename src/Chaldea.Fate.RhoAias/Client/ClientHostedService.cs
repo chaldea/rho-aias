@@ -33,7 +33,7 @@ internal class ClientHostedService : IHostedService
     }
 }
 
-public class SignalRRetryPolicy : IRetryPolicy
+internal class SignalRRetryPolicy : IRetryPolicy
 {
     public TimeSpan? NextRetryDelay(RetryContext retryContext)
     {

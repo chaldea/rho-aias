@@ -35,8 +35,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDnsProviderManager, DnsProviderManager>();
         services.AddSingleton<IMetrics, Metrics>();
         services.AddSingleton<IServerCertificateSelector, DefaultServerCertificateSelector>();
-        services.AddHostedService<ServerHostedService>();
-        services.AddHostedService<CertRenewJob>();
         services.AddSingleton<ICompressor, GZipCompressor>();
         services.AddAuthentication("Basic")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
@@ -92,6 +90,8 @@ public static class ServiceCollectionExtensions
     public static WebApplicationBuilder AddRhoAiasServer(this WebApplicationBuilder builder, Action<IRhoAiasConfigurationBuilder>? config = default)
     {
         builder.Services.AddRhoAias(builder.Configuration);
+        builder.Services.AddHostedService<ServerHostedService>();
+        builder.Services.AddHostedService<CertRenewJob>();
         builder.WebHost.ConfigureRhoAiasServer();
         var configBuilder = new RhoAiasConfigurationBuilder(builder.Services, builder.Configuration);
         config?.Invoke(configBuilder);
