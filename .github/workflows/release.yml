@@ -16,6 +16,8 @@ jobs:
         uses: dawidd6/action-get-tag@v1
         with:
           strip_v: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Docker Build
         working-directory: ./docker
         run: |

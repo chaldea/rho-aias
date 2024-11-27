@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 
-FROM --platform=$BUILDPLATFORM docker.flexem.com/library/node:20.12.2 AS node
+FROM --platform=$BUILDPLATFORM node:20.12.2 AS node
 ARG TARGETARCH
 WORKDIR /build
 COPY dashboard dashboard
