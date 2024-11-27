@@ -1,6 +1,7 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 
-FROM node:20.12.2 AS node
+FROM --platform=$BUILDPLATFORM docker.flexem.com/library/node:20.12.2 AS node
+ARG TARGETARCH
 WORKDIR /build
 COPY dashboard dashboard
 WORKDIR /build/dashboard
@@ -8,14 +9,15 @@ RUN npm install -g pnpm
 RUN pnpm install
 RUN npm run build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_VERSION
+ARG TARGETARCH
 WORKDIR /build
 COPY src src
 COPY --from=node /build/dashboard/dist ./src/Chaldea.Fate.RhoAias.Dashboard/wwwroot
 WORKDIR /build/src/Chaldea.Fate.RhoAias.Server
 RUN echo BUILD_VERSION:$BUILD_VERSION
-RUN dotnet publish Chaldea.Fate.RhoAias.Server.csproj -c Release -o /dist \
+RUN dotnet publish Chaldea.Fate.RhoAias.Server.csproj -c Release -o /dist -a $TARGETARCH \
     /p:AssemblyVersion=$BUILD_VERSION \
     /p:Version=$BUILD_VERSION
 
