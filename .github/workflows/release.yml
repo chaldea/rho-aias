@@ -20,19 +20,11 @@ jobs:
         working-directory: ./docker
         run: |
           echo "Build Version: ${{ steps.get_tag.outputs.tag }}"
-          docker compose build --build-arg BUILD_VERSION=${{ steps.get_tag.outputs.tag }}
-      - name: Docker Push
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin ${{secrets.DOCKER_REPOSITORY}}
-          docker push chaldea/rhoaias-server
-          docker push chaldea/rhoaias-client
-          docker push chaldea/rhoaias-ingress
-          docker tag chaldea/rhoaias-server chaldea/rhoaias-server:${{ steps.get_tag.outputs.tag }}
-          docker tag chaldea/rhoaias-client chaldea/rhoaias-client:${{ steps.get_tag.outputs.tag }}
-          docker tag chaldea/rhoaias-ingress chaldea/rhoaias-ingress:${{ steps.get_tag.outputs.tag }}
-          docker push chaldea/rhoaias-server:${{ steps.get_tag.outputs.tag }}
-          docker push chaldea/rhoaias-client:${{ steps.get_tag.outputs.tag }}
-          docker push chaldea/rhoaias-ingress:${{ steps.get_tag.outputs.tag }}
+          echo "TAG_VERSION=${{ steps.get_tag.outputs.tag }}" > .env
+          cat .env
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
+          echo "${{ secrets.DOCKER_ALIYUN_PASSWORD }}" | docker login -u ${{secrets.DOCKER_ALIYUN_USERNAME}} --password-stdin ${{secrets.DOCKER_ALIYUN_REPOSITORY}}
+          docker compose build --push
   binary:
     strategy:
       matrix:
@@ -97,4 +89,4 @@ jobs:
           strip_v: true
       - name: Dotnet Pack
         run: |
-          docker build --build-arg BUILD_VERSION=${{ steps.get_tag.outputs.tag }} --build-arg="NUGET_SOURCE=${{secrets.NUGET_SOURCE}}" --build-arg="NUGET_KEY=${{secrets.NUGET_KEY}}" -f docker/Dockerfile-Nuget -t chaldea/rhoaias-nuget .
+          docker build --build-arg BUILD_VERSION=${{ steps.get_tag.outputs.tag }} --build-arg="NUGET_SOURCE=${{secrets.NUGET_SOURCE}}" --build-arg="NUGET_KEY=${{secrets.NUGET_KEY}}" -f docker/Dockerfile.nuget -t chaldea/rhoaias-nuget .

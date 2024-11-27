@@ -1,7 +1,10 @@
 x-rhoaias-build: &rhoaias-build
   context: ../
+  platforms:
+    - linux/amd64
+    - linux/arm64
   args:
-    BUILD_VERSION: 1.0.0
+    BUILD_VERSION: ${TAG_VERSION}
 
 services:
   rhoaias-server:
@@ -9,7 +12,12 @@ services:
     image: chaldea/rhoaias-server
     restart: always
     build:
-      dockerfile: ./docker/Dockerfile-Server
+      dockerfile: ./docker/Dockerfile.server
+      tags:
+        - chaldea/rhoaias-server:latest
+        - chaldea/rhoaias-server:${TAG_VERSION}
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-server:latest
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-server:${TAG_VERSION}
       <<: *rhoaias-build
     environment:
       RhoAias__Server__Bridge: 8024
@@ -26,7 +34,12 @@ services:
     image: chaldea/rhoaias-client
     restart: always
     build:
-      dockerfile: ./docker/Dockerfile-Client
+      dockerfile: ./docker/Dockerfile.client
+      tags:
+        - chaldea/rhoaias-client:latest
+        - chaldea/rhoaias-client:${TAG_VERSION}
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-client:latest
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-client:${TAG_VERSION}
       <<: *rhoaias-build
     environment:
       RhoAias__Client__ServerUrl: http://rhoaias-server:8024
@@ -39,7 +52,12 @@ services:
     image: chaldea/rhoaias-ingress
     restart: always
     build:
-      dockerfile: ./docker/Dockerfile-Ingress
+      dockerfile: ./docker/Dockerfile.ingress
+      tags:
+        - chaldea/rhoaias-ingress:latest
+        - chaldea/rhoaias-ingress:${TAG_VERSION}
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-ingress:latest
+        - registry.cn-shanghai.aliyuncs.com/chaldea/rhoaias-ingress:${TAG_VERSION}
       <<: *rhoaias-build
     environment:
       RhoAias__Client__ServerUrl: http://rhoaias-server:8024
