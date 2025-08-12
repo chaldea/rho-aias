@@ -62,6 +62,11 @@ public class Cert
     {
         return $"{TrimDomain()}.pfx";
     }
+
+    public bool IsWildcardDomain()
+    {
+        return Domain.StartsWith("*.");
+    }
 }
 
 public class CertInfo

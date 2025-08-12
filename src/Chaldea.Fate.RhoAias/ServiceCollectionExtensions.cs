@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICompressor, GZipCompressor>();
         services.AddAuthentication("Basic")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
+        services.AddKeyedSingleton<IAcmeProvider, SelfSignedAcmeProvider>("SelfSigned");
         return services;
     }
 
