@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRhoAias(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RhoAiasServerOptions>(configuration.GetSection("RhoAias:Server"));
+        services.Configure<CertManagerOptions>(configuration.GetSection("RhoAias:CertManager"));
         services.AddReverseProxy().LoadFromMemory();
         services.AddHttpContextAccessor();
         services.AddSignalR();
@@ -38,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICompressor, GZipCompressor>();
         services.AddAuthentication("Basic")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
+        services.AddKeyedSingleton<IAcmeProvider, SelfSignedAcmeProvider>("SelfSigned");
         return services;
     }
 

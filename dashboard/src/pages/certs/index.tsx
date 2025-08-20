@@ -8,6 +8,7 @@ import {
   ModalForm,
   PageContainer,
   ProColumns,
+  ProFormDependency,
   ProFormSelect,
   ProFormText,
   ProTable,
@@ -18,7 +19,6 @@ import { useEffect, useRef, useState } from 'react';
 
 const Certs: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
-  const [certType, setCertType] = useState<number>(0);
   const [dnsProviders, setDnsProviders] = useState<{ value: string; label: string }[]>([]);
   const [modal, contextHolder] = Modal.useModal();
   const { styles } = useStyles();
@@ -69,7 +69,7 @@ const Certs: React.FC = () => {
       title: intl.formatMessage({ id: 'pages.certs.operation' }),
       valueType: 'option',
       key: 'option',
-      render: (text, record, _, action) => [
+      render: (_, record) => [
         <a key="edit">{intl.formatMessage({ id: 'pages.certs.operation.edit' })}</a>,
         <a
           key="delete"
@@ -121,7 +121,7 @@ const Certs: React.FC = () => {
             {intl.formatMessage({ id: 'pages.certs.create' })}
           </Button>,
         ]}
-        request={async (params) => {
+        request={async () => {
           const data = await getCertList();
           return {
             data,
@@ -137,10 +137,6 @@ const Certs: React.FC = () => {
         open={open}
         modalProps={{ maskClosable: false, destroyOnClose: true }}
         onOpenChange={(visible) => setOpen(visible)}
-        initialValues={{ certType }}
-        onValuesChange={(changed) => {
-          if (changed.certType !== undefined) setCertType(changed.certType);
-        }}
         onFinish={async (values: API.CertCreateDto) => {
           try {
             await putCertCreate(values);
@@ -166,26 +162,13 @@ const Certs: React.FC = () => {
           ]}
           placeholder={intl.formatMessage({ id: 'pages.certs.certType.placeholder' })}
         />
-        {certType == 1 && (
-          <>
-            <ProFormSelect
-              name="dnsProviderId"
-              label={intl.formatMessage({ id: 'pages.certs.dnsProvider' })}
-              options={dnsProviders}
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({ id: 'pages.certs.dnsProvider.required' }),
-                },
-              ]}
-              placeholder={intl.formatMessage({ id: 'pages.certs.dnsProvider.placeholder' })}
-            />
-          </>
-        )}
         <ProFormSelect
           name="issuer"
           label={intl.formatMessage({ id: 'pages.certs.issuer' })}
-          options={[{ value: 'LetsEncrypt', label: 'LetsEncrypt' }]}
+          options={[
+            { value: 'LetsEncrypt', label: 'LetsEncrypt' },
+            { value: 'SelfSigned', label: 'SelfSigned' },
+          ]}
           rules={[
             {
               required: true,
@@ -194,20 +177,50 @@ const Certs: React.FC = () => {
           ]}
           placeholder={intl.formatMessage({ id: 'pages.certs.issuer.placeholder' })}
         />
-        <ProFormText
-          name="domain"
-          label={intl.formatMessage({ id: 'pages.certs.domain' })}
-          rules={[
-            {
-              required: true,
-              message: intl.formatMessage({ id: 'pages.certs.domain.required' }),
-            },
-          ]}
-          placeholder={intl.formatMessage(
-            { id: 'pages.certs.domain.placeholder' },
-            { domain: certType == 0 ? 'test.sample.com' : '*.sample.com' },
-          )}
-        />
+        <ProFormDependency name={['certType', 'issuer']}>
+          {({ certType, issuer }) => {
+            if (certType === 1 && issuer !== 'SelfSigned') {
+              return (
+                <ProFormSelect
+                  name="dnsProviderId"
+                  label={intl.formatMessage({ id: 'pages.certs.dnsProvider' })}
+                  options={dnsProviders}
+                  rules={[
+                    {
+                      required: true,
+                      message: intl.formatMessage({ id: 'pages.certs.dnsProvider.required' }),
+                    },
+                  ]}
+                  placeholder={intl.formatMessage({ id: 'pages.certs.dnsProvider.placeholder' })}
+                />
+              );
+            }
+
+            return null;
+          }}
+        </ProFormDependency>
+
+        <ProFormDependency name={['certType']}>
+          {({ certType }) => {
+            return (
+              <ProFormText
+                name="domain"
+                label={intl.formatMessage({ id: 'pages.certs.domain' })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({ id: 'pages.certs.domain.required' }),
+                  },
+                ]}
+                placeholder={intl.formatMessage(
+                  { id: 'pages.certs.domain.placeholder' },
+                  { domain: certType === 0 ? 'test.sample.com' : '*.sample.com' },
+                )}
+              />
+            );
+          }}
+        </ProFormDependency>
+
         <ProFormText
           name="email"
           label={intl.formatMessage({ id: 'pages.certs.email' })}

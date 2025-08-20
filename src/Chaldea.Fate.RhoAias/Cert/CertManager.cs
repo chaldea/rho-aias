@@ -40,6 +40,7 @@ internal class CertManager : ICertManager
 
     public async Task CreateCertAsync(Cert entity)
     {
+        Check.NotNull(entity.Domain, nameof(entity.Domain));
         entity.Id = Guid.NewGuid();
         await _certRepository.InsertAsync(entity);
         if (_certJobs.ContainsKey(entity.Domain))
@@ -146,6 +147,8 @@ internal class CertManager : ICertManager
             .UpdateExpires();
         await _certRepository.UpdateAsync(entity);
         _certJobs.TryRemove(entity.Domain, out _);
+        // remove cache
+        RemoveCert(entity);
     }
 
     private async Task<X509Certificate2?> GetCertAsync(string domain)
@@ -185,5 +188,21 @@ internal class CertManager : ICertManager
         }
 
         return null;
+    }
+
+    private void RemoveCert(Cert cert)
+    {
+        _challengeCerts.TryRemove(cert.Domain, out _);
+        if (cert.IsWildcardDomain())
+        {
+            var pattern = cert.TrimDomain();
+            foreach (var key in _challengeCerts.Keys)
+            {
+                if (key.EndsWith(pattern))
+                {
+                    _challengeCerts.TryRemove(key, out _);
+                }
+            }
+        }
     }
 }
