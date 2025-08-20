@@ -48,14 +48,10 @@ public static class ServiceCollectionExtensions
         app.UseWebSockets();
         app.UseMiddleware<ForwarderMiddleware>();
         app.UseMiddleware<TokenMiddleware>();
-        if (app.Properties.TryGetValue(GlobalEndpointRouteBuilder, out var obj))
-        {
-            var endpoint = obj as IEndpointRouteBuilder;
-            endpoint?.MapReverseProxy();
-            endpoint?.MapHub<ClientHub>("/clienthub");
-            endpoint?.MapHub<UserHub>("/userhub");
-        }
-
+        var endpoint = app.GetEndpointRoute();
+        endpoint.MapReverseProxy();
+        endpoint.MapHub<ClientHub>("/clienthub");
+        endpoint.MapHub<UserHub>("/userhub");
         return app;
     }
 
@@ -119,5 +115,15 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IClientDispatcher, TcpDispatcher>(ProxyType.TCP);
         services.AddKeyedSingleton<IClientDispatcher, UdpDispatcher>(ProxyType.UDP);
         return services;
+    }
+
+    public static IEndpointRouteBuilder GetEndpointRoute(this IApplicationBuilder app)
+    {
+        if (app.Properties.TryGetValue(GlobalEndpointRouteBuilder, out var obj))
+        {
+            if (obj is IEndpointRouteBuilder endpoint) return endpoint;
+        }
+
+        throw new NullReferenceException("GlobalEndpointRouteBuilder is null.");
     }
 }

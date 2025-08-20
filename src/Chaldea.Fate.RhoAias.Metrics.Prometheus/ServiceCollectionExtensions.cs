@@ -1,7 +1,6 @@
 ﻿using Chaldea.Fate.RhoAias;
 using Chaldea.Fate.RhoAias.Metrics.Prometheus;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using OpenTelemetry.Metrics;
 
@@ -17,7 +16,7 @@ public static class ServiceCollectionExtensions
 
     public static IRhoAiasApplicationBuilder UseRhoAiasPrometheus(this IRhoAiasApplicationBuilder builder)
     {
-        builder.EndpointRouteBuilder.MapRhoAiasPrometheus();
+        builder.ApplicationBuilder.UseRhoAiasPrometheus();
         return builder;
     }
 
@@ -35,9 +34,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IEndpointRouteBuilder MapRhoAiasPrometheus(this IEndpointRouteBuilder routeBuilder)
+    public static IApplicationBuilder UseRhoAiasPrometheus(this IApplicationBuilder app)
     {
-        routeBuilder.MapPrometheusScrapingEndpoint();
-        return routeBuilder;
+        var endpoint = app.GetEndpointRoute();
+        endpoint.MapPrometheusScrapingEndpoint();
+        return app;
     }
 }
