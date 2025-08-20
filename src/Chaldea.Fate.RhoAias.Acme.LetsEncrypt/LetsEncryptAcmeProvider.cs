@@ -13,15 +13,18 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
     private readonly ILogger<LetsEncryptAcmeProvider> _logger;
     private readonly IMemoryCache _memoryCache;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IOptions<CertManagerOptions> _certOptions;
     private readonly IOptions<RhoAiasLetsEncryptOptions> _options;
 
     public LetsEncryptAcmeProvider(
         ILogger<LetsEncryptAcmeProvider> logger,
+        IOptions<CertManagerOptions> certOptions,
         IOptions<RhoAiasLetsEncryptOptions> options,
         IMemoryCache memoryCache,
         IServiceProvider serviceProvider)
     {
         _logger = logger;
+        _certOptions = certOptions;
         _options = options;
         _memoryCache = memoryCache;
         _serviceProvider = serviceProvider;
@@ -38,7 +41,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
         else
             await HttpChallengeAsync(authz);
         var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
-        var opt = _options.Value;
+        var opt = _certOptions.Value;
         var certificateChain = await order.Generate(new CsrInfo
         {
             CountryName = opt.CountryName,
@@ -49,9 +52,8 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
             CommonName = cert.Domain
         }, privateKey);
 
-        var certPassword = "Aa123456";
         var pfxBuilder = certificateChain.ToPfx(privateKey);
-        var pfx = pfxBuilder.Build("my-cert", certPassword);
+        var pfx = pfxBuilder.Build(opt.Name, opt.CertPassword);
         var certPath = Utilities.EnsurePath(AppContext.BaseDirectory, opt.CertRootDirectory);
         var certFile = cert.GetFileName();
         var certFullPath = Path.Combine(certPath, certFile);
@@ -60,7 +62,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
         return new CertInfo
         {
             File = certFile,
-            Password = certPassword,
+            Password = opt.CertPassword,
             CountryName = opt.CountryName,
             State = opt.State,
             Locality = opt.Locality,
@@ -72,7 +74,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 
     public async Task<byte[]> ReadCertFileAsync(string fileName)
     {
-        var path = Utilities.EnsurePath(AppContext.BaseDirectory, _options.Value.CertRootDirectory);
+        var path = Utilities.EnsurePath(AppContext.BaseDirectory, _certOptions.Value.CertRootDirectory);
         var certPath = Path.Combine(path, fileName);
         if (File.Exists(certPath)) return await File.ReadAllBytesAsync(certPath);
 
@@ -81,7 +83,7 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 
     private async Task<AcmeContext> CreateContextAsync(string email)
     {
-        var path = Utilities.EnsurePath(AppContext.BaseDirectory, _options.Value.CertRootDirectory);
+        var path = Utilities.EnsurePath(AppContext.BaseDirectory, _certOptions.Value.CertRootDirectory);
         var keyPath = Path.Combine(path, email + ".pem");
         if (File.Exists(keyPath))
         {
@@ -131,14 +133,16 @@ internal class LetsEncryptAcmeProvider : IAcmeProvider
 
     private async Task RetryValidateAsync(IChallengeContext context)
     {
-        await Task.Delay(5000);
+        var delay = _options.Value.ChallengeDelay;
+        var retries = _options.Value.ChallengeRetries;
+        await Task.Delay(delay);
         var challenge = await context.Validate();
-        for (var i = 0; i < 50; i++)
+        for (var i = 0; i < retries; i++)
         {
             if (challenge.Status == ChallengeStatus.Valid) break;
             if (challenge.Status == ChallengeStatus.Invalid) throw new Exception("Challenge status is Invalid");
-            if (i == 49) throw new Exception($"Challenge validate failed, after {i} attempts.");
-            await Task.Delay(5000);
+            if (i == retries - 1) throw new Exception($"Challenge validate failed, after {i} attempts.");
+            await Task.Delay(delay);
             challenge = await context.Resource();
             _logger.LogInformation($"Challenge validate failed, retry {i}...");
         }

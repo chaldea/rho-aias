@@ -12,9 +12,9 @@ public interface IAcmeProvider
 
 internal class SelfSignedAcmeProvider : IAcmeProvider
 {
-    private CertOptions _options;
+    private CertManagerOptions _options;
 
-    public SelfSignedAcmeProvider(IOptions<CertOptions> options)
+    public SelfSignedAcmeProvider(IOptions<CertManagerOptions> options)
     {
         _options = options.Value;
     }
@@ -22,8 +22,9 @@ internal class SelfSignedAcmeProvider : IAcmeProvider
     public async Task<CertInfo> CreateCertAsync(Cert cert)
     {
         using var rsa = RSA.Create(2048);
+        var subjectName = $"CN={cert.Domain}, O={_options.Organization}, OU={_options.OrganizationUnit}, L={_options.Locality}, ST={_options.State}, E={cert.Email}";
         var request = new CertificateRequest(
-            $"CN=RhoAias",
+            subjectName,
             rsa,
             HashAlgorithmName.SHA256,
             RSASignaturePadding.Pkcs1);
@@ -37,7 +38,13 @@ internal class SelfSignedAcmeProvider : IAcmeProvider
         request.CertificateExtensions.Add(
             new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
-        // Create self-signed cert
+        // add domain
+        var sanBuilder = new SubjectAlternativeNameBuilder();
+        // eg: *.example.com
+        sanBuilder.AddDnsName(cert.Domain);
+        request.CertificateExtensions.Add(sanBuilder.Build());
+
+        // create self-signed cert
         var certificate = request.CreateSelfSigned(
             DateTimeOffset.UtcNow.AddDays(-1),
             DateTimeOffset.UtcNow.AddMonths(3));

@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRhoAias(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RhoAiasServerOptions>(configuration.GetSection("RhoAias:Server"));
+        services.Configure<CertManagerOptions>(configuration.GetSection("RhoAias:CertManager"));
         services.AddReverseProxy().LoadFromMemory();
         services.AddHttpContextAccessor();
         services.AddSignalR();

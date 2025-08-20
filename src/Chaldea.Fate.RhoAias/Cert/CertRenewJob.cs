@@ -8,12 +8,12 @@ internal class CertRenewJob : BackgroundService
 {
     private readonly ILogger<CertRenewJob> _logger;
     private readonly ICertManager _certManager;
-    private readonly IOptions<RhoAiasServerOptions> _options;
+    private readonly IOptions<CertManagerOptions> _options;
 
     public CertRenewJob(
         ILogger<CertRenewJob> logger,
         ICertManager certManager,
-        IOptions<RhoAiasServerOptions> options)
+        IOptions<CertManagerOptions> options)
     {
         _logger = logger;
         _certManager = certManager;
